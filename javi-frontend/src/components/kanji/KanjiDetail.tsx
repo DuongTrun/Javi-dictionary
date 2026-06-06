@@ -6,6 +6,10 @@ import { AiOutlinePartition } from "react-icons/ai";
 import KanjiDecompositionModal from "./KanjiDecompositionModal";
 import { IKanjiDetailResponse } from "@/types/backend";
 import DOMPurify from "dompurify";
+import { PiBookBookmark } from "react-icons/pi";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { toast } from "react-toastify";
+import SaveToDeckModal from "@/components/study-deck/SaveToDeckModal";
 
 const { Title, Text } = Typography;
 
@@ -14,7 +18,10 @@ interface Props {
 }
 
 export default function KanjiDetail({ data }: Props) {
+    const user = useAuthStore((state) => state.user);
+    const isLoggedIn = !!user;
     const [analyzeOpen, setAnalyzeOpen] = useState(false);
+    const [saveModalOpen, setSaveModalOpen] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const handleReplay = () => {
@@ -115,15 +122,31 @@ export default function KanjiDetail({ data }: Props) {
                         </div>
                     </div>
 
-                    {/* Nút phân tích */}
-                    <Button
-                        type="default"
-                        icon={<AiOutlinePartition />}
-                        className="ml-auto bg-blue-50 border border-blue-300 text-blue-700 hover:bg-blue-100 transition-all"
-                        onClick={() => setAnalyzeOpen(true)}
-                    >
-                        Phân tích
-                    </Button>
+                    {/* Nút phân tích & Lưu sổ tay */}
+                    <div className="flex gap-2">
+                        <Button
+                            type="default"
+                            icon={<AiOutlinePartition />}
+                            className="bg-blue-50 border border-blue-300 text-blue-700 hover:bg-blue-100 transition-all"
+                            onClick={() => setAnalyzeOpen(true)}
+                        >
+                            Phân tích
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<PiBookBookmark />}
+                            className="bg-[#3e66d4] hover:bg-[#2c4fa8] border-none transition-all flex items-center"
+                            onClick={() => {
+                                if (!isLoggedIn) {
+                                    toast.info("Vui lòng đăng nhập để lưu vào sổ tay.");
+                                } else {
+                                    setSaveModalOpen(true);
+                                }
+                            }}
+                        >
+                            Lưu sổ tay
+                        </Button>
+                    </div>
 
                     <Divider className="!my-3" />
 
@@ -196,6 +219,14 @@ export default function KanjiDetail({ data }: Props) {
                 open={analyzeOpen}
                 onClose={() => setAnalyzeOpen(false)}
                 kanji={data.characterName}
+            />
+
+            <SaveToDeckModal
+                open={saveModalOpen}
+                onClose={() => setSaveModalOpen(false)}
+                kanjiId={data.id}
+                defaultFrontText={data.characterName}
+                defaultBackText={`${data.sinoViName || ""}: ${data.meaning || ""}`}
             />
         </div>
     );

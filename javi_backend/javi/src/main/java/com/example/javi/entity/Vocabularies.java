@@ -1,5 +1,6 @@
 package com.example.javi.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -44,6 +45,13 @@ public class Vocabularies extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "kanji_id"))
     //    @JsonIgnore
     private List<Kanji> kanjis;
+
+    @ManyToMany
+    @JoinTable(
+            name = "vocabulary_topic",
+            joinColumns = @JoinColumn(name = "vocab_id"),
+            inverseJoinColumns = @JoinColumn(name = "topic_id"))
+    private List<Topic> topics = new ArrayList<>();
 
     @OneToMany(mappedBy = "vocabularies", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

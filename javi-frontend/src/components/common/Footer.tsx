@@ -1,11 +1,6 @@
 import { MdEmail, MdLocationOn, MdPhone } from "react-icons/md";
 import zalo from "../../assets/zalo.png";
-import tiktok from "../../assets/tiktok.png";
 import facebook from "../../assets/facebook.png";
-import youtube from "../../assets/youtube.png";
-import instagram from "../../assets/instagram.png";
-import messenger from "../../assets/messenger.png";
-import line from "../../assets/line.png";
 import safari from "../../assets/safari.png";
 import chrome from "../../assets/chrome.png";
 import firefox from "../../assets/firefox.png";
@@ -34,15 +29,15 @@ export default function Footer() {
                     <ul className="space-y-2 text-gray-600 text-sm">
                         <li className="flex items-center gap-2">
                             <MdLocationOn className="text-blue-500 text-xl" />
-                            <span>Đặng Công Chất - Hà Nội - Việt Nam</span>
+                            <span>Ba Đình - Hà Nội - Việt Nam</span>
                         </li>
                         <li className="flex items-center gap-2">
                             <MdEmail className="text-blue-500 text-xl" />
-                            <span>nguyenhieupton@gmail.com</span>
+                            <span>nguyenduongtrung0803@gmail.com</span>
                         </li>
                         <li className="flex items-center gap-2">
                             <MdPhone className="text-blue-500 text-xl" />
-                            <span>(+84) 97 602 4780</span>
+                            <span>(+84) 97 894 5022</span>
                         </li>
                     </ul>
                 </div>
@@ -54,7 +49,7 @@ export default function Footer() {
                         <ul className="flex gap-4 mb-4">
                             <li>
                                 <a
-                                    href="https://www.facebook.com/duyhieu.nguyen.98434"
+                                    href="https://www.facebook.com/trung.nguyenduong.5070"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -65,7 +60,7 @@ export default function Footer() {
                                     />
                                 </a>
                             </li>
-                            <li>
+                            {/* <li>
                                 <a
                                     href="https://www.tiktok.com/@pantheon.ndh"
                                     target="_blank"
@@ -77,10 +72,10 @@ export default function Footer() {
                                         className="w-[32px] h-[32px]"
                                     />
                                 </a>
-                            </li>
+                            </li> */}
                             <li>
                                 <a
-                                    href="https://zalo.me/0976024780"
+                                    href="https://zalo.me/0978945022"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -91,7 +86,7 @@ export default function Footer() {
                                     />
                                 </a>
                             </li>
-                            <li>
+                            {/* <li>
                                 <a
                                     href="https://www.instagram.com/dhieu.ndh/"
                                     target="_blank"
@@ -103,8 +98,8 @@ export default function Footer() {
                                         className="w-[32px] h-[32px]"
                                     />
                                 </a>
-                            </li>
-                            <li>
+                            </li> */}
+                            {/* <li>
                                 <a
                                     href="https://www.youtube.com/@duyhieunguyen3890"
                                     target="_blank"
@@ -129,8 +124,8 @@ export default function Footer() {
                                         className="w-[32px] h-[32px]"
                                     />
                                 </a>
-                            </li>
-                            <li>
+                            </li> */}
+                            {/* <li>
                                 <a href="#" onClick={(e) => e.preventDefault()}>
                                     <img
                                         src={line}
@@ -138,7 +133,7 @@ export default function Footer() {
                                         className="w-[32px] h-[32px]"
                                     />
                                 </a>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
 
@@ -216,7 +211,7 @@ export default function Footer() {
                 </div>
             </div>
             <div className="pt-4 border-t border-gray-200 flex flex-col items-center align-middle space-y-3">
-                <p>Bắt đầu thực hiện từ ngày 27-09-2025</p>
+                {/* <p>Bắt đầu thực hiện từ ngày 27-09-2025</p> */}
                 <p>Copyright © 2025</p>
             </div>
         </div>

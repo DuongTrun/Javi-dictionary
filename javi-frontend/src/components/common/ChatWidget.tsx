@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 
 import { FiX } from "react-icons/fi";
 import zaloImg from "@/assets/zalo.png";
-import messengerImg from "@/assets/messenger.png";
 import facebookImg from "@/assets/facebook.png";
 import { BsChatDotsFill } from "react-icons/bs";
 
@@ -26,19 +25,13 @@ export default function ChatWidget() {
         {
             key: "zalo",
             img: zaloImg,
-            href: "https://zalo.me/0976024780",
+            href: "https://zalo.me/0978945022",
             delayClass: "delay-200",
-        },
-        {
-            key: "messenger",
-            img: messengerImg,
-            href: "https://m.me/duyhieu.nguyen.98434",
-            delayClass: "delay-150",
         },
         {
             key: "facebook",
             img: facebookImg,
-            href: "https://www.facebook.com/duyhieu.nguyen.98434",
+            href: "https://www.facebook.com/trung.nguyenduong.5070",
             delayClass: "delay-75",
         },
     ];

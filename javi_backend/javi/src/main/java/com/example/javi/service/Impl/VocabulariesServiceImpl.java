@@ -22,9 +22,11 @@ import com.example.javi.exeption.AppException;
 import com.example.javi.exeption.ErrorCode;
 import com.example.javi.mapper.VocabulariesMapper;
 import com.example.javi.repository.KanjiRepository;
+import com.example.javi.repository.TopicRepository;
 import com.example.javi.repository.UsersRepository;
 import com.example.javi.repository.VocabulariesRepository;
 import com.example.javi.service.GeminiService;
+import com.example.javi.service.UsersService;
 import com.example.javi.service.VocabulariesService;
 import com.example.javi.service.cache.RedisHelper;
 import com.example.javi.service.cache.VocabulariesCacheService;
@@ -46,9 +48,11 @@ public class VocabulariesServiceImpl implements VocabulariesService {
     VocabulariesMapper vocabulariesMapper;
     SecurityUtil securityUtil;
     GeminiService geminiService;
+    UsersService usersService;
     UsersRepository usersRepository;
     VocabulariesCacheService vocabulariesCacheService;
     RedisHelper redisHelper;
+    TopicRepository topicRepository;
 
     @Override
     @Transactional
@@ -84,6 +88,11 @@ public class VocabulariesServiceImpl implements VocabulariesService {
             }
         });
 
+        List<Topic> associatedTopics = new ArrayList<>();
+        if (request.getTopicIds() != null && !request.getTopicIds().isEmpty()) {
+            associatedTopics = topicRepository.findAllById(request.getTopicIds());
+        }
+
         Vocabularies vocab = Vocabularies.builder()
                 .word(request.getWord())
                 .romaji(request.getRomaji())
@@ -91,6 +100,7 @@ public class VocabulariesServiceImpl implements VocabulariesService {
                 .katakana(request.getKatakana())
                 .wordType(request.getWordType())
                 .level(request.getLevel())
+                .topics(associatedTopics)
                 .build();
 
         // (ánh xạ MEANING và MEANING EXAMPLE giữ nguyên)
@@ -173,6 +183,14 @@ public class VocabulariesServiceImpl implements VocabulariesService {
         // Map các field cơ bản từ request sang entity
         vocabulariesMapper.toVocabularies(vocab, request);
 
+        // Cập nhật chủ đề
+        List<Topic> updatedTopics = new ArrayList<>();
+        if (request.getTopicIds() != null && !request.getTopicIds().isEmpty()) {
+            updatedTopics = topicRepository.findAllById(request.getTopicIds());
+        }
+        vocab.getTopics().clear();
+        vocab.getTopics().addAll(updatedTopics);
+
         // Xoá nghĩa cũ
         vocab.getMeanings().clear();
 
@@ -235,10 +253,11 @@ public class VocabulariesServiceImpl implements VocabulariesService {
         log.info("[CACHE MISS] Vào DB tìm keyword: {}", normalized);
 
         List<VocabResponse> resultList;
+
         //  Nếu chứa kanji sẽ tìm chính xác trong word trước
         if (ValidationUtils.containsKanji(normalized)) {
-            // Tìm kiếm chính xác (EQUAL) - chỉ trả về một kết quả nếu khớp 100%
-            Optional<Vocabularies> exactResult = vocabulariesRepository.findByWord(normalized);
+            // Tìm kiếm chính xác (EQUAL) - dùng findFirstByWord để tránh NonUniqueResultException
+            Optional<Vocabularies> exactResult = vocabulariesRepository.findFirstByWord(normalized);
             if (exactResult.isPresent()) {
                 resultList = List.of(vocabulariesMapper.toDto(exactResult.get()));
 
@@ -248,8 +267,8 @@ public class VocabulariesServiceImpl implements VocabulariesService {
                 return resultList;
             }
 
-            // Không có chính xác sẽ tìm kiếm like bởi có thể user điền thiếu từ
-            List<Vocabularies> likeResult = vocabulariesRepository.findByWordContainingIgnoreCase(normalized);
+            // Không có chính xác sẽ tìm kiếm like (LIMIT 30, sắp xếp từ ngắn nhất)
+            List<Vocabularies> likeResult = vocabulariesRepository.findByWordContaining(normalized);
             if (!likeResult.isEmpty()) {
                 resultList = likeResult.stream().map(vocabulariesMapper::toDto).collect(Collectors.toList());
 
@@ -265,8 +284,14 @@ public class VocabulariesServiceImpl implements VocabulariesService {
         }
 
         // Không có Kanji (là Hiragana/Tiếng Việt), tìm kiếm MỜ
-        // Chạy truy vấn like trên Hiragana và MeaningVn
+        // Bước 1: Tìm trên word, hiragana, romaji (nhanh - không JOIN bảng meaning)
         List<Vocabularies> fuzzyResults = vocabulariesRepository.findFuzzySearch(normalized);
+
+        // Bước 2: Nếu không tìm được ở bước 1, fallback tìm trên nghĩa tiếng Việt
+        if (fuzzyResults.isEmpty()) {
+            log.info("[SEARCH FALLBACK] Tìm theo nghĩa tiếng Việt cho keyword: {}", normalized);
+            fuzzyResults = vocabulariesRepository.findByMeaningContaining(normalized);
+        }
 
         if (fuzzyResults.isEmpty()) {
             vocabulariesCacheService.saveSearch(normalized, List.of());
@@ -290,7 +315,7 @@ public class VocabulariesServiceImpl implements VocabulariesService {
             return cached;
         }
         log.info("[CACHE MISS] Vào DB tìm từ vựng: {}", word);
-        Optional<Vocabularies> vocabulary = vocabulariesRepository.findByWord(word);
+        Optional<Vocabularies> vocabulary = vocabulariesRepository.findFirstByWord(word);
         if (vocabulary.isEmpty()) {
             throw new AppException(ErrorCode.WORD_NOT_FOUND);
         }
@@ -372,18 +397,10 @@ public class VocabulariesServiceImpl implements VocabulariesService {
             return explain;
         }
 
-        // FREE user: kiểm tra lượt
-        if (currentUser.getRemainingTrialExplains() <= 0) {
-            throw new AppException(ErrorCode.NO_TRIAL_LEFT);
+        // FREE user: kiểm tra lượt và trừ lượt sử dụng AI
+        if (currentUser.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(currentUser);
         }
-
-        // Luôn trừ lượt trước, kể cả khi có cache
-        currentUser.setRemainingTrialExplains(currentUser.getRemainingTrialExplains() - 1);
-        usersRepository.save(currentUser);
-        log.info(
-                "[TRIAL] User '{}' dùng lượt giải nghĩa. Còn lại: {}",
-                currentUser.getEmail(),
-                currentUser.getRemainingTrialExplains());
 
         // Nếu có cache, trả cache (vẫn đã bị trừ lượt)
         if (cached != null) {

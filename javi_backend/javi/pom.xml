@@ -27,7 +27,9 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <org.projectlombok.version>${lombok.version}</org.projectlombok.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
     </properties>
@@ -222,6 +224,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -255,6 +258,7 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Tạm thời tắt spotless-maven-plugin ở local để tránh lỗi tải plugin
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
@@ -271,7 +275,6 @@
                         </indent>
                         <palantirJavaFormat/>
                         <importOrder>
-                            <!-- Specify either order or file, but not both -->
                             <order>java,jakarta,org,com,com.diffplug,</order>
                         </importOrder>
                     </java>
@@ -285,6 +288,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 

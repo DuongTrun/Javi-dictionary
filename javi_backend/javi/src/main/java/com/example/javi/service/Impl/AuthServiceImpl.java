@@ -85,24 +85,13 @@ public class AuthServiceImpl implements AuthService {
 
         Optional<Users> existingUserOpt = usersRepository.findByEmail(request.getEmail());
         if (existingUserOpt.isPresent()) {
-            Users existingUser = existingUserOpt.get();
-            if (existingUser.isVerified()) {
-                throw new AppException(ErrorCode.EXIST_EMAIL);
-            } else {
-                try {
-                    verificationTokenService.resendVerification(existingUser.getEmail(), TokenType.EMAIL_VERIFICATION);
-                } catch (Exception e) {
-                    log.warn("[REGISTER] Gửi lại email xác minh thất bại: {}", e.getMessage());
-                    //                    throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
-                }
-                throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
-            }
+            throw new AppException(ErrorCode.EXIST_EMAIL);
         }
 
         Users newUser = new Users();
         newUser.setEmail(request.getEmail());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setVerified(false);
+        newUser.setVerified(true);
 
         // Gán role mặc định USER
         Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
@@ -111,10 +100,6 @@ public class AuthServiceImpl implements AuthService {
         newUser.setUsername(generateUniqueUsername());
 
         usersRepository.save(newUser);
-
-        VerificationToken token =
-                verificationTokenService.createVerificationTokenForUser(newUser, TokenType.EMAIL_VERIFICATION);
-        verificationTokenService.sendVerificationEmail(newUser, token);
 
         return usersMapper.toCreateUserResponse(newUser);
     }

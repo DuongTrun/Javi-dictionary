@@ -6,19 +6,22 @@ import java.util.List;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.javi.entity.*;
 import com.example.javi.repository.PermissionRepository;
 import com.example.javi.repository.RoleRepository;
+import com.example.javi.repository.TopicRepository;
 import com.example.javi.repository.UsersRepository;
+import com.example.javi.repository.VocabulariesRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@Configuration
+@org.springframework.stereotype.Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -27,6 +30,9 @@ public class DatabaseInitializer implements ApplicationRunner {
     UsersRepository usersRepository;
     RoleRepository roleRepository;
     PermissionRepository permissionRepository;
+    TopicRepository topicRepository;
+    VocabulariesRepository vocabulariesRepository;
+    JdbcTemplate jdbcTemplate;
 
     static final String ADMIN_USER_NAME = "admin";
     static final String ADMIN_PASSWORD = "123456";
@@ -36,6 +42,7 @@ public class DatabaseInitializer implements ApplicationRunner {
     static final String USER_EMAIL = "user@gmail.com";
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void run(ApplicationArguments args) {
         if (permissionRepository.count() == 0) {
             ArrayList<Permission> arr = new ArrayList<>();
@@ -113,6 +120,56 @@ public class DatabaseInitializer implements ApplicationRunner {
             user.setRemainingTrialExplains(5);
             user.setVerified(true);
             usersRepository.save(user);
+        }
+
+        // Reset topics if we have topics but 0 mapped vocabularies (likely encoding mismatch on previous run)
+        if (topicRepository.count() > 0) {
+            Integer relationCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM vocabulary_topic", Integer.class);
+            if (relationCount != null && relationCount == 0) {
+                log.warn("[TOPIC SEED] Detected 0 mappings in vocabulary_topic. Clearing topics to trigger re-seeding with correct UTF-8 strings...");
+                jdbcTemplate.execute("DELETE FROM vocabulary_topic");
+                jdbcTemplate.execute("DELETE FROM topics");
+            }
+        }
+
+        if (topicRepository.count() == 0) {
+            log.info("[TOPIC SEED] Bắt đầu khởi tạo dữ liệu chủ đề mẫu...");
+
+            Topic travel = Topic.builder().nameVi("Du lịch").nameJa("旅行").description("Từ vựng phục vụ mục đích du lịch, hỏi đường, khách sạn, sân bay...").build();
+            Topic business = Topic.builder().nameVi("Công sở").nameJa("ビジネス").description("Từ vựng dùng trong công việc, giao tiếp với đồng nghiệp, đối tác...").build();
+            Topic school = Topic.builder().nameVi("Trường học").nameJa("学校").description("Từ vựng liên quan đến học tập, trường lớp, thi cử, bạn bè...").build();
+            Topic dining = Topic.builder().nameVi("Ăn uống").nameJa("飲食").description("Từ vựng về các món ăn, nhà hàng, đồ uống, gọi món...").build();
+            Topic conversation = Topic.builder().nameVi("Giao tiếp hàng ngày").nameJa("日常会話").description("Từ vựng thông dụng trong giao tiếp sinh hoạt đời sống hàng ngày...").build();
+
+            travel = topicRepository.save(travel);
+            business = topicRepository.save(business);
+            school = topicRepository.save(school);
+            dining = topicRepository.save(dining);
+            conversation = topicRepository.save(conversation);
+
+            // Gán từ vựng mẫu
+            seedVocabsForTopic(travel, List.of("旅行", "ホテル", "切符", "飛行機", "パスポート", "観光", "駅", "空港", "旅館", "お土産", "温泉", "案内", "地図", "出発"));
+            seedVocabsForTopic(business, List.of("会社", "会議", "仕事", "電話", "出張", "社長", "残業", "給料", "書類", "名刺", "契約", "同僚", "報告", "連絡", "相談"));
+            seedVocabsForTopic(school, List.of("学校", "先生", "学生", "勉強", "教室", "宿題", "試験", "授業", "教科書", "友達", "卒業", "入学", "質問", "作文", "黒板"));
+            seedVocabsForTopic(dining, List.of("料理", "ご飯", "水", "お茶", "肉", "魚", "野菜", "果物", "美味しい", "注文", "食堂", "朝ご飯", "晩ご飯", "昼ご飯", "酒"));
+            seedVocabsForTopic(conversation, List.of("日常", "会話", "挨拶", "友達", "家族", "掃除", "洗濯", "買い物", "映画", "音楽", "遊ぶ", "散歩", "携帯", "家", "趣味"));
+
+            log.info("[TOPIC SEED] Khởi tạo dữ liệu chủ đề mẫu thành công!");
+        }
+    }
+
+    private void seedVocabsForTopic(Topic topic, List<String> words) {
+        for (String word : words) {
+            List<Vocabularies> vocabs = vocabulariesRepository.findAllByWord(word);
+            for (Vocabularies vocab : vocabs) {
+                if (vocab.getTopics() == null) {
+                    vocab.setTopics(new ArrayList<>());
+                }
+                if (!vocab.getTopics().contains(topic)) {
+                    vocab.getTopics().add(topic);
+                    vocabulariesRepository.save(vocab);
+                }
+            }
         }
     }
 }

@@ -29,4 +29,6 @@ public class VocabUpdateDTO {
 
     @NotNull(message = "EMPTY_MEANING")
     List<MeaningRequest> meanings;
+
+    List<Long> topicIds;
 }

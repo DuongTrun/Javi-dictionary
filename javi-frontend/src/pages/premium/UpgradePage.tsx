@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { List, Typography, Collapse } from "antd";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
@@ -118,7 +118,7 @@ const PLANS: Plan[] = [
     {
         id: "p2",
         months: 6,
-        price: "499.000",
+        price: "5.000",
         originalPrice: "719.000",
         highlight: true,
         bgUrl: bg_6_month,
@@ -145,9 +145,6 @@ const BENEFITS = [
 ];
 
 export default function UpgradePage(): JSX.Element {
-    const [selected, setSelected] = useState<string | null>(
-        PLANS.find((p) => p.highlight)?.id ?? PLANS[0].id
-    );
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
@@ -286,7 +283,6 @@ export default function UpgradePage(): JSX.Element {
                                         <div
                                             onClick={() => {
                                                 // GỌI NAVIGATE SANG MÀN CONFIRM KHI NHẤN GÓI
-                                                setSelected(plan.id);
                                                 navigate("/premium/confirm", {
                                                     state: { plan },
                                                 });

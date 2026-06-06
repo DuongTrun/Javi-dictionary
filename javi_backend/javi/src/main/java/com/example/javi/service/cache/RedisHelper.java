@@ -31,8 +31,8 @@ public class RedisHelper {
             String json = objectMapper.writeValueAsString(data);
             redisTemplate.opsForValue().set(key, json, ttl);
             log.info("[REDIS SAVE] key={} (TTL={}s)", key, ttl.toSeconds());
-        } catch (JsonProcessingException e) {
-            log.error("[REDIS ERROR] Serialize key={} failed: {}", key, e.getMessage());
+        } catch (Exception e) {
+            log.error("[REDIS ERROR] Save key={} failed: {}", key, e.getMessage());
         }
     }
 
@@ -83,24 +83,36 @@ public class RedisHelper {
 
     // DELETE KEY
     public void delete(String key) {
-        redisTemplate.delete(key);
-        log.info("[REDIS DELETE] key={}", key);
+        try {
+            redisTemplate.delete(key);
+            log.info("[REDIS DELETE] key={}", key);
+        } catch (Exception e) {
+            log.error("[REDIS ERROR] Delete key={} failed: {}", key, e.getMessage());
+        }
     }
 
     // DELETE THEO PATTERN
     public void deleteByPattern(String pattern) {
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
-            log.info("[REDIS CLEAR] {} keys by pattern '{}'", keys.size(), pattern);
+        try {
+            Set<String> keys = redisTemplate.keys(pattern);
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+                log.info("[REDIS CLEAR] {} keys by pattern '{}'", keys.size(), pattern);
+            }
+        } catch (Exception e) {
+            log.error("[REDIS ERROR] Clear pattern '{}' failed: {}", pattern, e.getMessage());
         }
     }
 
     // CLEAR ALL
     public void clearAll() {
-        Objects.requireNonNull(redisTemplate.getConnectionFactory())
-                .getConnection()
-                .flushAll();
-        log.warn("[REDIS FLUSH] Cleared all Redis data!");
+        try {
+            Objects.requireNonNull(redisTemplate.getConnectionFactory())
+                    .getConnection()
+                    .flushAll();
+            log.warn("[REDIS FLUSH] Cleared all Redis data!");
+        } catch (Exception e) {
+            log.error("[REDIS ERROR] Clear all failed: {}", e.getMessage());
+        }
     }
 }

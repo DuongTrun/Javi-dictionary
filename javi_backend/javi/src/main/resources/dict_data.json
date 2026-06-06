@@ -1,0 +1,359 @@
+{
+  "kanjis": [
+    { "characterName": "日", "sinoViName": "NHẬT", "meaning": "Ngày, mặt trời, Nhật Bản", "level": "N5" },
+    { "characterName": "本", "sinoViName": "BẢN", "meaning": "Sách, gốc, bản chất, cội nguồn", "level": "N5" },
+    { "characterName": "学", "sinoViName": "HỌC", "meaning": "Học tập, trường học, khoa học", "level": "N5" },
+    { "characterName": "生", "sinoViName": "SINH", "meaning": "Sinh sống, sinh ra, học sinh, tươi sống", "level": "N5" },
+    { "characterName": "人", "sinoViName": "NHÂN", "meaning": "Người, nhân lực, nhân loại", "level": "N5" },
+    { "characterName": "国", "sinoViName": "QUỐC", "meaning": "Quốc gia, đất nước, lãnh thổ", "level": "N5" },
+    { "characterName": "山", "sinoViName": "SƠN", "meaning": "Núi, ngọn núi", "level": "N5" },
+    { "characterName": "川", "sinoViName": "XUYÊN", "meaning": "Sông, dòng sông", "level": "N5" },
+    { "characterName": "気", "sinoViName": "KHÍ", "meaning": "Khí chất, sinh khí, tinh thần, không khí", "level": "N5" },
+    { "characterName": "元", "sinoViName": "NGUYÊN", "meaning": "Gốc gác, nguyên bản, khỏe mạnh, bắt đầu", "level": "N5" },
+    { "characterName": "先", "sinoViName": "TIÊN", "meaning": "Trước, tiên phong, tương lai", "level": "N5" },
+    { "characterName": "何", "sinoViName": "HÀ", "meaning": "Cái gì, mấy, bao nhiêu", "level": "N5" },
+    { "characterName": "語", "sinoViName": "NGÔN", "meaning": "Ngôn ngữ, từ ngữ, kể chuyện", "level": "N5" },
+    { "characterName": "私", "sinoViName": "TƯ", "meaning": "Tôi, tư nhân, riêng tư", "level": "N5" },
+    { "characterName": "行", "sinoViName": "HÀNH", "meaning": "Đi, thực hành, tiến hành, hàng lối", "level": "N5" },
+    { "characterName": "来", "sinoViName": "LAI", "meaning": "Đến, tương lai, vị lai", "level": "N5" },
+    { "characterName": "食", "sinoViName": "THỰC", "meaning": "Ăn, thực phẩm, ẩm thực", "level": "N5" },
+    { "characterName": "見", "sinoViName": "KIẾN", "meaning": "Nhìn, xem, ý kiến, kiến thức", "level": "N5" },
+    { "characterName": "水", "sinoViName": "THỦY", "meaning": "Nước, sông nước", "level": "N5" },
+    { "characterName": "友", "sinoViName": "HỮU", "meaning": "Bạn bè, hữu nghị, thân thiết", "level": "N5" }
+  ],
+  "vocabularies": [
+    {
+      "word": "食べる",
+      "romaji": "taberu",
+      "hiragana": "たべる",
+      "katakana": "",
+      "wordType": "VERB",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Ăn", "description": "Hành động ăn cơm, ăn thực phẩm." }]
+    },
+    {
+      "word": "行く",
+      "romaji": "iku",
+      "hiragana": "いく",
+      "katakana": "",
+      "wordType": "VERB",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Đi", "description": "Di chuyển từ địa điểm này đến địa điểm khác." }]
+    },
+    {
+      "word": "日本語",
+      "romaji": "nihongo",
+      "hiragana": "にほんご",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Tiếng Nhật", "description": "Ngôn ngữ của đất nước Nhật Bản." }]
+    },
+    {
+      "word": "本",
+      "romaji": "hon",
+      "hiragana": "ほん",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Sách", "description": "Tập tài liệu, giấy in chữ đóng thành quyển." }]
+    },
+    {
+      "word": "先生",
+      "romaji": "sensei",
+      "hiragana": "せんせい",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Thầy giáo, cô giáo", "description": "Người làm nhiệm vụ giảng dạy ở trường học." }]
+    },
+    {
+      "word": "来る",
+      "romaji": "kuru",
+      "hiragana": "くる",
+      "katakana": "",
+      "wordType": "VERB",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Đến", "description": "Di chuyển từ nơi khác đến nơi người nói đang ở." }]
+    },
+    {
+      "word": "見る",
+      "romaji": "miru",
+      "hiragana": "みる",
+      "katakana": "",
+      "wordType": "VERB",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Xem, nhìn, ngắm", "description": "Sử dụng mắt để thu nhận thông tin hình ảnh." }]
+    },
+    {
+      "word": "水",
+      "romaji": "mizu",
+      "hiragana": "みず",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Nước", "description": "Chất lỏng không màu, không mùi, cần thiết cho sự sống." }]
+    },
+    {
+      "word": "友達",
+      "romaji": "tomodachi",
+      "hiragana": "ともだち",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Bạn bè", "description": "Những người quen biết và thân thiết với nhau." }]
+    },
+    {
+      "word": "何",
+      "romaji": "nani",
+      "hiragana": "なに",
+      "katakana": "",
+      "wordType": "PRONOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Cái gì", "description": "Từ dùng để hỏi về sự vật, sự việc chưa biết." }]
+    },
+    {
+      "word": "私",
+      "romaji": "watashi",
+      "hiragana": "わたし",
+      "katakana": "",
+      "wordType": "PRONOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Tôi", "description": "Đại từ nhân xưng ngôi thứ nhất số ít." }]
+    },
+    {
+      "word": "学生",
+      "romaji": "gakusei",
+      "hiragana": "がくせい",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N5",
+      "meanings": [{ "meaningVn": "Học sinh, sinh viên", "description": "Người đang đi học tại các trường lớp." }]
+    },
+    {
+      "word": "宿題",
+      "romaji": "shukudai",
+      "hiragana": "しゅくだい",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N4",
+      "meanings": [{ "meaningVn": "Bài tập về nhà", "description": "Nhiệm vụ học tập được giao để hoàn thành ở nhà." }]
+    },
+    {
+      "word": "運転",
+      "romaji": "unten",
+      "hiragana": "うんてん",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N4",
+      "meanings": [{ "meaningVn": "Lái xe, vận hành", "description": "Điều khiển hoạt động của xe cộ hoặc máy móc." }]
+    },
+    {
+      "word": "料理",
+      "romaji": "ryouri",
+      "hiragana": "りょうり",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N4",
+      "meanings": [{ "meaningVn": "Món ăn, nấu ăn", "description": "Thức ăn được chế biến hoặc hành động nấu thức ăn." }]
+    },
+    {
+      "word": "音楽",
+      "romaji": "ongaku",
+      "hiragana": "おんがく",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N4",
+      "meanings": [{ "meaningVn": "Âm nhạc", "description": "Nghệ thuật phối hợp âm thanh để biểu đạt cảm xúc." }]
+    },
+    {
+      "word": "家族",
+      "romaji": "kazoku",
+      "hiragana": "かぞく",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N4",
+      "meanings": [{ "meaningVn": "Gia đình", "description": "Tập hợp những người cùng sống chung có quan hệ huyết thống." }]
+    },
+    {
+      "word": "準備",
+      "romaji": "junbi",
+      "hiragana": "じゅんび",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N3",
+      "meanings": [{ "meaningVn": "Chuẩn bị", "description": "Sắp xếp, sửa soạn trước các điều kiện cần thiết." }]
+    },
+    {
+      "word": "経済",
+      "romaji": "keizai",
+      "hiragana": "けいざい",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N3",
+      "meanings": [{ "meaningVn": "Kinh tế", "description": "Hoạt động sản xuất, phân phối, tiêu dùng của xã hội." }]
+    },
+    {
+      "word": "複雑",
+      "romaji": "fukuzatsu",
+      "hiragana": "ふくざつ",
+      "katakana": "",
+      "wordType": "ADJECTIVE_NA",
+      "level": "N3",
+      "meanings": [{ "meaningVn": "Phức tạp", "description": "Có nhiều chi tiết rắc rối, khó giải quyết." }]
+    },
+    {
+      "word": "簡単",
+      "romaji": "kantan",
+      "hiragana": "かんたん",
+      "katakana": "",
+      "wordType": "ADJECTIVE_NA",
+      "level": "N3",
+      "meanings": [{ "meaningVn": "Đơn giản, dễ dàng", "description": "Không có nhiều chi tiết rắc rối, dễ thực hiện." }]
+    },
+    {
+      "word": "環境",
+      "romaji": "kankyou",
+      "hiragana": "かんきょう",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N2",
+      "meanings": [{ "meaningVn": "Môi trường", "description": "Các yếu tố tự nhiên và xã hội xung quanh con người." }]
+    },
+    {
+      "word": "影響",
+      "romaji": "eikyou",
+      "hiragana": "えいきょう",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N2",
+      "meanings": [{ "meaningVn": "Ảnh hưởng", "description": "Sự tác động làm thay đổi đối tượng khác." }]
+    },
+    {
+      "word": "開発",
+      "romaji": "kaihatsu",
+      "hiragana": "かいはつ",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N2",
+      "meanings": [{ "meaningVn": "Phát triển, mở mang", "description": "Làm cho tăng trưởng, tiến bộ hoặc khai thác tài nguyên." }]
+    },
+    {
+      "word": "解決",
+      "romaji": "kaiketsu",
+      "hiragana": "かいけつ",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N2",
+      "meanings": [{ "meaningVn": "Giải quyết", "description": "Xử lý xong xuôi một vấn đề hay tranh chấp." }]
+    },
+    {
+      "word": "矛盾",
+      "romaji": "mujun",
+      "hiragana": "むじゅん",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N1",
+      "meanings": [{ "meaningVn": "Mâu thuẫn", "description": "Sự trái ngược, không thống nhất giữa các mặt." }]
+    },
+    {
+      "word": "把握",
+      "romaji": "haoku",
+      "hiragana": "はおく",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N1",
+      "meanings": [{ "meaningVn": "Nắm bắt, hiểu thấu", "description": "Hiểu rõ và nắm vững bản chất sự việc." }]
+    },
+    {
+      "word": "克復",
+      "romaji": "kokufuku",
+      "hiragana": "こくふく",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N1",
+      "meanings": [{ "meaningVn": "Khắc phục, vượt qua", "description": "Đấu tranh vượt qua khó khăn, trở ngại." }]
+    },
+    {
+      "word": "契機",
+      "romaji": "keiki",
+      "hiragana": "けいき",
+      "katakana": "",
+      "wordType": "NOUN",
+      "level": "N1",
+      "meanings": [{ "meaningVn": "Cơ hội, bước ngoặt", "description": "Động cơ hoặc nhân cơ hội để thay đổi." }]
+    }
+  ],
+  "grammars": [
+    {
+      "pattern": "～てください",
+      "meaning": "Hãy làm gì đó...",
+      "structure": "Động từ thể て + ください",
+      "usageNote": "Dùng để đưa ra yêu cầu hoặc đề nghị lịch sự.",
+      "level": "N5"
+    },
+    {
+      "pattern": "～から～まで",
+      "meaning": "Từ... đến...",
+      "structure": "Danh từ + から + Danh từ + まで",
+      "usageNote": "Chỉ mốc giới hạn về thời gian hoặc không gian.",
+      "level": "N5"
+    },
+    {
+      "pattern": "～なければならない",
+      "meaning": "Phải làm gì đó...",
+      "structure": "Động từ thể ない (bỏ い) + ければならない",
+      "usageNote": "Biểu thị nghĩa vụ hoặc sự bắt buộc phải thực hiện hành động.",
+      "level": "N4"
+    },
+    {
+      "pattern": "～ことができる",
+      "meaning": "Có thể làm gì đó...",
+      "structure": "Động từ thể từ điển (V-ru) + ことができる",
+      "usageNote": "Chỉ khả năng hoặc năng lực có thể thực hiện được.",
+      "level": "N4"
+    },
+    {
+      "pattern": "～たい",
+      "meaning": "Muốn làm gì đó...",
+      "structure": "Động từ thể ます (bỏ ます) + たい",
+      "usageNote": "Diễn tả nguyện vọng, mong muốn làm việc gì của người nói.",
+      "level": "N5"
+    },
+    {
+      "pattern": "～たことがある",
+      "meaning": "Đã từng làm gì đó...",
+      "structure": "Động từ thể た + ことがある",
+      "usageNote": "Diễn tả kinh nghiệm đã từng trải qua trong quá khứ.",
+      "level": "N4"
+    },
+    {
+      "pattern": "～ながら",
+      "meaning": "Vừa... vừa...",
+      "structure": "Động từ thể ます (bỏ ます) + ながら",
+      "usageNote": "Diễn tả hai hành động được thực hiện đồng thời bởi một chủ thể.",
+      "level": "N4"
+    },
+    {
+      "pattern": "～ば",
+      "meaning": "Nếu... thì...",
+      "structure": "Động từ chia sang thể điều kiện (thể ば)",
+      "usageNote": "Diễn tả giả định hoặc điều kiện giả định.",
+      "level": "N3"
+    },
+    {
+      "pattern": "～ようにする",
+      "meaning": "Cố gắng làm/không làm gì đó...",
+      "structure": "Động từ thể từ điển/thể ない + ようにする",
+      "usageNote": "Diễn tả sự nỗ lực, cố gắng tạo thói quen hoặc hành động.",
+      "level": "N3"
+    },
+    {
+      "pattern": "～わけがない",
+      "meaning": "Không lý nào/Lẽ nào lại...",
+      "structure": "Thể thông thường + わけがない",
+      "usageNote": "Biểu thị sự phủ định mạnh mẽ dựa trên lý do xác thực.",
+      "level": "N2"
+    }
+  ]
+}

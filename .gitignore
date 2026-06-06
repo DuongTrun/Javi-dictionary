@@ -1,0 +1,33 @@
+# System and IDE files
+.idea/
+.vscode/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node modules and build files
+node_modules/
+dist/
+dist-ssr/
+target/
+build/
+
+# Temp and Database dumps
+dump.rdb
+*.db
+*.sql
+.agent/
+javi_project_analysis.html
+
+# Large assets/archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Environment files
+.env
+.env.*
+!*.env.example

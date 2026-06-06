@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local Configuration ###
+/src/main/resources/application-local.yaml
+

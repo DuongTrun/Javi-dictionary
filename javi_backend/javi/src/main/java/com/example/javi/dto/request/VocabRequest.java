@@ -29,4 +29,6 @@ public class VocabRequest {
 
     @NotNull(message = "EMPTY_MEANING")
     List<MeaningRequest> meanings; // Danh sách các nghĩa
+
+    List<Long> topicIds;
 }

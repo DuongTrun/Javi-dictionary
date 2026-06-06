@@ -23,4 +23,5 @@ public class VocabResponse {
     WordType wordType;
     List<MeaningDTO> meanings;
     List<KanjiResponse> kanjis;
+    List<TopicResponse> topics;
 }

@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { PiDiamondFill } from "react-icons/pi";
+import { PiDiamondFill, PiBookBookmark } from "react-icons/pi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import facebook from "@/assets/facebook.png";
 import x from "@/assets/x.png";
 import { Link } from "react-router-dom";
 import Comment from "@/components/comment/Comment";
-import { IVocabResponse, IMeaning, IMeaningExample } from "@/types/backend";
+import { IVocabResponse, IMeaning } from "@/types/backend";
 import { callExplainVocabulary } from "@/apis/vocabularyApi";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
 import { MdStar } from "react-icons/md";
+import SaveToDeckModal from "@/components/study-deck/SaveToDeckModal";
 
 const wordTypeMap: Record<string, string> = {
     NOUN: "Danh từ",
@@ -45,6 +46,7 @@ export default function VocabularyDetail({ data }: Props) {
     const [explanation, setExplanation] = useState("");
     const [loading, setLoading] = useState(false);
     const [canRetry, setCanRetry] = useState(true); // Thêm biến để kiểm soát retry
+    const [saveModalOpen, setSaveModalOpen] = useState(false);
 
     // Gọi API giải thích thật (có chặn spam)
     const handleExplain = async () => {
@@ -159,56 +161,25 @@ export default function VocabularyDetail({ data }: Props) {
                 </div>
             )}
 
-            <div>
+        <div>
                 {Array.isArray(data.meanings) && data.meanings.length > 0 ? (
-                    data.meanings.map((m: IMeaning, idx: number) => (
-                        <div key={m.id ?? idx} className="mb-4">
-                            <h3 className="my-3 text-lg flex items-start gap-1 text-[#3e67d6]">
-                                <PiDiamondFill className="text-[12px] mt-2 flex-shrink-0" />
-                                <span
-                                    className="ql-render"
-                                    dangerouslySetInnerHTML={{
-                                        __html: DOMPurify.sanitize(
-                                            m.meaningVn || ""
-                                        ),
-                                    }}
-                                />
-                            </h3>
+                    data.meanings.map((m: IMeaning, idx: number) => {
+                        const rawHtml = m.meaningVn || "";
+                        const sanitized = DOMPurify.sanitize(rawHtml);
+                        // Lấy text thuần để đếm ký tự
+                        const tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = sanitized;
+                        const plainText = tempDiv.textContent || "";
+                        const isLong = plainText.length > 300;
 
-                            {m.description && (
-                                <div
-                                    className="ql-render text-gray-600 ml-4 text-[15px] mb-2"
-                                    dangerouslySetInnerHTML={{
-                                        __html: DOMPurify.sanitize(
-                                            m.description || ""
-                                        ),
-                                    }}
-                                />
-                            )}
-
-                            {Array.isArray(m.examples) &&
-                                m.examples.length > 0 && (
-                                    <div className="space-y-2 ml-4">
-                                        {m.examples.map(
-                                            (ex: IMeaningExample) => (
-                                                <div
-                                                    key={ex.id ?? ex.jaSentence}
-                                                >
-                                                    <div className="text-lg leading-relaxed whitespace-pre-line">
-                                                        {ex.jaSentence}
-                                                    </div>
-                                                    {ex.viSentence && (
-                                                        <div className="text-base text-gray-500 mt-1 whitespace-pre-line">
-                                                            {ex.viSentence}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                )}
-                        </div>
-                    ))
+                        return (
+                            <MeaningBlock
+                                key={m.id ?? idx}
+                                sanitizedHtml={sanitized}
+                                isLong={isLong}
+                            />
+                        );
+                    })
                 ) : (
                     <p className="text-gray-500 italic">
                         Không có nghĩa nào được cung cấp.
@@ -219,7 +190,7 @@ export default function VocabularyDetail({ data }: Props) {
             {/* ==== GIẢI THÍCH + CHIA SẺ ==== */}
             <div>
                 <div className="mt-3 flex items-center justify-between pb-3">
-                    <div>
+                    <div className="flex gap-2">
                         <button
                             onClick={handleExplain}
                             disabled={loading || (!canRetry && !explanation)}
@@ -233,6 +204,19 @@ export default function VocabularyDetail({ data }: Props) {
                             ) : (
                                 `${data.word} là gì?`
                             )}
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (!isLoggedIn) {
+                                    toast.info("Vui lòng đăng nhập để lưu vào sổ tay.");
+                                } else {
+                                    setSaveModalOpen(true);
+                                }
+                            }}
+                            className="bg-[#3e66d4] text-white rounded-xl px-[12px] py-[6px] text-[18px] hover:bg-[#2c4fa8] text-medium transition-all flex items-center gap-2"
+                        >
+                            <PiBookBookmark className="text-[20px]" />
+                            Lưu sổ tay
                         </button>
                     </div>
 
@@ -287,6 +271,57 @@ export default function VocabularyDetail({ data }: Props) {
             </div>
 
             <Comment entityType="WORD" entityId={data.id} />
+
+            <SaveToDeckModal
+                open={saveModalOpen}
+                onClose={() => setSaveModalOpen(false)}
+                vocabId={data.id}
+                defaultFrontText={data.word}
+                defaultBackText={data.meanings?.[0]?.meaningVn || ""}
+            />
+        </div>
+    );
+}
+
+// === Sub-component: Hiển thị nghĩa từ với khả năng thu gọn / mở rộng ===
+function MeaningBlock({ sanitizedHtml, isLong }: { sanitizedHtml: string; isLong: boolean }) {
+    const [expanded, setExpanded] = useState(false);
+
+    // Cắt HTML thông minh: lấy tối đa 300 ký tự text thuần, nhưng cắt tại ranh giới thẻ <br/>
+    const truncatedHtml = (() => {
+        if (!isLong || expanded) return sanitizedHtml;
+        // Tách theo <br/> hoặc <br> hoặc <br />
+        const parts = sanitizedHtml.split(/<br\s*\/?>/gi);
+        let accumulated = "";
+        let charCount = 0;
+        for (const part of parts) {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = part;
+            const partTextLen = (tempDiv.textContent || "").length;
+            if (charCount + partTextLen > 300 && accumulated) break;
+            accumulated += (accumulated ? "<br/>" : "") + part;
+            charCount += partTextLen;
+        }
+        return accumulated + " ...";
+    })();
+
+    return (
+        <div className="mb-4">
+            <h3 className="my-3 text-lg flex items-start gap-1 text-[#3e67d6]">
+                <PiDiamondFill className="text-[12px] mt-2 flex-shrink-0" />
+                <span
+                    className="ql-render"
+                    dangerouslySetInnerHTML={{ __html: isLong && !expanded ? truncatedHtml : sanitizedHtml }}
+                />
+            </h3>
+            {isLong && (
+                <button
+                    onClick={() => setExpanded(!expanded)}
+                    className="ml-4 text-sm text-blue-500 hover:text-blue-700 hover:underline transition-colors cursor-pointer"
+                >
+                    {expanded ? "▲ Thu gọn" : "▼ Xem thêm..."}
+                </button>
+            )}
         </div>
     );
 }

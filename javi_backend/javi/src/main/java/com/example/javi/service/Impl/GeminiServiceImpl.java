@@ -80,9 +80,8 @@ public class GeminiServiceImpl implements GeminiService {
         }
 
         if (currentUser.getAccountType() == AccountType.FREE) {
-            usersService.checkAndUpdateImageQuota(currentUser);
+            usersService.checkAndUpdateAiQuota(currentUser);
         }
-
         String text = request.getSourceText();
         if (text == null || text.isBlank()) {
             throw new AppException(ErrorCode.SOURCE_TEXT_CANNOT_EMPTY);
@@ -129,8 +128,9 @@ public class GeminiServiceImpl implements GeminiService {
         Users user = securityUtil.getCurrentUser();
         if (user == null) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        // Chỉ Premium mới được phép dịch ảnh
-        if (user.getAccountType() == AccountType.FREE) throw new AppException(ErrorCode.REQUIRE_PREMIUM);
+        if (user.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(user);
+        }
 
         // OCR ảnh
         String extractedText = ocrService.extractTextFromImage(imageFile);
@@ -195,8 +195,8 @@ public class GeminiServiceImpl implements GeminiService {
         if (currentUser == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        if (currentUser.getAccountType() != AccountType.PREMIUM) {
-            throw new AppException(ErrorCode.REQUIRE_PREMIUM);
+        if (currentUser.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(currentUser);
         }
 
         String prompt = String.format(
@@ -222,9 +222,11 @@ public class GeminiServiceImpl implements GeminiService {
     @Transactional(readOnly = true)
     public KanjiDecompositionResult analyzeKanjiStructure(String kanji) {
         Users user = securityUtil.getCurrentUser();
-
-        if (user.getAccountType() != AccountType.PREMIUM) {
-            throw new AppException(ErrorCode.REQUIRE_PREMIUM);
+        if (user == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        if (user.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(user);
         }
 
         String prompt =

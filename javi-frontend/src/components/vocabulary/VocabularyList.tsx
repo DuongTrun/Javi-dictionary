@@ -8,7 +8,7 @@ import {
 
 import { RotateCcw } from "lucide-react";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
     vocabularies: IVocabResponse[];
@@ -28,6 +28,13 @@ export default function VocabularyList({
     onViewKanjiDetail,
 }: Props) {
     const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+
+    // Reset trang khi thay đổi danh sách từ (khi tìm kiếm từ mới)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [vocabularies]);
 
     // helper: chuyển HTML -> text thuần (loại bỏ thẻ)
     // dùng để tránh in thẻ ReactQuill ra giao diện
@@ -53,6 +60,10 @@ export default function VocabularyList({
         });
     }, [kanjiDetails]);
 
+    const totalPages = Math.ceil(vocabularies.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedVocabularies = vocabularies.slice(startIndex, startIndex + itemsPerPage);
+
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 flex flex-col">
             <h3 className="text-gray-800 mb-3 text-[15px]">
@@ -67,7 +78,7 @@ export default function VocabularyList({
                         Không có kết quả nào phù hợp.
                     </p>
                 ) : (
-                    vocabularies.map((item) => {
+                    paginatedVocabularies.map((item) => {
                         // loại bỏ thẻ HTML (ReactQuill output)
                         // nối các nghĩa bằng "; "
                         // loại bỏ giá trị rỗng và duplicate
@@ -93,7 +104,10 @@ export default function VocabularyList({
                         return (
                             <div
                                 key={item.word}
-                                onClick={() => onSelect(item.word)}
+                                onClick={() => {
+                                    onSelect(item.word);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
                                 className={`p-3 rounded-lg cursor-pointer transition-all ${
                                     selectedId === item.word
                                         ? "bg-[#f1f5fd]"
@@ -126,6 +140,35 @@ export default function VocabularyList({
                     })
                 )}
             </div>
+
+            {/* ==== PHÂN TRANG CHO TỪ VỰNG ==== */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-3 px-2 pt-2 border-t border-gray-100 mb-3">
+                    <Button
+                        size="small"
+                        disabled={currentPage === 1}
+                        onClick={() => {
+                            setCurrentPage(prev => Math.max(prev - 1, 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                    >
+                        Trang trước
+                    </Button>
+                    <span className="text-[13px] text-gray-500 font-medium">
+                        Trang {currentPage} / {totalPages}
+                    </span>
+                    <Button
+                        size="small"
+                        disabled={currentPage === totalPages}
+                        onClick={() => {
+                            setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                    >
+                        Trang sau
+                    </Button>
+                </div>
+            )}
 
             {/* ==== DANH SÁCH KANJI CỦA TỪ ==== */}
             {kanjiDetails && kanjiDetails.length > 0 && (

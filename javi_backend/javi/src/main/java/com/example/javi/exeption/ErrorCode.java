@@ -137,6 +137,23 @@ public enum ErrorCode {
     CANNOT_DETECTED_TEXT_IN_IMAGE(1070, "Không thể phát hiện chữ trong ảnh của bạn", HttpStatus.BAD_REQUEST),
     REQUIRE_PREMIUM(1077, "Bạn cần nâng cấp tài khoản lên premium để thực hiện chức năng này", HttpStatus.FORBIDDEN),
     INVALID_ENGINE(1078, "Engin bạn truyền xuống không đúng", HttpStatus.BAD_REQUEST),
+
+    // FLASHCARD & DECK
+    DECK_NOT_FOUND(2001, "Không tìm thấy sổ tay học tập tương ứng", HttpStatus.NOT_FOUND),
+    CARD_NOT_FOUND(2002, "Không tìm thấy thẻ ghi nhớ tương ứng", HttpStatus.NOT_FOUND),
+    CARD_ALREADY_EXISTS(2003, "Thẻ này đã tồn tại trong sổ tay học tập", HttpStatus.BAD_REQUEST),
+
+    // PAYMENT ORDER
+    PAYMENT_ORDER_NOT_FOUND(4001, "Không tìm thấy đơn thanh toán tương ứng", HttpStatus.NOT_FOUND),
+    PENDING_ORDER_EXISTS(4002, "Bạn đã có đơn thanh toán đang chờ xử lý, vui lòng đợi admin duyệt", HttpStatus.BAD_REQUEST),
+    ORDER_ALREADY_PROCESSED(4003, "Đơn thanh toán này đã được xử lý rồi", HttpStatus.BAD_REQUEST),
+    DAILY_AI_LIMIT_EXCEEDED(4004, "Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng nâng cấp Premium!", HttpStatus.FORBIDDEN),
+
+    // VOICE AI COACH
+    AUDIO_FILE_REQUIRED(3001, "Tệp âm thanh không được để trống", HttpStatus.BAD_REQUEST),
+    AUDIO_FILE_TOO_LARGE(3002, "Tệp âm thanh không được vượt quá 5MB", HttpStatus.BAD_REQUEST),
+    VOICE_TARGET_TEXT_EMPTY(3003, "Văn bản mẫu không được để trống", HttpStatus.BAD_REQUEST),
+    VOICE_PROCESSING_ERROR(3004, "Có lỗi xảy ra khi xử lý giọng nói, vui lòng thử lại", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     // spotless:on

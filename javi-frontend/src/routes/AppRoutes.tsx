@@ -32,6 +32,10 @@ import AdminRoles from "@/pages/admin/AdminRoles";
 import UpgradePage from "@/pages/premium/UpgradePage";
 import ConfirmPremiumPage from "@/pages/premium/ConfirmPremiumPage";
 import BankPaymentConfirmPage from "@/pages/premium/BankPaymentConfirmPage";
+import TopicsPage from "@/pages/topic/TopicsPage";
+import StudyDeckPage from "@/pages/study-deck/StudyDeckPage";
+import FlashcardReviewPage from "@/pages/study-deck/FlashcardReviewPage";
+import AdminPaymentOrders from "@/pages/admin/AdminPaymentOrders";
 
 export default function App() {
     const router = createBrowserRouter([
@@ -88,6 +92,23 @@ export default function App() {
                 },
                 { path: "/users/my-info", element: <UserDetailPage /> },
                 { path: "intro", element: <IntroPage /> },
+                { path: "topics", element: <TopicsPage /> },
+                {
+                    path: "study-decks",
+                    element: (
+                        <ProtectedRoute>
+                            <StudyDeckPage />
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+                    path: "study-decks/:deckId/review",
+                    element: (
+                        <ProtectedRoute>
+                            <FlashcardReviewPage />
+                        </ProtectedRoute>
+                    ),
+                },
                 {
                     path: "/users/profile/:username",
                     element: <UserDetailPage />,
@@ -179,6 +200,16 @@ export default function App() {
                         <ProtectedRoute>
                             <RequirePermission required={["MANAGE_PERMISSION"]}>
                                 <AdminPermissions />
+                            </RequirePermission>
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+                    path: "admin/payment-orders",
+                    element: (
+                        <ProtectedRoute>
+                            <RequirePermission required={["MANAGE_USER"]}>
+                                <AdminPaymentOrders />
                             </RequirePermission>
                         </ProtectedRoute>
                     ),

@@ -59,7 +59,9 @@ public class SecurityConfig {
             "/api/v1/users/register",
             "/api/v1/auth/verify-email",
             "/api/v1/auth/resend-verification",
-            "/api/v1/auth/**"
+            "/api/v1/auth/**",
+            "/api/v1/topics/**",
+            "/api/v1/demo-data/**"
         };
 
         http.csrf(AbstractHttpConfigurer::disable)

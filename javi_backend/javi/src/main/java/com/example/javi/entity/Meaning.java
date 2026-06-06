@@ -28,7 +28,7 @@ public class Meaning extends BaseEntity {
     @JsonBackReference
     Vocabularies vocabularies;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     String meaningVn; // nghĩa tiếng việt
 
     @Column(columnDefinition = "TEXT")

@@ -121,6 +121,15 @@ export interface IResetPassRequest {
     confirmPassword: string;
 }
 
+export interface ITopic {
+  id: number;
+  nameVi: string;
+  nameJa: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // =====================================================
 // TỪ VỰNG VÀ NGHĨA
 // =====================================================
@@ -164,6 +173,7 @@ export interface IVocabResponse {
   level: string;             // N5 - N1
   meanings: IMeaning[];      // Danh sách nghĩa tiếng Việt
   kanjis: IVocabKanji[];     // Các Kanji liên quan
+  topics?: ITopic[];         // Các chủ đề
 }
 
 /** Payload tạo từ vựng (Admin) */
@@ -172,6 +182,7 @@ export interface IVocabCreateRequest {
   wordType: string;
   level: string;
   meanings: IMeaning[];
+  topicIds?: number[];
 }
 
 /** Payload cập nhật từ vựng (Admin) */
@@ -181,6 +192,7 @@ export interface IVocabUpdateRequest {
   wordType: string;
   level: string;
   meanings: IMeaning[];
+  topicIds?: number[];
 }
 
 
@@ -465,4 +477,80 @@ export interface TranslateBlockModel {
     loading?: boolean;
     file?: File | undefined;
     grammar?: IGrammarCheckResult | null;
+}
+
+// =====================================================
+// SỔ TAY HỌC TẬP & THẺ GHI NHỚ FLASHCARD SRS
+// =====================================================
+
+export interface IStudyDeckRequest {
+  name: string;
+  description?: string;
+}
+
+export interface IStudyDeckResponse {
+  id: number;
+  name: string;
+  description: string;
+  userId: number;
+  createdAt: string;
+  reviewCount?: number;  // Số lượng thẻ cần ôn tập hôm nay
+  totalCards?: number;   // Tổng số thẻ có trong sổ tay
+}
+
+export interface IFlashcardRequest {
+  deckId: number;
+  vocabId?: number | null;
+  kanjiId?: number | null;
+  grammarId?: number | null;
+  frontText?: string | null;
+  backText?: string | null;
+}
+
+export interface IFlashcardResponse {
+  id: number;
+  deckId: number;
+  vocabId: number | null;
+  kanjiId: number | null;
+  grammarId: number | null;
+  frontText: string | null;
+  backText: string | null;
+  repetitions: number;
+  intervalDays: number;
+  easeFactor: number;
+  nextReviewDate: string;
+  createdAt: string;
+  vocab?: IVocabResponse | null;
+  kanji?: IKanjiResponse | null;
+  grammar?: IGrammarResponse | null;
+}
+
+export interface IFlashcardReviewRequest {
+  cardId: number;
+  rating: number; // 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
+}
+
+// =====================================================
+// PAYMENT ORDER (Xác nhận thanh toán thủ công)
+// =====================================================
+
+export type PaymentOrderStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface IPaymentOrderRequest {
+  premiumType: PremiumType;
+  amount: number;
+  transferContent: string;
+}
+
+export interface IPaymentOrderResponse {
+  id: number;
+  userId: number;
+  username: string;
+  email: string;
+  premiumType: PremiumType;
+  amount: number;
+  transferContent: string;
+  status: PaymentOrderStatus;
+  adminNote?: string;
+  createdAt: string;
 }

@@ -3,6 +3,7 @@ import { message } from "antd";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { callRefreshToken } from "./authApi";
 import { useGlobalErrorStore } from "@/stores/useGlobalErrorStore";
+import { usePremiumModalStore } from "@/stores/usePremiumModalStore";
 import { callLogout } from "@/apis/authApi";
 // import { useNavigate } from "react-router-dom";
 
@@ -119,6 +120,12 @@ axiosClient.interceptors.response.use(
         // Nếu refresh bị lỗi thì trả reject (clearAuth đã được gọi trong block trên)
         return Promise.reject(e);
       }
+    }
+
+    // Bắt lỗi vượt hạn mức AI hàng ngày (code 4004)
+    if (error.response?.data?.code === 4004) {
+      usePremiumModalStore.getState().openModal();
+      return Promise.reject(error);
     }
 
     // Các lỗi còn lại để page tự handle (400, 403, 404,...)

@@ -6,6 +6,7 @@ interface AuthState {
   token: string | null;
   user: IUserResponse | null;
   setAuth: (res: ILoginResponse) => void;
+  setUser: (user: IUserResponse) => void;
   clearAuth: () => void;
 }
 
@@ -19,6 +20,11 @@ export const useAuthStore = create<AuthState>()(
         set({
           token: res.token,
           user: res.user,
+        }),
+
+      setUser: (user) =>
+        set({
+          user,
         }),
 
       clearAuth: () => {

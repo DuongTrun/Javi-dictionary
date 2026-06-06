@@ -207,7 +207,7 @@ export default function IntroModal({
 
                 <div className="relative">
                     <p className="text-gray-700 leading-relaxed mb-5 text-[15px]">
-                        Đây là đồ án tốt nghiệp của mình. Hiện tại dữ liệu từ
+                        Đây là dự án demo của mình. Hiện tại dữ liệu từ
                         điển được phát triển ở mức{" "}
                         <strong className="text-indigo-600">JLPT N5</strong>,
                         nên một số từ hoặc cấu trúc cao hơn có thể chưa có trong

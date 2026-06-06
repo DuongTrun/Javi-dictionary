@@ -27,6 +27,7 @@ import {
     callGetVocabularyPage,
     callUpdateVocabulary,
 } from "@/apis/vocabularyApi";
+import { callGetTopics } from "@/apis/topicApi";
 import { useAuthStore } from "@/stores/useAuthStore";
 import SearchResultModal from "@/components/search/SearchResultModal";
 import type {
@@ -35,6 +36,7 @@ import type {
     IVocabCreateRequest,
     IVocabUpdateRequest,
     IMeaning,
+    ITopic,
 } from "@/types/backend";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -141,6 +143,24 @@ function VocabFormModal({
     onSubmit,
 }: VocabFormModalProps) {
     const [form] = Form.useForm();
+    const [allTopics, setAllTopics] = useState<ITopic[]>([]);
+
+    // Load danh sách chủ đề khi mở modal
+    useEffect(() => {
+        if (open) {
+            const loadTopics = async () => {
+                try {
+                    const res = await callGetTopics();
+                    if (res.data && res.data.result) {
+                        setAllTopics(res.data.result);
+                    }
+                } catch (e) {
+                    console.error("Lỗi khi load chủ đề trong Admin:", e);
+                }
+            };
+            loadTopics();
+        }
+    }, [open]);
 
     // set lại giá trị mỗi khi mở modal / initialValues đổi
     useEffect(() => {
@@ -159,6 +179,7 @@ function VocabFormModal({
                 romaji: initialValues.romaji ?? "",
                 hiragana: initialValues.hiragana ?? "",
                 katakana: initialValues.katakana ?? "",
+                topicIds: initialValues.topics?.map((t) => t.id) ?? [],
                 meanings:
                     defaultMeanings.length > 0
                         ? defaultMeanings.map((m) => ({
@@ -200,6 +221,7 @@ function VocabFormModal({
                 romaji: "",
                 hiragana: "",
                 katakana: "",
+                topicIds: [],
                 meanings: [
                     {
                         meaningVn: "",
@@ -223,8 +245,6 @@ function VocabFormModal({
             const rawMeanings = values.meanings || [];
 
             const processedMeanings = rawMeanings.map((m: any) => ({
-                // NOTE: Không gửi id trong body vì BE không chấp nhận field 'id' trong MeaningRequest
-                // hiện tại ở BE là xóa cũ và tạo mới khi cập nhật nên không cần truyền id, sau này nếu BE hỗ trợ cập nhật từng nghĩa và ví dụ thì sẽ cần truyền id
                 meaningVn: m.meaningVn ?? null,
                 description: cleanEmptyHtml(m.description as string),
                 examples:
@@ -242,6 +262,7 @@ function VocabFormModal({
                 hiragana: values.hiragana?.trim() || null,
                 katakana: values.katakana?.trim() || null,
                 meanings: processedMeanings,
+                topicIds: values.topicIds ?? [],
             };
 
             await onSubmit(payload);
@@ -355,6 +376,27 @@ function VocabFormModal({
                         tooltip="Cách đọc katakana (nếu có)"
                     >
                         <Input placeholder="Nhập katakana (nếu có)" />
+                    </Form.Item>
+                </div>
+
+                {/* Chọn chủ đề */}
+                <div className="mt-4">
+                    <Form.Item
+                        name="topicIds"
+                        label="Chủ đề từ vựng"
+                        tooltip="Chọn các chủ đề cho từ vựng này (chọn nhiều)"
+                    >
+                        <Select
+                            mode="multiple"
+                            placeholder="Chọn chủ đề"
+                            style={{ width: "100%" }}
+                            options={allTopics.map((t) => ({
+                                label: `${t.nameJa} (${t.nameVi})`,
+                                value: t.id,
+                            }))}
+                            showSearch
+                            optionFilterProp="label"
+                        />
                     </Form.Item>
                 </div>
 

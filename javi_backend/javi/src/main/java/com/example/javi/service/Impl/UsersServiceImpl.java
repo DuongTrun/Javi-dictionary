@@ -362,5 +362,61 @@ public class UsersServiceImpl implements UsersService {
                 "[QUOTA] User {} (FREE) còn {}/2 lượt dịch ảnh hôm nay",
                 user.getEmail(),
                 user.getDailyImageTranslations());
+     }
+
+    @Override
+    @Transactional
+    public synchronized void checkAndUpdateAiQuota(Users user) {
+        ZoneId zoneId = getZoneId();
+        LocalDate today = LocalDate.now(zoneId);
+
+        // Hạ cấp nếu premium đã hết hạn
+        if (user.getAccountType() == AccountType.PREMIUM
+                && user.getPremiumExpiredAt() != null
+                && user.getPremiumExpiredAt().isBefore(LocalDateTime.now(zoneId))) {
+            log.info(
+                    "[PREMIUM] User {} hết hạn lúc {}, tự động hạ cấp về FREE",
+                    user.getEmail(),
+                    user.getPremiumExpiredAt());
+            user.setAccountType(AccountType.FREE);
+            user.setPremiumExpiredAt(null);
+            usersRepository.save(user);
+        }
+
+        // PREMIUM user còn hạn thì bỏ qua quota
+        if (user.getAccountType() == AccountType.PREMIUM
+                && (user.getPremiumExpiredAt() == null
+                        || user.getPremiumExpiredAt().isAfter(LocalDateTime.now(zoneId)))) {
+            log.debug("[QUOTA] PREMIUM user {} sử dụng AI, không giới hạn", user.getEmail());
+            return;
+        }
+
+        // Reset quota nếu sang ngày mới hoặc lần đầu tiên dùng AI
+        LocalDate lastDate = Optional.ofNullable(user.getLastAiRequestDate())
+                .map(LocalDateTime::toLocalDate)
+                .orElse(null);
+
+        if (lastDate == null || !lastDate.isEqual(today) || user.getDailyAiRequests() == null) {
+            log.info("[QUOTA] Reset lượt sử dụng AI cho user {} - Ngày mới {}", user.getEmail(), today);
+            user.setDailyAiRequests(5);
+            user.setLastAiRequestDate(LocalDateTime.now(zoneId));
+            usersRepository.save(user);
+        }
+
+        // FREE user vượt quota
+        if (user.getDailyAiRequests() <= 0) {
+            log.warn("[QUOTA] User {} đã vượt giới hạn 5 lượt sử dụng AI/ngày (FREE)", user.getEmail());
+            throw new AppException(ErrorCode.DAILY_AI_LIMIT_EXCEEDED);
+        }
+
+        // Trừ lượt cho FREE user
+        user.setDailyAiRequests(user.getDailyAiRequests() - 1);
+        user.setLastAiRequestDate(LocalDateTime.now(zoneId));
+        usersRepository.save(user);
+
+        log.info(
+                "[QUOTA] User {} (FREE) còn {}/5 lượt sử dụng AI hôm nay",
+                user.getEmail(),
+                user.getDailyAiRequests());
     }
 }

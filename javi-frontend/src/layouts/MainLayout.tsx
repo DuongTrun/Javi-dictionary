@@ -11,6 +11,9 @@ import HistoryPickerModal from "@/components/history/HistoryPickerModal";
 import SearchResultModal from "@/components/search/SearchResultModal";
 import type { EntityType } from "@/types/backend";
 import IntroModal from "@/components/common/IntroModal";
+import PremiumUpgradeModal from "@/components/common/PremiumUpgradeModal";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { callGetMyInfo } from "@/apis/userApi";
 
 export default function MainLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,6 +35,23 @@ export default function MainLayout() {
     const navigate = useNavigate();
 
     const { serverDown, setServerDown } = useGlobalErrorStore();
+    const token = useAuthStore((s) => s.token);
+    const setUser = useAuthStore((s) => s.setUser);
+
+    useEffect(() => {
+        if (token) {
+            callGetMyInfo()
+                .then((res) => {
+                    const u = res.data?.result;
+                    if (u) {
+                        setUser(u);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Failed to fetch current user info:", err);
+                });
+        }
+    }, [token, setUser]);
 
     useEffect(() => {
         if (!localStorage.getItem("javi_seen_intro_v1")) setIntroOpen(true);
@@ -127,6 +147,7 @@ export default function MainLayout() {
             />
 
             <IntroModal open={introOpen} onClose={() => setIntroOpen(false)} />
+            <PremiumUpgradeModal />
         </div>
     );
 }

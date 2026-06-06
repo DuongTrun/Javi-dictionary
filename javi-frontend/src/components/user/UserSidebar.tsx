@@ -23,6 +23,24 @@ export default function UserSidebar({
     isSelf = false,
 }: UserSidebarProps) {
     const isPremium = user.accountType === "PREMIUM";
+
+    const formatPremiumExpiry = (expiredAt: any): string => {
+        if (!expiredAt) return "Trọn đời";
+        if (typeof expiredAt === "string") {
+            try {
+                const d = new Date(expiredAt);
+                if (!isNaN(d.getTime())) return d.toLocaleDateString("vi-VN");
+            } catch {}
+        }
+        if (Array.isArray(expiredAt) && expiredAt.length >= 3) {
+            try {
+                const [year, month, day, hour = 0, minute = 0, second = 0] = expiredAt;
+                const dt = new Date(year, month - 1, day, hour, minute, second);
+                if (!isNaN(dt.getTime())) return dt.toLocaleDateString("vi-VN");
+            } catch {}
+        }
+        return "Trọn đời";
+    };
     const [avatarUrl, setAvatarUrl] = useState<string>(
         user.avatarUrl || avatarDefault
     );
@@ -139,7 +157,7 @@ export default function UserSidebar({
             </h2>
             <p className="text-sm py-1 px-3 bg-[#ffeecc] text-[#ad6800] font-normal rounded-2xl">
                 {isPremium
-                    ? "Ngày hết hạn Premium: Trọn đời"
+                    ? `Ngày hết hạn Premium: ${formatPremiumExpiry(user.premiumExpiredAt)}`
                     : "Tài khoản miễn phí"}
             </p>
 

@@ -8,7 +8,7 @@ import com.example.javi.dto.request.VocabUpdateDTO;
 import com.example.javi.dto.response.VocabResponse;
 import com.example.javi.entity.Vocabularies;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {TopicMapper.class})
 public interface VocabulariesMapper {
     @Mapping(target = "meanings", ignore = true)
     void toVocabularies(@MappingTarget Vocabularies vocab, VocabUpdateDTO vocabUpdateDTO);

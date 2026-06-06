@@ -62,6 +62,12 @@ public class Users extends BaseEntity {
     @Column(name = "last_image_translation_date")
     private LocalDateTime lastImageTranslationDate;
 
+    @Column(name = "daily_ai_requests")
+    private Integer dailyAiRequests = 5;
+
+    @Column(name = "last_ai_request_date")
+    private LocalDateTime lastAiRequestDate;
+
     @Column(nullable = false)
     private boolean verified = false;
 

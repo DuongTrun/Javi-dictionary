@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Input, Button, message } from "antd";
 import { useAuthStore } from "@/stores/useAuthStore";
 import momo from "@/assets/momo.png";
-import techcombank from "@/assets/techcombank.png";
+import mbbank from "@/assets/mbbank.png";
 import { AiFillExclamationCircle } from "react-icons/ai";
 
 type Plan = {
@@ -272,13 +272,13 @@ export default function ConfirmPremiumPage(): JSX.Element {
                                     onClick={() => setPayment("bank")}
                                 >
                                     <img
-                                        src={techcombank}
+                                        src={mbbank}
                                         alt="bank"
-                                        className="w-9 h-9 object-cover shadow-md rounded-md"
+                                        className="w-9 h-9 object-contain bg-white p-1 shadow-md rounded-md"
                                     />
                                     <div className="flex-1 text-left">
                                         <div className="text-sm font-normal text-gray-900">
-                                            Thanh toán bằng chuyển khoản
+                                            Chuyển khoản (MB Bank)
                                         </div>
                                         <div className="text-xs font-normal text-[#ec2028]">
                                             (Giảm 5%)

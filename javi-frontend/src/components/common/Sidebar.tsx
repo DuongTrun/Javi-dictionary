@@ -6,6 +6,10 @@ import {
     PiCrownSimpleFill,
     PiBookBookmarkFill,
     PiBookBookmark,
+    PiNotebook,
+    PiNotebookFill,
+    PiBookOpen,
+    PiBookOpenFill,
 } from "react-icons/pi";
 import { BsCursor, BsCursorFill } from "react-icons/bs";
 import javi from "../../assets/javi-logo.png";
@@ -28,6 +32,8 @@ import {
     MdOutlineAdminPanelSettings,
     MdOutlineLockPerson,
     MdOutlineManageAccounts,
+    MdOutlinePayment,
+    MdPayment,
 } from "react-icons/md";
 
 const links = [
@@ -44,6 +50,18 @@ const links = [
         label: "JLPT",
         icon: <PiBookBookmark />,
         selectIcon: <PiBookBookmarkFill />,
+    },
+    {
+        path: "/topics",
+        label: "Chủ đề",
+        icon: <PiBookOpen />,
+        selectIcon: <PiBookOpenFill />,
+    },
+    {
+        path: "/study-decks",
+        label: "Sổ tay",
+        icon: <PiNotebook />,
+        selectIcon: <PiNotebookFill />,
     },
     {
         path: "/intro",
@@ -104,6 +122,13 @@ const links = [
         icon: <MdOutlineLockPerson />,
         selectIcon: <MdLockPerson />,
         required: ["MANAGE_PERMISSION"],
+    },
+    {
+        path: "/admin/payment-orders",
+        label: "QL Thanh toán",
+        icon: <MdOutlinePayment />,
+        selectIcon: <MdPayment />,
+        required: ["MANAGE_USER"],
     },
 ];
 

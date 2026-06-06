@@ -42,4 +42,6 @@ public interface UsersService {
     UserResponse setPremiumManually(Long userId, PremiumType premiumType);
 
     void checkAndUpdateImageQuota(Users users);
+
+    void checkAndUpdateAiQuota(Users users);
 }

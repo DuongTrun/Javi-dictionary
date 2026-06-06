@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+// @Component
 @RequiredArgsConstructor
 public class RedisTestRunner implements CommandLineRunner {
     private final StringRedisTemplate redisTemplate;

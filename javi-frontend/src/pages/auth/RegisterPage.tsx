@@ -69,17 +69,16 @@ export default function RegisterPage() {
         try {
             setLoading(true);
             // dùng callRegister từ authApi (axiosClient đã cấu hình withCredentials)
-            const res = await callRegister(email, password, confirmPassword);
+            await callRegister(email, password, confirmPassword);
 
             // Thông báo thành công bằng toast
             toast.success(
-                res?.data?.message ||
-                    "Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản.",
+                "Đăng ký thành công! Bạn có thể đăng nhập ngay để học nhé.",
                 { position: "top-right" }
             );
 
-            // Điều hướng về /search theo yêu cầu
-            navigate("/search");
+            // Điều hướng về /login
+            navigate("/login");
         } catch (err: any) {
             console.error("Register failed:", err);
 
