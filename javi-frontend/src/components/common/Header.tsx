@@ -119,24 +119,24 @@ export default function AppHeader({ onMenuClick }: HeaderProps) {
         <header
             className={`fixed top-0 z-40
         w-full lg:w-[calc(100%-214px)] lg:left-[214px]
-        h-[64px] flex items-center transition-all duration-200
-        ${isScrolled ? "bg-[#fefefe]/90" : "bg-transparent"}`}
+        h-[64px] flex items-center transition-all duration-300
+        ${isScrolled ? "bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm" : "bg-transparent"}`}
         >
-            <div className="w-full max-w-[1380px] mx-auto flex items-center justify-between px-2">
+            <div className="w-full max-w-[1380px] mx-auto flex items-center justify-between px-6">
                 <div className="flex items-center gap-3">
                     <button
-                        className="lg:hidden text-gray-700 text-2xl"
+                        className="lg:hidden text-slate-600 hover:text-[#3e66d4] text-2xl transition-colors duration-200"
                         onClick={onMenuClick}
                     >
                         <RxHamburgerMenu />
                     </button>
-                    <h1 className="hidden lg:block text-xl transition-colors duration-300 text-gray-800">
+                    <h1 className="hidden lg:block text-[20px] font-bold tracking-tight text-slate-800">
                         {currentTitle}
                     </h1>
                 </div>
 
-                <div className="flex items-center justify-end space-x-4">
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                <div className="flex items-center justify-end space-x-5">
+                    <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 shadow-sm">
                         <img
                             src={vietnam}
                             alt="VN"
@@ -145,12 +145,12 @@ export default function AppHeader({ onMenuClick }: HeaderProps) {
                     </div>
 
                     {!token && (
-                        <>
+                        <div className="flex gap-2.5">
                             {location.pathname !== "/login" && (
                                 <Button
                                     type="primary"
                                     size="large"
-                                    className="!bg-[#3e67d6] hover:!bg-[#3558b6]"
+                                    className="!bg-gradient-to-r !from-[#3e66d4] !to-[#2c3f84] hover:scale-[1.02] active:scale-[0.98] !rounded-xl !border-none !h-[42px] !px-5 !text-[15px] !font-medium transition-all duration-300"
                                     onClick={() => navigate("/login")}
                                 >
                                     Đăng nhập
@@ -159,13 +159,13 @@ export default function AppHeader({ onMenuClick }: HeaderProps) {
                             {location.pathname !== "/register" && (
                                 <Button
                                     size="large"
-                                    className="!bg-white/80"
+                                    className="!bg-white/90 hover:!bg-slate-50 hover:scale-[1.02] active:scale-[0.98] !text-slate-700 !border-slate-200 !rounded-xl !h-[42px] !px-5 !text-[15px] !font-medium transition-all duration-300"
                                     onClick={() => navigate("/register")}
                                 >
                                     Đăng ký
                                 </Button>
                             )}
-                        </>
+                        </div>
                     )}
 
                     {token && (
@@ -175,19 +175,20 @@ export default function AppHeader({ onMenuClick }: HeaderProps) {
                             placement="bottom"
                             overlayInnerStyle={{
                                 width: 240,
-                                padding: "12px",
-                                borderRadius: 12,
+                                padding: "16px",
+                                borderRadius: 16,
+                                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)"
                             }}
                         >
-                            <button className="relative w-[44px] h-[44px] rounded-full overflow-visible">
+                            <button className="relative w-[42px] h-[42px] rounded-full overflow-visible transition-transform duration-300 hover:scale-105">
                                 <img
                                     src={avatarSrc}
                                     alt="avatar"
-                                    className="w-full h-full rounded-full object-cover"
+                                    className="w-full h-full rounded-full object-cover border-2 border-white shadow-md"
                                 />
                                 {isPremium && (
                                     <div
-                                        className="absolute left-1/2 top-[40%] w-[58px] h-[58px] -translate-x-1/2 -translate-y-1/2 bg-contain bg-no-repeat bg-center pointer-events-none"
+                                        className="absolute left-1/2 top-[40%] w-[56px] h-[56px] -translate-x-1/2 -translate-y-1/2 bg-contain bg-no-repeat bg-center pointer-events-none drop-shadow-[0_2px_8px_rgba(245,158,11,0.4)] animate-pulse"
                                         style={{
                                             backgroundImage: `url(${premium_avatar})`,
                                         }}

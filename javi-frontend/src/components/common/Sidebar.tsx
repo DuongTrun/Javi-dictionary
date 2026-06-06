@@ -160,23 +160,22 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
             {/* Sidebar cố định */}
             <aside
                 className={`fixed top-0 left-0 z-50 h-screen w-[214px]
-                            bg-gradient-to-b from-[#3e66d4] to-[#2c3f84]
-                            text-white flex flex-col transform transition-transform duration-300
+                            glass-sidebar text-slate-200 flex flex-col transform transition-transform duration-300
                             ${open ? "translate-x-0" : "-translate-x-full"}
-                            lg:translate-x-0 lg:z-40`}
+                            lg:translate-x-0 lg:z-40 shadow-2xl`}
             >
                 <Link to="/">
-                    <div className="flex justify-center items-center my-3">
+                    <div className="flex justify-center items-center my-5 transition-transform duration-300 hover:scale-105">
                         <img
                             src={javi}
                             alt="Javi logo"
-                            className="w-[100px] h-[46px] object-cover"
+                            className="w-[105px] h-[48px] object-cover drop-shadow-[0_0_8px_rgba(62,102,212,0.3)]"
                         />
                     </div>
                 </Link>
 
                 {/* Menu */}
-                <nav className="flex-1 overflow-y-auto">
+                <nav className="flex-1 overflow-y-auto px-2 py-2">
                     <ul className="space-y-1">
                         {visibleLinks.map(
                             ({ path, label, icon, selectIcon }) => {
@@ -190,19 +189,19 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                                     <li key={path}>
                                         <Link
                                             to={path}
-                                            className={`flex items-center px-[18px] py-[8px] my-[4px] mx-2 text-[16px] transition-all duration-500 ${
+                                            className={`flex items-center px-4 py-2.5 my-1 text-[15px] font-medium rounded-xl transition-all duration-300 transform ${
                                                 active
-                                                    ? "bg-[#d0e0f9] text-[#262a34] rounded-2xl"
-                                                    : "text-white/90 hover:text-white"
+                                                    ? "bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white shadow-lg glow-active scale-[1.02]"
+                                                    : "text-slate-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
                                             }`}
                                             onClick={() => setOpen(false)}
                                         >
                                             {icon && (
                                                 <span
-                                                    className={`text-[24px] mr-[12px] flex-shrink-0 ${
+                                                    className={`text-[20px] mr-3 flex-shrink-0 transition-colors duration-300 ${
                                                         active
-                                                            ? "text-[#3e66d4]"
-                                                            : "text-white"
+                                                            ? "text-white"
+                                                            : "text-slate-400 group-hover:text-white"
                                                     }`}
                                                 >
                                                     {active && selectIcon

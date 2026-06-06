@@ -158,40 +158,40 @@ export default function SearchBar({
 
     return (
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
-            <div className="flex flex-nowrap items-center w-full gap-2 h-[52px] md:h-[56px]">
+            <div className="flex flex-nowrap items-center w-full gap-3 h-[52px] md:h-[58px]">
                 {/* Select ngôn ngữ */}
-                <select className="md:hidden flex-shrink-0 bg-[#3f67d6] text-white text-sm font-medium px-3 md:px-4 h-full rounded-xl outline-none hover:bg-[#365cc9] transition appearance-none">
-                    <option>JA - VI</option>
-                    <option>VI - JA</option>
+                <select className="md:hidden flex-shrink-0 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white text-[14px] font-semibold px-3.5 h-full rounded-2xl outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
+                    <option className="text-slate-800">JA - VI</option>
+                    <option className="text-slate-800">VI - JA</option>
                 </select>
 
-                <select className="hidden lg:block flex-shrink-0 bg-[#3f67d6] text-white text-sm font-medium px-3 md:px-4 h-full rounded-xl outline-none hover:bg-[#365cc9] transition appearance-none">
-                    <option>Nhật - Việt</option>
-                    <option>Việt - Nhật</option>
+                <select className="hidden lg:block flex-shrink-0 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white text-[15px] font-semibold px-5 h-full rounded-2xl outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
+                    <option className="text-slate-800">Nhật - Việt</option>
+                    <option className="text-slate-800">Việt - Nhật</option>
                 </select>
 
                 {/* Ô tìm kiếm */}
-                <div className="relative flex-1 h-full">
+                <div className="relative flex-1 h-full group">
                     {/* Icon tìm kiếm */}
                     <button
                         type="submit"
-                        className="absolute left-2 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-600 p-2 transition"
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3e66d4] p-1.5 transition-colors duration-300"
                         title="Tìm kiếm"
                     >
-                        <IoSearchOutline className="text-xl" />
+                        <IoSearchOutline className="text-2xl" />
                     </button>
 
                     <input
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         placeholder={placeholderMap[activeTab]}
-                        className="w-full h-full border border-blue-400 rounded-xl pl-10 pr-3 md:pr-[96px] text-[15px] md:text-base text-gray-800 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none transition"
+                        className="w-full h-full border-2 border-slate-200/90 rounded-2xl pl-12 pr-4 md:pr-[120px] text-[15px] md:text-[16px] text-slate-800 placeholder-slate-400 outline-none focus:border-[#3e66d4] focus:ring-4 focus:ring-blue-50/70 transition-all duration-300"
                     />
 
                     {/* Nút tìm kiếm bên phải */}
                     <button
                         type="submit"
-                        className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 bg-[#3f67d6] hover:bg-blue-600 text-white rounded-lg px-5 py-2 text-base transition"
+                        className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] hover:scale-[1.02] active:scale-[0.98] text-white rounded-xl px-6 py-2.5 text-[15px] font-medium shadow-md transition-all duration-300"
                     >
                         Tìm kiếm
                     </button>

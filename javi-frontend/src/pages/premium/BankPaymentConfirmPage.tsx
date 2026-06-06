@@ -5,13 +5,6 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { callCreatePaymentOrder } from "@/apis/paymentOrderApi";
 import { PremiumType } from "@/types/backend";
 
-import zalo from "@/assets/zalo.png";
-import tiktok from "@/assets/tiktok.png";
-import facebook from "@/assets/facebook.png";
-import youtube from "@/assets/youtube.png";
-import instagram from "@/assets/instagram.png";
-import messenger from "@/assets/messenger.png";
-
 import { IoCopy } from "react-icons/io5";
 import { FaCheckCircle, FaClock } from "react-icons/fa";
 
@@ -117,12 +110,7 @@ export default function BankPaymentConfirmPage(): JSX.Element {
         setIsConfirmModalOpen(true);
     };
 
-    const socialLinks = {
-        // facebook: "https://www.facebook.com/duyhieu.nguyen.98434",
-        // tiktok: "https://www.tiktok.com/@pantheon.ndh",
-        // zalo: "https://zalo.me/0978945022",
-        // instagram: "https://www.instagram.com/dhieu.ndh/",
-    };
+
 
     return (
         <div className="min-h-screen bg-[#f8fafc] py-8 px-4 sm:px-6 lg:px-8">

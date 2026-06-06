@@ -21,10 +21,10 @@ export default function CategoryTabs({
                     onClick={() =>
                         onTabChange(tab.key as "word" | "kanji" | "grammar")
                     }
-                    className={`px-4 py-2 text-sm md:text-base rounded-3xl transition-all border border-transparent ${
+                    className={`px-5 py-2 text-[14px] font-semibold rounded-2xl transition-all duration-300 transform active:scale-95 ${
                         activeTab === tab.key
-                            ? "!bg-[#f1f5fd] !border-[#3e67d6] !text-[#3e67d6]"
-                            : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                            ? "bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white shadow-md shadow-blue-100"
+                            : "bg-slate-100 hover:bg-slate-200/80 text-slate-600 hover:text-slate-800"
                     }`}
                 >
                     {tab.label}

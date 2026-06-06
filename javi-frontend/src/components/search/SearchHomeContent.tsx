@@ -138,58 +138,57 @@ export default function SearchHomeContent() {
         navigate(`/search?${params.toString()}`);
     };
 
+    // Define JLPT gradient colors
+    const jlptColors: Record<string, string> = {
+        N1: "from-rose-500 to-red-600 shadow-rose-100 hover:from-rose-600 hover:to-red-700",
+        N2: "from-amber-500 to-orange-600 shadow-amber-100 hover:from-amber-600 hover:to-orange-700",
+        N3: "from-emerald-500 to-teal-600 shadow-emerald-100 hover:from-emerald-600 hover:to-teal-700",
+        N4: "from-blue-500 to-indigo-600 shadow-blue-100 hover:from-blue-600 hover:to-indigo-700",
+        N5: "from-slate-500 to-zinc-600 shadow-slate-100 hover:from-slate-600 hover:to-zinc-700",
+    };
+
     return (
         <div className="flex flex-col gap-6">
             {/* Banner: Ẩn nếu user là PREMIUM */}
             {!isPremium && (
                 <div
-                    className="w-full h-[280px] rounded-2xl border border-gray-200 bg-cover bg-center"
+                    className="w-full h-[240px] rounded-2xl border border-slate-200/60 bg-cover bg-center shadow-sm hover:scale-[1.005] transition-transform duration-500"
                     style={{ backgroundImage: `url(${banner})` }}
                 ></div>
             )}
 
             {/* Content mặc định */}
-            <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 text-[16px]">
-                {/* Tips: Ẩn nếu user đăng nhập */}
-
-                <div className="mb-[12px]">
-                    <h2 className="flex gap-2 items-center text-[18px] mb-[12px]">
-                        <FaLightbulb className="text-[#ffa800] text-[20px]" />
-                        Tips
+            <div className="glass-card rounded-2xl p-6 shadow-sm border border-slate-200/50 flex flex-col gap-6">
+                {/* Tips */}
+                <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4.5 text-[14px] text-slate-700">
+                    <h2 className="flex gap-2 items-center text-[16px] font-bold text-amber-800 mb-2.5">
+                        <FaLightbulb className="text-amber-500 text-[18px]" />
+                        Mẹo tra cứu thông minh
                     </h2>
-                    {!isLoggedIn && (
-                        <p className="mb-[6px] leading-relaxed">
-                            - Đăng nhập tài khoản Javi để được đồng bộ dữ liệu
-                            và sử dụng trên nhiều thiết bị.
-                        </p>
-                    )}
-                    <p className="mb-[6px] leading-relaxed">
-                        - Bạn có thể tra cứu nhanh trong Javi bằng cách bôi đen
-                        từ cần tra.
-                    </p>
-                    <p className="mb-[6px] leading-relaxed">
-                        - Javi có thể chuyển romaji sang hiragana/katakana tự
-                        động khi bạn nhập từ khóa.
-                    </p>
-                    <p className="mb-[6px] leading-relaxed">
-                        - Tra cứu hiragana: viết thường chữ romaji đó, ví dụ:
-                        nihongo
-                    </p>
-                    <p className=" leading-relaxed">
-                        - Tra cứu katakana: viết hoa chữ romaji đó, ví dụ:
-                        BETONAMU
-                    </p>
+                    <ul className="space-y-1.5">
+                        {!isLoggedIn && (
+                            <li className="leading-relaxed">
+                                • <strong>Đăng nhập tài khoản Javi:</strong> Để đồng bộ lịch sử và sử dụng các tính năng AI xịn mịn.
+                            </li>
+                        )}
+                        <li className="leading-relaxed">
+                            • <strong>Tra nhanh:</strong> Bôi đen bất kỳ từ nào trên trang để hiển thị bảng tra cứu nhanh.
+                        </li>
+                        <li className="leading-relaxed">
+                            • <strong>Tự động chuyển Kana:</strong> Nhập Romaji viết thường ra <strong>Hiragana</strong> (ví dụ: <em>nihongo</em>), viết hoa ra <strong>Katakana</strong> (ví dụ: <em>BETONAMU</em>).
+                        </li>
+                    </ul>
                 </div>
 
                 {/* Lịch sử */}
-                <div className="mb-[12px]">
-                    <div className="flex flex-row items-center justify-between mb-[12px]">
-                        <h2 className="flex gap-2 items-center text-[20px]">
-                            <MdHistory />
-                            <span className="text-[18px]">Lịch sử</span>
+                <div className="flex flex-col">
+                    <div className="flex flex-row items-center justify-between mb-3">
+                        <h2 className="flex gap-2 items-center text-[18px] font-bold text-slate-800">
+                            <MdHistory className="text-[#3e66d4] text-[20px]" />
+                            Lịch sử tra cứu gần đây
                         </h2>
                         <button
-                            className="hover:underline text-[14px]"
+                            className="text-[13px] font-semibold text-[#3e66d4] hover:text-[#2c3f84] hover:underline transition-colors"
                             onClick={() => {
                                 if (!isLoggedIn) {
                                     setLoginRequiredOpen(true);
@@ -198,7 +197,7 @@ export default function SearchHomeContent() {
                                 openHistoryModal();
                             }}
                         >
-                            Xem thêm
+                            Xem tất cả
                         </button>
                     </div>
 
@@ -214,39 +213,39 @@ export default function SearchHomeContent() {
 
                     {/* Chưa đăng nhập */}
                     {!loading && !isLoggedIn && (
-                        <div className="flex flex-col justify-center items-center py-4 border border-dashed border-gray-300 rounded-lg">
+                        <div className="flex flex-col justify-center items-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                             <img
-                                className="w-[50px] h-[50px]"
+                                className="w-[48px] h-[48px] opacity-70"
                                 src={no_history}
                                 alt="no-history"
                             />
-                            <div className="mt-2 text-gray-500">
-                                Chưa có lịch sử
+                            <div className="mt-2 text-slate-400 text-sm">
+                                Đăng nhập để lưu lịch sử tra cứu của bạn
                             </div>
                         </div>
                     )}
 
                     {/* Đã đăng nhập nhưng chưa có lịch sử */}
                     {!loading && isLoggedIn && history.length === 0 && (
-                        <div className="flex flex-col justify-center items-center py-4 border border-dashed border-gray-300 rounded-lg">
+                        <div className="flex flex-col justify-center items-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                             <img
-                                className="w-[50px] h-[50px]"
+                                className="w-[48px] h-[48px] opacity-70"
                                 src={no_history}
                                 alt="no-history"
                             />
-                            <div className="mt-2 text-gray-500">
-                                Chưa có lịch sử
+                            <div className="mt-2 text-slate-400 text-sm">
+                                Bạn chưa tra cứu từ nào gần đây
                             </div>
                         </div>
                     )}
 
                     {/* Đã đăng nhập và có lịch sử */}
                     {!loading && isLoggedIn && history.length > 0 && (
-                        <div className="flex flex-wrap justify-start items-center py-4 border border-dashed border-gray-300 rounded-lg">
-                            {history.map((h, idx) => (
+                        <div className="flex flex-wrap gap-2.5 p-3 border border-slate-100 rounded-2xl bg-slate-50/40">
+                            {history.slice(0, 10).map((h, idx) => (
                                 <button
                                     key={idx}
-                                    className="px-4 py-2 rounded-xl first:ml-[6px] bg-[#f1f5fd] text-black m-[6px] px-[12px] py-[6px]"
+                                    className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200/60 hover:border-[#3e66d4] hover:bg-blue-50/30 text-slate-700 hover:text-[#3e66d4] text-[14px] font-medium transition-all duration-300 transform active:scale-95 shadow-sm"
                                     onClick={() => openDetailFromChip(h)}
                                 >
                                     {h.entityName ?? h.keyword}
@@ -257,40 +256,41 @@ export default function SearchHomeContent() {
                 </div>
 
                 {/* JLPT */}
-                <div>
-                    <h2 className="flex gap-2 items-center text-[18px] mb-[12px]">
-                        JLPT
+                <div className="flex flex-col">
+                    <h2 className="text-[17px] font-bold text-slate-800 mb-3.5">
+                        Luyện thi JLPT
                     </h2>
-                    <div className="flex flex-wrap justify-start items-center">
+                    <div className="flex flex-wrap gap-3">
                         {["N1", "N2", "N3", "N4", "N5"].map((lvl) => (
                             <button
                                 key={lvl}
-                                className="px-4 py-2 rounded-2xl first:ml-[6px] bg-[#f1f5fd] text-black m-[6px] px-[14px] py-[8px]"
+                                className={`px-6 py-2.5 rounded-xl text-white font-bold bg-gradient-to-r ${jlptColors[lvl]} shadow-md hover:scale-[1.04] active:scale-95 transition-all duration-300 text-[14px]`}
                                 onClick={() =>
                                     navigate(`/jlpt?level=${lvl}&type=vocab`)
                                 }
                             >
-                                {lvl}
+                                Cấp độ {lvl}
                             </button>
                         ))}
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* Nâng cấp Premium: chỉ hiện khi chưa premium */}
             {!isPremium && (
-                <section className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl p-6 flex justify-between items-center">
-                    <div>
-                        <h3 className="text-xl font-bold mb-2">
-                            Nâng cấp Premium
+                <section className="premium-gradient text-white rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-5 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                    <div className="absolute -right-10 -top-10 w-44 h-44 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+                    <div className="relative z-10 flex flex-col">
+                        <h3 className="text-xl font-bold tracking-tight mb-1.5 flex items-center gap-2">
+                            👑 Trải nghiệm Javi Premium
                         </h3>
-                        <p className="text-sm opacity-90">
-                            Dịch ảnh không giới hạn và học sâu hơn!
+                        <p className="text-sm text-white/90">
+                            Dịch ảnh OCR, học Spaced Repetition và luyện nói Kaiwa AI hoàn toàn không giới hạn!
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/premium")}
-                        className="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-blue-50 transition"
+                        className="relative z-10 premium-gold-btn text-white px-6 py-2.5 rounded-xl font-bold text-[14px] transition-all duration-300 transform hover:scale-105 active:scale-95"
                     >
                         Nâng cấp ngay
                     </button>

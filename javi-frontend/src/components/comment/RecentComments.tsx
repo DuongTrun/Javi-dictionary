@@ -51,26 +51,40 @@ export default function RecentComments() {
     const typeLabel = (t: EntityType) =>
         t === "WORD" ? "từ vựng" : t === "KANJI" ? "hán tự" : "ngữ pháp";
 
+    const typeStyles = (t: EntityType) => {
+        switch (t) {
+            case "WORD":
+                return "bg-blue-50 text-blue-600 border border-blue-100/60";
+            case "KANJI":
+                return "bg-purple-50 text-purple-600 border border-purple-100/60";
+            case "GRAMMAR":
+                return "bg-orange-50 text-orange-600 border border-orange-100/60";
+            default:
+                return "bg-slate-50 text-slate-600 border border-slate-100";
+        }
+    };
+
     return (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm py-3 pl-3 flex flex-col">
-            <h2 className="flex items-center gap-2 text-base text-center pb-3 mr-3 border-b border-gray-300">
-                <GoCommentDiscussion className="text-lg" /> Bình luận gần đây
+        <div className="glass-card rounded-2xl p-5 flex flex-col shadow-sm border border-slate-200/50">
+            <h2 className="flex items-center gap-2 text-[15px] font-bold text-slate-800 pb-3 mb-3 border-b border-slate-200/60">
+                <GoCommentDiscussion className="text-[#3e66d4] text-[18px]" /> 
+                Bình luận gần đây
             </h2>
 
             {/* Khung danh sách có cuộn */}
-            <div className="flex-1 max-h-[200px] md:max-h-[480px] overflow-y-auto pr-1 text-sm text-gray-700 divide-y divide-gray-200">
+            <div className="flex-1 max-h-[200px] md:max-h-[480px] overflow-y-auto pr-1 text-[13px] text-slate-700 divide-y divide-slate-100 scroll-x-thin">
                 {items.map((c) => (
-                    <div key={c.id} className="py-3">
+                    <div key={c.id} className="py-3.5 first:pt-0">
                         {/* dòng nội dung 2 dòng + tag loại */}
-                        <div className="flex items-start gap-2">
-                            <span className="text-center shrink-0 mt-[2px] rounded-full text-[11px] px-2 py-[1px] bg-gray-100 text-gray-700 w-[65px] ">
+                        <div className="flex items-start gap-2.5">
+                            <span className={`text-center shrink-0 mt-[2px] rounded-lg text-[9px] font-bold px-1.5 py-[2px] w-[65px] uppercase tracking-wider ${typeStyles(c.entityType)}`}>
                                 {typeLabel(c.entityType)}
                             </span>
 
                             {/* Hiển thị entityName */}
-                            <p className="line-clamp-2 leading-5">
+                            <p className="line-clamp-2 leading-relaxed text-slate-700">
                                 {c.entityName && (
-                                    <span className="text-blue-600 font-semibold mr-1">
+                                    <span className="text-[#3e66d4] font-semibold mr-1">
                                         {c.entityName}:
                                     </span>
                                 )}
@@ -79,18 +93,18 @@ export default function RecentComments() {
                         </div>
 
                         {/* user */}
-                        <div className="flex items-center gap-2 text-gray-600 mt-2">
+                        <div className="flex items-center gap-2 text-slate-500 mt-2.5 pl-[75px]">
                             <img
                                 src={c.avatarUrl || avatar}
                                 alt="avatar"
-                                className="w-5 h-5 rounded-full border border-gray-300"
+                                className="w-5 h-5 rounded-full border border-slate-200 shadow-sm"
                             />
                             {/* click username -> profile */}
                             <span
                                 onClick={() =>
                                     navigate(`/users/profile/${c.userName}`)
                                 }
-                                className="truncate cursor-pointer hover:underline hover:text-blue-600"
+                                className="truncate cursor-pointer font-medium hover:underline hover:text-[#3e66d4] transition-colors"
                             >
                                 {c.userName}
                             </span>
@@ -98,11 +112,7 @@ export default function RecentComments() {
                             {/* click xem chi tiết -> mở modal và LƯU lịch sử */}
                             <button
                                 onClick={() => {
-                                    // backend trả entityName (ví dụ ký tự Kanji hoặc từ),
-                                    // ưu tiên dùng entityName cho KANJI — modal / API cần ký tự Kanji.
-                                    // WORD & GRAMMAR vẫn truyền id (số).
                                     if (c.entityType === "KANJI") {
-                                        // use characterName (entityName) for kanji detail
                                         const charName =
                                             c.entityName ?? String(c.entityId);
                                         openEntity(c.entityType, charName);
@@ -113,35 +123,37 @@ export default function RecentComments() {
                                         );
                                     }
                                 }}
-                                className="ml-auto text-[12px] text-blue-600 hover:underline"
+                                className="ml-auto text-[12px] text-[#3e66d4] font-semibold hover:underline hover:text-[#2c3f84]"
                             >
-                                Xem chi tiết
+                                Chi tiết
                             </button>
                         </div>
                     </div>
                 ))}
 
                 {!items.length && !loading && (
-                    <div className="py-6 text-center text-gray-500">
+                    <div className="py-6 text-center text-slate-400">
                         Chưa có bình luận.
                     </div>
                 )}
             </div>
 
             {/* Nút xem thêm tách đáy */}
-            <div className="mr-3 border-t border-gray-200 text-center bg-white">
-                <button
-                    onClick={() => hasMore && load(page)}
-                    disabled={!hasMore || loading}
-                    className="text-[13px] mt-[8px] text-blue-600 hover:underline disabled:text-gray-400"
-                >
-                    {hasMore
-                        ? loading
-                            ? "Đang tải..."
-                            : "Xem thêm"
-                        : "Hết rồi"}
-                </button>
-            </div>
+            {items.length > 0 && (
+                <div className="pt-3 mt-1 border-t border-slate-200/60 text-center">
+                    <button
+                        onClick={() => hasMore && load(page)}
+                        disabled={!hasMore || loading}
+                        className="text-[13px] font-semibold text-[#3e66d4] hover:text-[#2c3f84] hover:underline disabled:text-slate-400 transition-colors"
+                    >
+                        {hasMore
+                            ? loading
+                                ? "Đang tải..."
+                                : "Xem thêm bình luận"
+                            : "Đã hiển thị tất cả"}
+                    </button>
+                </div>
+            )}
 
             {/* Modal đa năng: LƯU lịch sử vì user chủ động click */}
             <SearchResultModal

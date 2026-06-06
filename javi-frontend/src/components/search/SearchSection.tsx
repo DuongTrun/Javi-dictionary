@@ -42,7 +42,7 @@ export default function SearchSection({
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col gap-3">
+        <div className="glass-card rounded-2xl p-6 flex flex-col gap-4">
             <SearchBar onSubmit={onSubmit} activeTab={currentTab} />
             <CategoryTabs
                 activeTab={currentTab}
