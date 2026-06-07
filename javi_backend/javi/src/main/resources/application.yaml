@@ -79,7 +79,7 @@ app:
     token-expiration-minutes: 10
     reset-password-token-expiration-minutes: 10
   frontend:
-    base-url: https://javi.click
+    base-url: ${APP_FRONTEND_BASE_URL:${APP_FRONTEND_BASE-URL:https://javi.click}}
 cloudflare:
   r2:
     account-id: ${R2_ACCOUNT_ID:dummy-account-id}
