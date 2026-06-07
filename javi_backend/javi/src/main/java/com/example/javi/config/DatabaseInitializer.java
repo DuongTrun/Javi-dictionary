@@ -33,6 +33,7 @@ public class DatabaseInitializer implements ApplicationRunner {
     TopicRepository topicRepository;
     VocabulariesRepository vocabulariesRepository;
     JdbcTemplate jdbcTemplate;
+    com.example.javi.service.cache.VocabulariesCacheService vocabulariesCacheService;
 
     static final String ADMIN_USER_NAME = "admin";
     static final String ADMIN_PASSWORD = "123456";
@@ -44,6 +45,13 @@ public class DatabaseInitializer implements ApplicationRunner {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void run(ApplicationArguments args) {
+        try {
+            vocabulariesCacheService.clearAllCache();
+            log.info("[BOOT CACHE CLEAR] Cleared all Redis caches on application startup.");
+        } catch (Exception e) {
+            log.error("[BOOT CACHE CLEAR ERROR] Failed to clear Redis cache: " + e.getMessage());
+        }
+
         if (permissionRepository.count() == 0) {
             ArrayList<Permission> arr = new ArrayList<>();
             arr.add(new Permission("CREATE_GRAMMAR", "Cho phép tạo mẫu ngữ pháp mới.", true));
