@@ -32,10 +32,10 @@ export default function TranslateBlock({
     const canTranslate = !!block.sourceText?.trim() || !!block.file;
 
     // refs để đồng bộ chiều cao nội dung
-    const sourceOuterRef = useRef<HTMLDivElement | null>(null); // wrapper (có padding)
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null); // textarea thật
-    const targetOuterRef = useRef<HTMLDivElement | null>(null); // wrapper target
-    const targetInnerRef = useRef<HTMLDivElement | null>(null); // inner chứa translatedText
+    const sourceOuterRef = useRef<HTMLDivElement | null>(null); 
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null); 
+    const targetOuterRef = useRef<HTMLDivElement | null>(null); 
+    const targetInnerRef = useRef<HTMLDivElement | null>(null); 
 
     const lastTranslatedSnapshotRef = useRef<string | null>(null);
     const lastTranslateAtRef = useRef<number>(0); // timestamp lần dịch thành công gần nhất

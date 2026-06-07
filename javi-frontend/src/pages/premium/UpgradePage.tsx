@@ -113,7 +113,7 @@ const PLANS: Plan[] = [
     {
         id: "p2",
         months: 6,
-        price: "5.000",
+        price: "499.000",
         originalPrice: "719.000",
         highlight: true,
         type: "Phổ biến nhất",
@@ -461,7 +461,7 @@ export default function UpgradePage(): JSX.Element {
                                     năng bị giới hạn trên app (Bao gồm cả các
                                     tính năng mới cập nhật trong tương lai). Để
                                     thêm thông tin chi tiết, hãy liên hệ với Tư
-                                    vấn viên của Javi qua Hotline: 0976024780.
+                                    vấn viên của Javi qua Hotline: 0978945022.
                                 </Text>
                             </Panel>
                             <Panel
@@ -475,7 +475,7 @@ export default function UpgradePage(): JSX.Element {
                                 >
                                     Về chương trình ưu đãi, Bạn có thể theo dõi
                                     trên các kênh truyền thông của Javi như:
-                                    Trang cá nhân của admin Duy Hiếu , Thông báo
+                                    Trang cá nhân của admin Dương Trung , Thông báo
                                     trên Web,...
                                 </Text>
                             </Panel>
