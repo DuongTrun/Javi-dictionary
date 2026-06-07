@@ -111,18 +111,18 @@ const PLANS: Plan[] = [
         type: "Gói cơ bản",
     },
     {
-        id: "p3",
-        months: 3,
-        price: "319.000",
-        type: "Tiết kiệm",
-    },
-    {
         id: "p2",
         months: 6,
         price: "5.000",
         originalPrice: "719.000",
         highlight: true,
         type: "Phổ biến nhất",
+    },
+    {
+        id: "p3",
+        months: 3,
+        price: "319.000",
+        type: "Tiết kiệm",
     },
 ];
 
@@ -281,7 +281,7 @@ export default function UpgradePage(): JSX.Element {
                                             }}
                                             className={`relative rounded-3xl p-6 flex flex-col justify-between cursor-pointer h-full min-h-[320px] transition-premium select-none border-2 ${
                                                 isHighlight
-                                                    ? "bg-slate-950 border-amber-500 shadow-xl shadow-indigo-500/10 scale-[1.02] lg:scale-[1.04] hover:scale-[1.04] lg:hover:scale-[1.06]"
+                                                    ? "bg-gradient-to-br from-[#3e66d4] to-[#6366f1] border-blue-300/30 text-white shadow-xl shadow-indigo-500/15 scale-[1.02] lg:scale-[1.04] hover:scale-[1.04] lg:hover:scale-[1.06]"
                                                     : "bg-white border-slate-100 hover:border-[#3e66d4] hover:shadow-lg hover:-translate-y-1"
                                             }`}
                                         >
@@ -290,13 +290,13 @@ export default function UpgradePage(): JSX.Element {
                                                 <div className="flex justify-between items-center w-full mb-5">
                                                     <span className={`text-[11px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full ${
                                                         isHighlight
-                                                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
+                                                            ? "bg-white/20 backdrop-blur-md text-white border border-white/20"
                                                             : "bg-[#f1f5fd] text-[#3e66d4]"
                                                     }`}>
                                                         {plan.type}
                                                     </span>
                                                     {isHighlight && (
-                                                        <span className="bg-rose-500 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                                                        <span className="bg-white text-rose-600 text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
                                                             -30%
                                                         </span>
                                                     )}
@@ -312,23 +312,23 @@ export default function UpgradePage(): JSX.Element {
                                             {/* Price Section */}
                                             <div className="my-8">
                                                 {isHighlight && plan.originalPrice && (
-                                                    <div className="text-[13px] text-slate-500 line-through mb-1.5 font-medium">
+                                                    <div className="text-[13px] text-white/70 line-through mb-1.5 font-medium">
                                                         {plan.originalPrice}đ
                                                     </div>
                                                 )}
                                                 <div className="flex items-baseline gap-1">
                                                     <span className={`text-4xl font-black ${
-                                                        isHighlight ? "text-amber-400" : "text-slate-800"
+                                                        isHighlight ? "text-white" : "text-slate-800"
                                                     }`}>
                                                         {plan.price}
                                                     </span>
                                                     <span className={`text-lg font-bold ${
-                                                        isHighlight ? "text-amber-400/90" : "text-slate-500"
+                                                        isHighlight ? "text-white/90" : "text-slate-500"
                                                     }`}>
                                                         đ
                                                     </span>
                                                     <span className={`text-[13px] ml-1.5 ${
-                                                        isHighlight ? "text-slate-400" : "text-slate-500"
+                                                        isHighlight ? "text-white/70" : "text-slate-500"
                                                     }`}>
                                                         / gói
                                                     </span>
@@ -338,7 +338,7 @@ export default function UpgradePage(): JSX.Element {
                                             {/* Button CTA */}
                                             <button className={`w-full py-3 rounded-2xl font-extrabold text-[13px] tracking-wider uppercase transition-all duration-300 transform active:scale-95 ${
                                                 isHighlight
-                                                    ? "premium-gold-btn text-white"
+                                                    ? "bg-white text-[#3e66d4] hover:bg-slate-50 hover:shadow-lg hover:shadow-white/10"
                                                     : "bg-slate-50 hover:bg-[#3e66d4] hover:text-white border border-slate-200/60 hover:border-[#3e66d4] text-slate-700 shadow-sm"
                                             }`}>
                                                 Đăng ký ngay
@@ -419,11 +419,11 @@ export default function UpgradePage(): JSX.Element {
                                     <List.Item.Meta
                                         avatar={
                                             <span
-                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-50"
+                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-50"
                                             >
                                                 <IoIosCheckmarkCircle
                                                     size={15}
-                                                    color="#ffa800"
+                                                    color="#3e66d4"
                                                 />
                                             </span>
                                         }
