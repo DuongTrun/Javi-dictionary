@@ -1,7 +1,7 @@
 # Build stage
 FROM maven:3.8.8-eclipse-temurin-17-alpine AS build
 WORKDIR /app
-COPY . .
+COPY javi_backend/javi /app
 RUN mvn clean package -DskipTests
 
 # Run stage
@@ -10,3 +10,4 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 # Tối ưu JVM cho RAM 512MB
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-Xmx380m", "-jar", "app.jar"]
+
