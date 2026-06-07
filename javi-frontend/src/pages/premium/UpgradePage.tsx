@@ -3,11 +3,8 @@ import { List, Typography, Collapse } from "antd";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import avatarDefault from "@/assets/avatar.png";
-import bg_1_month from "@/assets/bg-1-month.png";
-import bg_3_month from "@/assets/bg-3-month.png";
-import bg_6_month from "@/assets/bg-6-month.png";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Panel } = Collapse;
 
 type Plan = {
@@ -16,7 +13,6 @@ type Plan = {
     price: string;
     originalPrice?: string;
     highlight?: boolean;
-    bgUrl?: string;
     type?: string;
 };
 
@@ -112,8 +108,13 @@ const PLANS: Plan[] = [
         id: "p1",
         months: 1,
         price: "119.000",
-        bgUrl: bg_1_month,
-        type: "Basic version",
+        type: "Gói cơ bản",
+    },
+    {
+        id: "p3",
+        months: 3,
+        price: "319.000",
+        type: "Tiết kiệm",
     },
     {
         id: "p2",
@@ -121,15 +122,7 @@ const PLANS: Plan[] = [
         price: "5.000",
         originalPrice: "719.000",
         highlight: true,
-        bgUrl: bg_6_month,
-        type: "Most Popular",
-    },
-    {
-        id: "p3",
-        months: 3,
-        price: "319.000",
-        bgUrl: bg_3_month,
-        type: "Basic version",
+        type: "Phổ biến nhất",
     },
 ];
 
@@ -261,20 +254,20 @@ export default function UpgradePage(): JSX.Element {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* left column */}
                 <div className="lg:col-span-3">
-                    <div className="w-full overflow-hidden">
-                        <div className="w-[200px] md:w-[300px] h-[42px] mx-auto flex items-center justify-center text-center text-xl font-medium mb-5 rounded-full bg-[#f1f5fd] shadow-md text-[#3e67d6] border border-[#3e67d6]">
+                    <div className="w-full">
+                        <div className="w-[180px] md:w-[260px] h-[40px] mx-auto flex items-center justify-center text-center text-[15px] font-bold mb-8 rounded-full bg-blue-50 text-[#3e66d4] border border-blue-100 shadow-sm uppercase tracking-wider">
                             Javi Premium
                         </div>
                         <div
                             ref={scrollRef}
-                            className="flex flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center overflow-x-auto lg:overflow-x-visible overflow-y-hidden scroll-smooth snap-x snap-mandatory max-w-full scroll-x-thin"
+                            className="flex flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center items-stretch gap-6 overflow-x-auto lg:overflow-x-visible overflow-y-hidden pb-6 snap-x snap-mandatory max-w-full scroll-x-thin"
                         >
                             {PLANS.map((plan) => {
                                 const isHighlight = !!plan.highlight;
                                 return (
                                     <div
                                         key={plan.id}
-                                        className="min-w-[260px] snap-center"
+                                        className="min-w-[280px] lg:min-w-0 snap-center p-1"
                                         data-plan-id={plan.id}
                                         data-highlight={
                                             isHighlight ? "true" : undefined
@@ -282,63 +275,74 @@ export default function UpgradePage(): JSX.Element {
                                     >
                                         <div
                                             onClick={() => {
-                                                // GỌI NAVIGATE SANG MÀN CONFIRM KHI NHẤN GÓI
                                                 navigate("/premium/confirm", {
                                                     state: { plan },
                                                 });
                                             }}
-                                            className={`relative rounded-xl overflow-visible flex flex-col cursor-pointer font-normal`}
+                                            className={`relative rounded-3xl p-6 flex flex-col justify-between cursor-pointer h-full min-h-[320px] transition-premium select-none border-2 ${
+                                                isHighlight
+                                                    ? "bg-slate-950 border-amber-500 shadow-xl shadow-indigo-500/10 scale-[1.02] lg:scale-[1.04] hover:scale-[1.04] lg:hover:scale-[1.06]"
+                                                    : "bg-white border-slate-100 hover:border-[#3e66d4] hover:shadow-lg hover:-translate-y-1"
+                                            }`}
                                         >
-                                            <div className="mx-auto rounded-lg overflow-hidden relative">
-                                                <img
-                                                    src={plan.bgUrl}
-                                                    alt=""
-                                                    className="object-cover block"
-                                                />
-                                                {isHighlight && (
-                                                    <div className="text-center absolute top-2 left-0 w-full text-xl md:text-2xl font-bold text-white [text-shadow:0px_4px_4px_rgba(0,0,0,0.4),0px_8px_16px_rgba(0,0,0,0.3)]">
-                                                        -30%
+                                            {/* Top Section */}
+                                            <div>
+                                                <div className="flex justify-between items-center w-full mb-5">
+                                                    <span className={`text-[11px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                                                        isHighlight
+                                                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
+                                                            : "bg-[#f1f5fd] text-[#3e66d4]"
+                                                    }`}>
+                                                        {plan.type}
+                                                    </span>
+                                                    {isHighlight && (
+                                                        <span className="bg-rose-500 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                                                            -30%
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <h3 className={`text-2xl font-black tracking-tight ${
+                                                    isHighlight ? "text-white" : "text-slate-800"
+                                                }`}>
+                                                    {plan.months} Tháng
+                                                </h3>
+                                            </div>
+
+                                            {/* Price Section */}
+                                            <div className="my-8">
+                                                {isHighlight && plan.originalPrice && (
+                                                    <div className="text-[13px] text-slate-500 line-through mb-1.5 font-medium">
+                                                        {plan.originalPrice}đ
                                                     </div>
                                                 )}
-                                                <div
-                                                    className={`text-center absolute left-0 w-full text-xl md:text-2xl font-semibold text-gray-700 font-system ${
-                                                        isHighlight
-                                                            ? "top-12"
-                                                            : "top-6"
-                                                    }`}
-                                                >
-                                                    {plan.months} Tháng
-                                                </div>
-                                                <div
-                                                    className={`text-center absolute left-0 w-full text-lg md:text-xl font-normal font-medium ${
-                                                        isHighlight
-                                                            ? "text-[#ffa800] top-20"
-                                                            : "text-[#3e67d6] top-14"
-                                                    }`}
-                                                >
-                                                    {plan.type}
-                                                </div>
-                                                <div
-                                                    className={`text-center absolute left-0 w-full text-2xl md:text-3xl font-semibold text-white ${
-                                                        isHighlight
-                                                            ? "[text-shadow:0px_4px_4px_rgba(0,0,0,0.4),0px_8px_16px_rgba(0,0,0,0.3)] bottom-20 md:bottom-24"
-                                                            : "bottom-20"
-                                                    }`}
-                                                >
-                                                    {plan.price}
-                                                    <span className="underline align-super text-[14px] md:text-[18px] ml-1">
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className={`text-4xl font-black ${
+                                                        isHighlight ? "text-amber-400" : "text-slate-800"
+                                                    }`}>
+                                                        {plan.price}
+                                                    </span>
+                                                    <span className={`text-lg font-bold ${
+                                                        isHighlight ? "text-amber-400/90" : "text-slate-500"
+                                                    }`}>
                                                         đ
                                                     </span>
+                                                    <span className={`text-[13px] ml-1.5 ${
+                                                        isHighlight ? "text-slate-400" : "text-slate-500"
+                                                    }`}>
+                                                        / gói
+                                                    </span>
                                                 </div>
-                                                {isHighlight && (
-                                                    <div className="flex justify-center text-center absolute bottom-12 md:bottom-16 left-0 w-full text-xl md:text-2xl font-normal text-white line-through">
-                                                        {plan.originalPrice}
-                                                        <span className="underline text-[14px] md:text-[18px]">
-                                                            đ
-                                                        </span>
-                                                    </div>
-                                                )}
                                             </div>
+
+                                            {/* Button CTA */}
+                                            <button className={`w-full py-3 rounded-2xl font-extrabold text-[13px] tracking-wider uppercase transition-all duration-300 transform active:scale-95 ${
+                                                isHighlight
+                                                    ? "premium-gold-btn text-white"
+                                                    : "bg-slate-50 hover:bg-[#3e66d4] hover:text-white border border-slate-200/60 hover:border-[#3e66d4] text-slate-700 shadow-sm"
+                                            }`}>
+                                                Đăng ký ngay
+                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -346,50 +350,29 @@ export default function UpgradePage(): JSX.Element {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex justify-center">
-                        <div className="inline-flex items-center rounded-full overflow-hidden  h-[46px] sm:h-[52px] md:h-[59px]">
-                            <div className="h-[46px] sm:h-[52px] md:h-[59px] flex items-center px-4 sm:px-5 font-normal text-white text-[14px] sm:text-[16px] md:text-[18px] border-r-2 border-white bg-[linear-gradient(94.87deg,#ffa800_9.03%,#d48806_97.19%)]">
-                                Giảm 5%
-                            </div>
-                            <button
-                                onClick={() =>
-                                    window.open(
-                                        "https://zalo.me/0976024780",
-                                        "_blank"
-                                    )
-                                }
-                                className="h-[46px] sm:h-[52px] md:h-[59px] flex items-center px-4 sm:px-6 font-normal text-white text-[14px] sm:text-[16px] md:text-[18px] border-none bg-[linear-gradient(90deg,#3e67d6,#2e439f)]"
-                            >
-                                Khi nhắn tin qua Zalo
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Người dùng nói gì (reviews) */}
-                    <div className="mt-6 bg-white rounded-2xl py-4">
-                        <div className="px-4 sm:px-6">
-                            <div className="text-lg font-normal text-gray-800 mb-3">
-                                Người dùng nói gì về Javi Premium
-                            </div>
+                    <div className="mt-8 glass-card rounded-3xl p-6 shadow-sm border border-slate-200/50">
+                        <div className="px-1">
+                            <h3 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                💬 Người dùng nói gì về Javi Premium
+                            </h3>
                             <div className="scroll-x-thin flex gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth">
                                 {MOCK_REVIEWS.map((r) => (
                                     <div
                                         key={r.id}
-                                        className="min-w-[260px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-[#f1f5fd] rounded-2xl p-4"
+                                        className="min-w-[260px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-slate-50/70 border border-slate-100/80 rounded-2xl p-4 hover:shadow-sm transition-all duration-300"
                                     >
-                                        <div className="flex items-start gap-3 mb-2">
+                                        <div className="flex items-start gap-3 mb-2.5">
                                             <img
                                                 src={r.avatar}
                                                 alt={r.name}
-                                                className="w-10 h-10 rounded-full object-cover"
+                                                className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-sm"
                                             />
                                             <div className="flex-1">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="text-sm font-normal text-gray-800">
-                                                        {r.name}
-                                                    </div>
+                                                <div className="text-[13px] font-bold text-slate-800">
+                                                    {r.name}
                                                 </div>
-                                                <div className="mt-1 flex items-center gap-1">
+                                                <div className="mt-0.5 flex items-center gap-0.5">
                                                     {Array.from({
                                                         length: 5,
                                                     }).map((_, i) => (
@@ -398,10 +381,10 @@ export default function UpgradePage(): JSX.Element {
                                                             viewBox="0 0 20 20"
                                                             fill={
                                                                 i < r.stars
-                                                                    ? "#f6ad55"
-                                                                    : "#e6e6e6"
+                                                                    ? "#ffa800"
+                                                                    : "#e2e8f0"
                                                             }
-                                                            className="w-4 h-4"
+                                                            className="w-3.5 h-3.5"
                                                             aria-hidden="true"
                                                         >
                                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.163c.969 0 1.371 1.24.588 1.81l-3.374 2.455a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118L10 15.347l-3.436 2.785c-.785.57-1.84-.197-1.54-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.572 9.384c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.95-.69l1.286-3.957z" />
@@ -410,7 +393,7 @@ export default function UpgradePage(): JSX.Element {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-sm text-gray-700 meaning-clamp">
+                                        <div className="text-[13px] text-slate-600 leading-relaxed meaning-clamp">
                                             {r.text}
                                         </div>
                                     </div>
@@ -421,36 +404,33 @@ export default function UpgradePage(): JSX.Element {
                 </div>
 
                 {/* right column */}
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 flex flex-col gap-6">
                     <div
                         id="benefits"
-                        className="rounded-2xl bg-white shadow-sm p-4 font-normal"
+                        className="glass-card rounded-3xl p-5 shadow-sm border border-slate-200/50"
                     >
-                        <Title level={5} className="mb-2 !font-normal">
-                            Quyền lợi
-                        </Title>
+                        <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                            ✨ Quyền lợi Premium
+                        </h4>
                         <List
                             dataSource={BENEFITS}
                             renderItem={(item) => (
-                                <List.Item className="py-1">
+                                <List.Item className="py-2 border-none">
                                     <List.Item.Meta
                                         avatar={
                                             <span
-                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full"
-                                                style={{
-                                                    background: "#fff7ed",
-                                                }}
+                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-50"
                                             >
                                                 <IoIosCheckmarkCircle
-                                                    size={14}
-                                                    color="#f59e0b"
+                                                    size={15}
+                                                    color="#ffa800"
                                                 />
                                             </span>
                                         }
                                         title={
-                                            <Text className="text-sm">
+                                            <span className="text-[13px] font-medium text-slate-700">
                                                 {item}
-                                            </Text>
+                                            </span>
                                         }
                                     />
                                 </List.Item>
@@ -458,25 +438,23 @@ export default function UpgradePage(): JSX.Element {
                         />
                     </div>
 
-                    <div className="h-4" />
-
-                    <div className="rounded-2xl bg-white shadow-sm p-4 font-normal">
-                        <Title level={5} className="mb-2 !font-normal">
-                            Câu hỏi thường gặp
-                        </Title>
+                    <div className="glass-card rounded-3xl p-5 shadow-sm border border-slate-200/50">
+                        <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                            ❓ Câu hỏi thường gặp
+                        </h4>
                         <Collapse
                             bordered={false}
                             ghost
                             className="faq-collapse"
                         >
                             <Panel
-                                className="pb-4"
-                                header="Sau khi đăng ký Javi premium, tôi sẽ có những quyền lợi gì?"
+                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-slate-700">Sau khi đăng ký Javi premium, tôi có quyền lợi gì?</span>}
                                 key="1"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-sm font-normal font-system italic"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
                                 >
                                     Sau khi nâng cấp từ điển Javi bạn sẽ được bỏ
                                     hoàn toàn quảng cáo và sử dụng tất cả tính
@@ -487,13 +465,13 @@ export default function UpgradePage(): JSX.Element {
                                 </Text>
                             </Panel>
                             <Panel
-                                className="pb-4"
-                                header="Làm sao để biết các chương trình ưu đãi của Javi?"
+                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-slate-700">Làm sao để biết các ưu đãi của Javi?</span>}
                                 key="2"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-sm font-normal font-system italic"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
                                 >
                                     Về chương trình ưu đãi, Bạn có thể theo dõi
                                     trên các kênh truyền thông của Javi như:
@@ -502,13 +480,13 @@ export default function UpgradePage(): JSX.Element {
                                 </Text>
                             </Panel>
                             <Panel
-                                className="pb-4"
-                                header="Với 01 tài khoản Javi Premium tôi có được dùng chung cho nhiều thiết bị không?"
+                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-slate-700">Gói Premium dùng chung nhiều thiết bị không?</span>}
                                 key="3"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-sm font-normal font-system italic"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
                                 >
                                     Chỉ với 01 tài khoản, bạn có thể đồng bộ
                                     trên 3 thiết bị Web, Android, IOS rất tiện
@@ -518,23 +496,19 @@ export default function UpgradePage(): JSX.Element {
                                 </Text>
                             </Panel>
                             <Panel
-                                className=""
-                                header="Tôi ở Nhật, tôi có thể mua Javi Premium không?"
+                                className="last:pb-0"
+                                header={<span className="text-[13px] font-bold text-slate-700">Tôi ở Nhật có mua Javi Premium được không?</span>}
                                 key="4"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-sm font-normal font-system italic"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
                                 >
                                     Có. Liên hệ Zalo để được hướng dẫn cách
                                     thanh toán quốc tế hoặc chuyển khoản. Tại
                                     Nhật, bạn vẫn có thể mua Javi Premium dễ
                                     dàng. Javi có hỗ trợ hệ thống thanh toán
-                                    trên app hoặc chuyển khoản (Áp dụng đồng
-                                    thời cho cả Việt Nam và Nhật Bản). Bạn vui
-                                    lòng làm theo hướng dẫn sau khi đăng ký mua
-                                    hàng hoặc liên hệ tư vấn viên để được hỗ trợ
-                                    thêm.
+                                    trên app hoặc chuyển khoản để tiện cho bạn.
                                 </Text>
                             </Panel>
                         </Collapse>
