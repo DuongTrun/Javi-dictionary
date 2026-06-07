@@ -58,8 +58,15 @@ public class VoiceServiceImpl implements VoiceService {
     }
 
     private String callGeminiDirect(byte[] audioBytes, MimeType mimeType, String systemInstruction) throws Exception {
-        RestClient restClient = RestClient.builder().build();
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
+            new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(45000); // 45 seconds
+        requestFactory.setReadTimeout(45000);    // 45 seconds
+
+        RestClient restClient = RestClient.builder()
+            .requestFactory(requestFactory)
+            .build();
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -99,8 +106,15 @@ public class VoiceServiceImpl implements VoiceService {
     }
 
     private String callGeminiTextDirect(String systemInstruction, String promptText) throws Exception {
-        RestClient restClient = RestClient.builder().build();
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
+            new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(45000); // 45 seconds
+        requestFactory.setReadTimeout(45000);    // 45 seconds
+
+        RestClient restClient = RestClient.builder()
+            .requestFactory(requestFactory)
+            .build();
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
