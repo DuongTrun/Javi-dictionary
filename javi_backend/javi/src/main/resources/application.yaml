@@ -2,7 +2,7 @@ spring:
   profiles:
     active: local
   datasource:
-    url: "jdbc:mysql://localhost:3306/javi"
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/javi}
     driverClassName: "com.mysql.cj.jdbc.Driver"
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -29,8 +29,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${JAVI_EMAIL}
-    password: ${APP_PASSWORD}
+    username: ${JAVI_EMAIL:dummy-email@gmail.com}
+    password: ${APP_PASSWORD:dummy-password}
     properties:
       mail:
         smtp:
@@ -64,14 +64,14 @@ jwt:
   refreshable-duration: 1209600 # in seconds (14 ngày)
 
 google:
-  client-id: ${GOOGLE_CLIENT_ID}
-  client-secret: ${GOOGLE_CLIENT_SECRET}
+  client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
+  client-secret: ${GOOGLE_CLIENT_SECRET:dummy-client-secret}
     #  redirect-uri: http://localhost:5173/auth/google/callback
   redirect-uri: https://javi.click/api/v1/auth/google/callback
   translate:
     base-url: https://translate.googleapis.com/translate_a/single
   vision:
-    api-key: ${GOOGLE_CLOUD_API_KEY}
+    api-key: ${GOOGLE_CLOUD_API_KEY:dummy-vision-key}
 
 app:
   time-zone: Asia/Ho_Chi_Minh
@@ -82,9 +82,9 @@ app:
     base-url: https://javi.click
 cloudflare:
   r2:
-    account-id: ${R2_ACCOUNT_ID}
-    access-key: ${R2_ACCESS_KEY_ID}
-    secret-key: ${R2_SECRET_KEY}
+    account-id: ${R2_ACCOUNT_ID:dummy-account-id}
+    access-key: ${R2_ACCESS_KEY_ID:dummy-access-key}
+    secret-key: ${R2_SECRET_KEY:dummy-secret-key}
     bucket: "javi-avatar"
-    endpoint: ${R2_ENDPOINT}
-    public-base-url: "https://pub-a426002f5fad4ea3b8229f3e7d166a74.r2.dev"
+    endpoint: ${R2_ENDPOINT:https://dummy-endpoint.r2.dev}
+    public-base-url: "https://pub-a426002f5fad4ea3b8229f3e7d166a74.r2.dev"
