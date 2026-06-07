@@ -165,7 +165,7 @@ export default function VocabularyDetail({ data }: Props) {
                 {Array.isArray(data.meanings) && data.meanings.length > 0 ? (
                     data.meanings.map((m: IMeaning, idx: number) => {
                         const rawHtml = m.meaningVn || "";
-                        const sanitized = DOMPurify.sanitize(rawHtml);
+                        const sanitized = formatMeaningHtml(DOMPurify.sanitize(rawHtml));
                         // Lấy text thuần để đếm ký tự
                         const tempDiv = document.createElement("div");
                         tempDiv.innerHTML = sanitized;
@@ -281,6 +281,53 @@ export default function VocabularyDetail({ data }: Props) {
             />
         </div>
     );
+}
+
+// === Helper function to dynamically wrap numbered meanings on new lines ===
+function formatMeaningHtml(html: string): string {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+
+    const walk = (node: Node) => {
+        const children = Array.from(node.childNodes);
+        for (const child of children) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const text = child.nodeValue || "";
+                // Regex matches a space followed by a number (>= 2) and a dot with spaces (e.g. " 2. ")
+                const regex = /\s+([2-9]\d*\.\s+)/g;
+                if (regex.test(text)) {
+                    regex.lastIndex = 0; // reset regex index
+                    const fragment = document.createDocumentFragment();
+                    let lastIndex = 0;
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        const matchIndex = match.index;
+                        if (matchIndex > lastIndex) {
+                            fragment.appendChild(
+                                document.createTextNode(
+                                    text.substring(lastIndex, matchIndex)
+                                )
+                            );
+                        }
+                        fragment.appendChild(document.createElement("br"));
+                        fragment.appendChild(document.createTextNode(match[1]));
+                        lastIndex = regex.lastIndex;
+                    }
+                    if (lastIndex < text.length) {
+                        fragment.appendChild(
+                            document.createTextNode(text.substring(lastIndex))
+                        );
+                    }
+                    node.replaceChild(fragment, child);
+                }
+            } else {
+                walk(child);
+            }
+        }
+    };
+
+    walk(tempDiv);
+    return tempDiv.innerHTML;
 }
 
 // === Sub-component: Hiển thị nghĩa từ với khả năng thu gọn / mở rộng ===
