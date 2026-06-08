@@ -47,10 +47,10 @@ public interface VocabulariesRepository
             nativeQuery = true)
     List<Vocabularies> findFuzzySearch(String keyword);
 
-    // Tìm theo nghĩa tiếng Việt bằng FULLTEXT (Inverted Index) — nhanh gấp 40-326x so với LIKE
+    // Tìm theo nghĩa tiếng Việt bằng LIKE
     @Query(value = "SELECT DISTINCT v.* FROM vocabularies v "
             + "INNER JOIN meaning m ON v.vocab_id = m.vocab_id "
-            + "WHERE MATCH(m.meaning_vn) AGAINST(:keyword IN BOOLEAN MODE) "
+            + "WHERE LOWER(m.meaning_vn) LIKE CONCAT('%', LOWER(:keyword), '%') "
             + "ORDER BY CHAR_LENGTH(v.word) ASC "
             + "LIMIT 30",
             nativeQuery = true)
