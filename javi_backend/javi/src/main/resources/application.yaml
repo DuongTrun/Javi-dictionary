@@ -67,7 +67,7 @@ google:
   client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
   client-secret: ${GOOGLE_CLIENT_SECRET:dummy-client-secret}
     #  redirect-uri: http://localhost:5173/auth/google/callback
-  redirect-uri: https://javi.click/api/v1/auth/google/callback
+  redirect-uri: ${GOOGLE_REDIRECT_URI:https://javi.click/api/v1/auth/google/callback}
   translate:
     base-url: https://translate.googleapis.com/translate_a/single
   vision:
