@@ -6,6 +6,7 @@ import { callGetCardsForReview, callSubmitReview } from "@/apis/flashcardApi";
 import { IFlashcardResponse } from "@/types/backend";
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
+import { toRomaji } from "wanakana";
 
 export default function FlashcardReviewPage() {
     const { deckId } = useParams<{ deckId: string }>();
@@ -148,8 +149,10 @@ export default function FlashcardReviewPage() {
                 <div className="space-y-3 w-full text-left">
                     <div className="text-center">
                         <span className="text-gray-400 text-sm block">Cách đọc:</span>
-                        <span className="text-lg font-medium text-gray-800 font-mplus">{vocab.hiragana || vocab.katakana}</span>
-                        {vocab.romaji && <span className="text-gray-400 text-sm block italic">({vocab.romaji})</span>}
+                        <span className="text-lg font-medium text-gray-800 font-mplus">
+                            {vocab.hiragana || vocab.katakana}
+                            {(vocab.hiragana || vocab.katakana) && ` (${toRomaji(vocab.hiragana || vocab.katakana || "")})`}
+                        </span>
                     </div>
                     
                     <div className="border-t border-gray-100 pt-3">

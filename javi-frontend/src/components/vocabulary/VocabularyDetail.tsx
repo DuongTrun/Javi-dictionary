@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
 import { MdStar } from "react-icons/md";
 import SaveToDeckModal from "@/components/study-deck/SaveToDeckModal";
+import { toRomaji } from "wanakana";
 
 const wordTypeMap: Record<string, string> = {
     NOUN: "Danh từ",
@@ -42,7 +43,6 @@ export default function VocabularyDetail({ data }: Props) {
 
     const [showExplanation, setShowExplanation] = useState(false);
     const [displayedText, setDisplayedText] = useState("");
-    const [typingIndex, setTypingIndex] = useState(0);
     const [explanation, setExplanation] = useState("");
     const [loading, setLoading] = useState(false);
     const [canRetry, setCanRetry] = useState(true); // Thêm biến để kiểm soát retry
@@ -67,7 +67,6 @@ export default function VocabularyDetail({ data }: Props) {
 
         setShowExplanation(true);
         setDisplayedText("");
-        setTypingIndex(0);
         setExplanation("");
         setLoading(true);
         setCanRetry(false); // Chặn spam click
@@ -93,19 +92,23 @@ export default function VocabularyDetail({ data }: Props) {
 
     // Hiệu ứng typing
     useEffect(() => {
-        if (showExplanation && isLoggedIn && explanation) {
-            if (typingIndex < explanation.length) {
-                const timeout = setTimeout(() => {
-                    setDisplayedText((prev) => prev + explanation[typingIndex]);
-                    setTypingIndex((prev) => prev + 1);
-                }, 15);
-                return () => clearTimeout(timeout);
-            }
-        } else {
+        if (!showExplanation || !isLoggedIn || !explanation) {
             setDisplayedText("");
-            setTypingIndex(0);
+            return;
         }
-    }, [showExplanation, typingIndex, explanation, isLoggedIn]);
+
+        let currentIndex = 0;
+        const intervalId = setInterval(() => {
+            if (currentIndex < explanation.length) {
+                setDisplayedText((prev) => prev + explanation[currentIndex]);
+                currentIndex++;
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 15);
+
+        return () => clearInterval(intervalId);
+    }, [showExplanation, explanation, isLoggedIn]);
 
     // Chia sẻ mạng xã hội
     const currentUrl = window.location.href;
@@ -132,7 +135,7 @@ export default function VocabularyDetail({ data }: Props) {
             </h2>
             <div className="flex item-center gap-3 mb-2">
                 {data.hiragana && (
-                    <p className="text-base text-gray-700">{data.hiragana}</p>
+                    <p className="text-base text-gray-700">{data.hiragana} ({toRomaji(data.hiragana)})</p>
                 )}
 
                 {/* Hiển thị tên Hán-Việt của các chữ Kanji nếu có */}

@@ -1,4 +1,5 @@
 import { Button } from "antd";
+import { toRomaji } from "wanakana";
 
 import {
     IKanjiDetailResponse,
@@ -123,7 +124,7 @@ export default function VocabularyList({
                                     {/* Hiragana */}
                                     {item.hiragana && (
                                         <p className="text-[14px] text-gray-600 leading-tight mt-1">
-                                            {item.hiragana}
+                                            {item.hiragana} ({toRomaji(item.hiragana)})
                                         </p>
                                     )}
 

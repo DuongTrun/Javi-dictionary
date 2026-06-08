@@ -8,6 +8,7 @@ import { callGetCardsByDeckId, callDeleteFlashcard } from "@/apis/flashcardApi";
 import { IStudyDeckResponse, IFlashcardResponse } from "@/types/backend";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import { toRomaji } from "wanakana";
 
 export default function StudyDeckPage() {
     const navigate = useNavigate();
@@ -144,7 +145,10 @@ export default function StudyDeckPage() {
                     return (
                         <div>
                             <span className="font-bold text-blue-600 text-[15px]">{record.vocab.word}</span>
-                            <span className="text-gray-400 text-xs ml-2">({record.vocab.hiragana})</span>
+                            <span className="text-gray-400 text-xs ml-2">
+                                ({(record.vocab.hiragana || record.vocab.katakana || "")}
+                                {(record.vocab.hiragana || record.vocab.katakana) && ` - ${toRomaji(record.vocab.hiragana || record.vocab.katakana || "")}`})
+                            </span>
                             <Tag color="cyan" className="ml-2 scale-90">Từ vựng</Tag>
                         </div>
                     );

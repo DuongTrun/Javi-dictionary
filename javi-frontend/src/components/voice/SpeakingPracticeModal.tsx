@@ -12,6 +12,7 @@ import {
 } from "react-icons/pi";
 import { callEvaluateSimpleVoice, callEvaluateChatVoice, callGenerateDialogue, IVoiceEvaluationResponse, IVoiceDialogueResponse, IDialogueOption } from "@/apis/voiceApi";
 import { ITopic, IVocabResponse } from "@/types/backend";
+import { toRomaji } from "wanakana";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -648,9 +649,9 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                     )}
 
                     <div className="mt-4 flex flex-col gap-1 items-center">
-                      {cleanVocabList[vocabIndex]?.hiragana && (
+                       {cleanVocabList[vocabIndex]?.hiragana && (
                         <Text className="text-gray-500 text-base md:text-lg font-medium">
-                          りょう: {cleanVocabList[vocabIndex].hiragana}
+                          Cách đọc: {cleanVocabList[vocabIndex].hiragana} ({toRomaji(cleanVocabList[vocabIndex].hiragana)})
                         </Text>
                       )}
                       <Text type="secondary" className="text-sm md:text-base italic max-w-lg px-2">

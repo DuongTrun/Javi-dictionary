@@ -15,6 +15,7 @@ import { callGetVocabularyPage } from "@/apis/vocabularyApi";
 import { ITopic, IVocabResponse } from "@/types/backend";
 import VocabularyDetail from "@/components/vocabulary/VocabularyDetail";
 import SpeakingPracticeModal from "@/components/voice/SpeakingPracticeModal";
+import { toRomaji } from "wanakana";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -332,7 +333,7 @@ export default function TopicsPage() {
                                                         </Text>
                                                         {v.hiragana && (
                                                             <Text type="secondary" className="text-xs">
-                                                                {v.hiragana}
+                                                                {v.hiragana} ({toRomaji(v.hiragana)})
                                                             </Text>
                                                         )}
                                                     </div>
