@@ -250,24 +250,24 @@ export default function UpgradePage(): JSX.Element {
     }, []);
 
     return (
-        <div className="mt-10 px-2">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="mt-6 sm:mt-10 px-3 sm:px-4 overflow-x-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 sm:gap-6">
                 {/* left column */}
                 <div className="lg:col-span-3">
                     <div className="w-full">
-                        <div className="w-[180px] md:w-[260px] h-[40px] mx-auto flex items-center justify-center text-center text-[15px] font-bold mb-8 rounded-full bg-blue-50 text-[#3e66d4] border border-blue-100 shadow-sm uppercase tracking-wider">
+                        <div className="w-[160px] sm:w-[180px] md:w-[260px] h-[36px] sm:h-[40px] mx-auto flex items-center justify-center text-center text-[13px] sm:text-[15px] font-bold mb-6 sm:mb-8 rounded-full bg-blue-50 text-[#3e66d4] border border-blue-100 shadow-sm uppercase tracking-wider">
                             Javi Premium
                         </div>
                         <div
                             ref={scrollRef}
-                            className="flex flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center items-stretch gap-6 overflow-x-auto lg:overflow-x-visible overflow-y-hidden pb-6 snap-x snap-mandatory max-w-full scroll-x-thin"
+                            className="grid grid-cols-1 sm:flex sm:flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center items-stretch gap-4 sm:gap-6 sm:overflow-x-auto lg:overflow-x-visible overflow-y-hidden pb-4 sm:pb-6 sm:snap-x sm:snap-mandatory max-w-full scroll-x-thin"
                         >
                             {PLANS.map((plan) => {
                                 const isHighlight = !!plan.highlight;
                                 return (
                                     <div
                                         key={plan.id}
-                                        className="min-w-[280px] lg:min-w-0 snap-center p-1"
+                                        className="min-w-0 sm:min-w-[280px] lg:min-w-0 snap-center p-1"
                                         data-plan-id={plan.id}
                                         data-highlight={
                                             isHighlight ? "true" : undefined
@@ -279,9 +279,9 @@ export default function UpgradePage(): JSX.Element {
                                                     state: { plan },
                                                 });
                                             }}
-                                            className={`relative rounded-3xl p-6 flex flex-col justify-between cursor-pointer h-full min-h-[320px] transition-premium select-none border-2 ${
+                                            className={`relative rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer h-full min-h-[200px] sm:min-h-[320px] transition-premium select-none border-2 ${
                                                 isHighlight
-                                                    ? "bg-gradient-to-br from-[#3e66d4] to-[#6366f1] border-blue-300/30 text-white shadow-xl shadow-indigo-500/15 scale-[1.02] lg:scale-[1.04] hover:scale-[1.04] lg:hover:scale-[1.06]"
+                                                    ? "bg-gradient-to-br from-[#3e66d4] to-[#6366f1] border-blue-300/30 text-white shadow-xl shadow-indigo-500/15 sm:scale-[1.02] lg:scale-[1.04] hover:scale-[1.02] sm:hover:scale-[1.04] lg:hover:scale-[1.06]"
                                                     : "bg-white border-slate-100 hover:border-[#3e66d4] hover:shadow-lg hover:-translate-y-1"
                                             }`}
                                         >
@@ -302,7 +302,7 @@ export default function UpgradePage(): JSX.Element {
                                                     )}
                                                 </div>
 
-                                                <h3 className={`text-2xl font-black tracking-tight ${
+                                                <h3 className={`text-xl sm:text-2xl font-black tracking-tight ${
                                                     isHighlight ? "text-white" : "text-slate-800"
                                                 }`}>
                                                     {plan.months} Tháng
@@ -310,14 +310,14 @@ export default function UpgradePage(): JSX.Element {
                                             </div>
 
                                             {/* Price Section */}
-                                            <div className="my-8">
+                                            <div className="my-4 sm:my-8">
                                                 {isHighlight && plan.originalPrice && (
                                                     <div className="text-[13px] text-white/70 line-through mb-1.5 font-medium">
                                                         {plan.originalPrice}đ
                                                     </div>
                                                 )}
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className={`text-4xl font-black ${
+                                                    <span className={`text-3xl sm:text-4xl font-black ${
                                                         isHighlight ? "text-white" : "text-slate-800"
                                                     }`}>
                                                         {plan.price}
@@ -351,16 +351,16 @@ export default function UpgradePage(): JSX.Element {
                     </div>
 
                     {/* Người dùng nói gì (reviews) */}
-                    <div className="mt-8 glass-card rounded-3xl p-6 shadow-sm border border-slate-200/50">
-                        <div className="px-1">
+                    <div className="mt-6 sm:mt-8 glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/50 overflow-hidden">
+                        <div className="px-0 sm:px-1">
                             <h3 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 💬 Người dùng nói gì về Javi Premium
                             </h3>
-                            <div className="scroll-x-thin flex gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth">
+                            <div className="scroll-x-thin flex gap-3 sm:gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth -mx-1">
                                 {MOCK_REVIEWS.map((r) => (
                                     <div
                                         key={r.id}
-                                        className="min-w-[260px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-slate-50/70 border border-slate-100/80 rounded-2xl p-4 hover:shadow-sm transition-all duration-300"
+                                        className="min-w-[220px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-slate-50/70 border border-slate-100/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-sm transition-all duration-300"
                                     >
                                         <div className="flex items-start gap-3 mb-2.5">
                                             <img
@@ -404,10 +404,10 @@ export default function UpgradePage(): JSX.Element {
                 </div>
 
                 {/* right column */}
-                <div className="lg:col-span-1 flex flex-col gap-6">
+                <div className="lg:col-span-1 flex flex-col gap-5 sm:gap-6">
                     <div
                         id="benefits"
-                        className="glass-card rounded-3xl p-5 shadow-sm border border-slate-200/50"
+                        className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/50"
                     >
                         <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
                             ✨ Quyền lợi Premium
@@ -438,7 +438,7 @@ export default function UpgradePage(): JSX.Element {
                         />
                     </div>
 
-                    <div className="glass-card rounded-3xl p-5 shadow-sm border border-slate-200/50">
+                    <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/50">
                         <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
                             ❓ Câu hỏi thường gặp
                         </h4>
