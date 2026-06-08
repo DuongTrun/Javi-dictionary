@@ -582,15 +582,15 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
       className="speaking-practice-modal"
       bodyStyle={{ padding: 0 }}
     >
-      <div className="flex flex-col h-[85vh] bg-slate-50 rounded-2xl overflow-hidden font-sans">
+      <div className="flex flex-col h-[85vh] sm:h-[80vh] md:h-[85vh] bg-slate-50 rounded-2xl overflow-hidden font-sans">
         
         {/* BANNER HEADER */}
-        <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center shadow-md">
+        <div className="p-4 md:p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between shadow-md">
           <div>
-            <Title level={3} className="m-0 text-white font-bold flex items-center gap-2">
+            <Title level={3} className="!text-white font-bold flex items-center gap-2 m-0 !text-xl md:!text-2xl">
               🎙️ AI Voice Coach
             </Title>
-            <Paragraph className="m-0 text-blue-100 text-sm mt-1">
+            <Paragraph className="m-0 text-blue-100 text-xs md:text-sm mt-1">
               Chủ đề: <span className="font-semibold text-white">{topic.nameJa} — {topic.nameVi}</span>
             </Paragraph>
           </div>
@@ -604,16 +604,16 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
             }}
             optionType="button"
             buttonStyle="solid"
-            className="speaking-level-selector"
+            className="speaking-level-selector flex flex-wrap md:flex-nowrap"
           >
-            <Radio.Button value={1}>Cấp 1: Đọc theo mẫu</Radio.Button>
-            <Radio.Button value={2}>Cấp 2: Gợi ý hội thoại</Radio.Button>
-            <Radio.Button value={3}>Cấp 3: Kaiwa tự do</Radio.Button>
+            <Radio.Button value={1} className="flex-1 text-center text-xs md:text-sm">Cấp 1: Đọc theo mẫu</Radio.Button>
+            <Radio.Button value={2} className="flex-1 text-center text-xs md:text-sm">Cấp 2: Gợi ý</Radio.Button>
+            <Radio.Button value={3} className="flex-1 text-center text-xs md:text-sm">Cấp 3: Kaiwa tự do</Radio.Button>
           </Radio.Group>
         </div>
 
         {/* NỘI DUNG CHÍNH */}
-        <div className="flex-1 overflow-y-auto p-8 flex flex-col justify-between">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col justify-between">
           
           {/* LEVEL 1: ĐỌC THEO MẪU */}
           {level === 1 && (
@@ -625,7 +625,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
               ) : (
                 <>
                   {/* Khung Hiển thị Từ mẫu */}
-                  <div className="text-center my-auto">
+                  <div className="text-center my-auto py-4">
                     <Text type="secondary" className="text-xs tracking-widest uppercase font-bold text-blue-500 block mb-2">
                       Câu/Từ mẫu #{vocabIndex + 1}
                     </Text>
@@ -635,25 +635,25 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                       renderSimpleAnalysis(simpleResult)
                     ) : loading ? (
                       <div className="relative inline-block my-2 overflow-hidden px-4">
-                        <Title level={1} className="m-0 font-bold font-mplus text-gray-300 text-5xl select-none filter blur-[0.5px]">
+                        <Title level={1} className="!text-3xl md:!text-5xl m-0 font-bold font-mplus text-gray-300 select-none filter blur-[0.5px]">
                           {cleanVocabList[vocabIndex]?.word}
                         </Title>
                         {/* Wave scanner line */}
                         <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-laser-scan"></div>
                       </div>
                     ) : (
-                      <Title level={1} className="m-0 font-bold font-mplus text-gray-800 text-5xl hover:scale-102 transition-transform duration-200">
+                      <Title level={1} className="!text-3xl md:!text-5xl m-0 font-bold font-mplus text-gray-800 hover:scale-102 transition-transform duration-200">
                         {cleanVocabList[vocabIndex]?.word}
                       </Title>
                     )}
 
                     <div className="mt-4 flex flex-col gap-1 items-center">
                       {cleanVocabList[vocabIndex]?.hiragana && (
-                        <Text className="text-gray-500 text-lg font-medium">
+                        <Text className="text-gray-500 text-base md:text-lg font-medium">
                           りょう: {cleanVocabList[vocabIndex].hiragana}
                         </Text>
                       )}
-                      <Text type="secondary" className="text-base italic max-w-lg">
+                      <Text type="secondary" className="text-sm md:text-base italic max-w-lg px-2">
                         Ý nghĩa: {cleanVocabList[vocabIndex]?.meanings?.[0]?.meaningVn?.replace(/<[^>]*>/g, "") || "—"}
                       </Text>
                     </div>
@@ -673,18 +673,18 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
 
                   {/* Vùng trạng thái đang chấm điểm (Loading) */}
                   {loading && (
-                    <Card className="border border-solid border-blue-200 rounded-2xl shadow-md bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-4 mb-6 animate-pulse-glow">
-                      <div className="flex items-center gap-6">
-                        <div className="relative flex items-center justify-center w-16 h-16 bg-white/80 rounded-full shadow-inner">
+                    <Card className="border border-solid border-blue-200 rounded-2xl shadow-md bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 md:p-4 mb-4 md:mb-6 animate-pulse-glow">
+                      <div className="flex items-center gap-4 md:gap-6">
+                        <div className="relative flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-full shadow-inner">
                           <Spin size="default" />
                           <div className="absolute inset-0 border border-solid border-blue-400 rounded-full animate-ping opacity-25"></div>
                         </div>
                         <div className="flex-1">
-                          <Title level={5} className="m-0 font-bold text-blue-800 flex items-center gap-2">
+                          <Title level={5} className="!text-sm md:!text-base m-0 font-bold text-blue-800 flex items-center gap-2">
                             <span className="animate-bounce">🤖</span> AI đang phân tích phát âm...
                           </Title>
-                          <Paragraph className="m-0 mt-1 text-blue-600 text-sm">
-                            Đang phân tích độ chuẩn xác, ngữ điệu và phát âm từng âm tiết. Vui lòng đợi trong giây lát!
+                          <Paragraph className="m-0 mt-1 text-blue-600 text-xs md:text-sm">
+                            Đang phân tích độ chuẩn xác, ngữ điệu và phát âm từng âm tiết.
                           </Paragraph>
                         </div>
                       </div>
@@ -695,7 +695,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   {simpleResult && (() => {
                     const theme = getScoreFeedbackTheme(simpleResult.score);
                     return (
-                      <Card className={`border border-solid rounded-2xl p-4 mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
+                      <Card className={`border border-solid rounded-2xl p-3 md:p-4 mb-4 md:mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
                         {/* Decorative particles for EXCELLENT score */}
                         {simpleResult.score >= 85 && (
                           <div className="absolute inset-0 pointer-events-none">
@@ -705,26 +705,33 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                             <span className="absolute text-lg animate-float-particle-4" style={{ right: '8%', bottom: '20%' }}>🌟</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-6 relative z-10">
-                          <div className="relative">
+                        <div className="flex items-center gap-4 md:gap-6 relative z-10">
+                          <div className="relative flex-shrink-0">
+                            <Progress
+                              type="circle"
+                              percent={simpleResult.score}
+                              strokeColor={getScoreColor(simpleResult.score)}
+                              width={60}
+                              className="font-bold md:hidden"
+                            />
                             <Progress
                               type="circle"
                               percent={simpleResult.score}
                               strokeColor={getScoreColor(simpleResult.score)}
                               width={80}
-                              className="font-bold"
+                              className="font-bold hidden md:block"
                             />
                             {simpleResult.score >= 85 && (
                               <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 shadow-md animate-bounce">
-                                <PiSparkleBold className="text-sm" />
+                                <PiSparkleBold className="text-[10px] md:text-sm" />
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
-                            <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-lg`}>
-                              {theme.badge} <span className="text-xl">{theme.emoji}</span>
+                            <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-sm md:text-lg`}>
+                              {theme.badge} <span className="text-base md:text-xl">{theme.emoji}</span>
                             </Title>
-                            <Paragraph className="m-0 mt-1.5 text-gray-700 text-sm leading-relaxed">
+                            <Paragraph className="m-0 mt-1 text-gray-700 text-xs md:text-sm leading-relaxed">
                               {simpleResult.feedback || theme.description}
                             </Paragraph>
                           </div>
@@ -734,7 +741,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   })()}
 
                   {/* Nút bấm Ghi âm / Thao tác */}
-                  <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="flex flex-col items-center gap-3 mt-4 md:mt-6">
                     {/* Visualizer Sóng âm ảo khi ghi âm */}
                     {isRecording && (
                       <div className="flex items-center gap-1.5 h-6">
@@ -751,9 +758,9 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
                       {simpleResult && (
-                        <Button size="large" disabled={loading} icon={<PiXBold />} onClick={handleRetryVocab}>
+                        <Button size="large" disabled={loading} icon={<PiXBold />} onClick={handleRetryVocab} className="text-xs md:text-base h-10 md:h-12">
                           Đọc lại
                         </Button>
                       )}
@@ -768,11 +775,11 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                         disabled={loading}
                         icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
                         onClick={isRecording ? stopRecordingAndSubmit : startRecording}
-                        className={`speaking-mic-btn h-14 px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 ${
+                        className={`speaking-mic-btn h-11 md:h-14 px-5 md:px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
                           isRecording ? "animate-pulse bg-red-600 border-red-600" : "bg-blue-600 border-blue-600"
                         }`}
                       >
-                        {loading ? "AI đang chấm điểm..." : isRecording ? "Bấm để Nộp bài" : "Bắt đầu nói"}
+                        {loading ? "AI đang chấm..." : isRecording ? "Nộp bài" : "Bắt đầu nói"}
                       </Button>
 
                       {simpleResult && (
@@ -781,14 +788,14 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                           size="large"
                           icon={<PiArrowRightBold />}
                           onClick={handleNextVocab}
-                          className="bg-emerald-600 border-emerald-600 hover:bg-emerald-700 hover:border-emerald-700"
+                          className="bg-emerald-600 border-emerald-600 hover:bg-emerald-700 hover:border-emerald-700 text-xs md:text-base h-10 md:h-12"
                         >
-                          Từ tiếp theo
+                          Câu tiếp
                         </Button>
                       )}
                     </div>
-                    <Text type="secondary" className="text-xs">
-                      Mẹo: Bấm một lần để bắt đầu nói, đọc to rõ ràng. Bấm lại để nộp bài.
+                    <Text type="secondary" className="text-[10px] md:text-xs">
+                      Mẹo: Bấm một lần để nói. Bấm lại để nộp bài.
                     </Text>
                   </div>
                 </>
@@ -824,8 +831,8 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                 return (
                   <>
                     {/* Header thông tin hội thoại */}
-                    <div className="flex justify-between items-center mb-4">
-                      <Text type="secondary" className="text-xs tracking-widest uppercase font-bold text-indigo-600">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between mb-4">
+                      <Text type="secondary" className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-indigo-600">
                         Hội thoại #{dialogueIndex + 1} {currentScript.isAiGenerated ? " (Tạo bởi AI 🤖)" : " (Mặc định)"}
                       </Text>
                       <Button
@@ -833,19 +840,19 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                         icon={<PiSparkleBold className="text-indigo-500 animate-pulse" />}
                         onClick={handleGenerateAiDialogue}
                         loading={aiGenerating}
-                        className="hover:border-indigo-500 hover:text-indigo-500 flex items-center gap-1 text-xs px-2.5 py-1.5 h-auto"
+                        className="hover:border-indigo-500 hover:text-indigo-500 flex items-center gap-1 text-xs px-2.5 py-1.5 h-auto self-start sm:self-auto"
                       >
                         Tạo câu mới bằng AI
                       </Button>
                     </div>
                     {/* Phần hội thoại AI Hỏi */}
-                    <div className="mb-6">
-                      <div className="flex items-start gap-4">
-                        <div className="p-3 bg-indigo-50 border border-solid border-indigo-200 rounded-2xl shadow-sm text-indigo-600 font-bold text-sm">
+                    <div className="mb-4 md:mb-6">
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <div className="p-2 md:p-3 bg-indigo-50 border border-solid border-indigo-200 rounded-2xl shadow-sm text-indigo-600 font-bold text-xs md:text-sm">
                           AI
                         </div>
-                        <div className="bg-white border border-solid border-gray-200 rounded-2xl p-4 shadow-sm max-w-xl">
-                          <Title level={4} className="m-0 font-bold text-gray-800 font-mplus flex items-center gap-2">
+                        <div className="bg-white border border-solid border-gray-200 rounded-2xl p-3 md:p-4 shadow-sm max-w-full md:max-w-xl">
+                          <Title level={4} className="!text-base md:!text-xl m-0 font-bold text-gray-800 font-mplus flex items-center gap-2">
                             {currentScript.question}
                             <Button
                               shape="circle"
@@ -855,7 +862,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                               onClick={() => playBrowserTTS(currentScript.question)}
                             />
                           </Title>
-                          <Paragraph className="m-0 mt-2 text-gray-400 text-sm italic">
+                          <Paragraph className="m-0 mt-1 md:mt-2 text-gray-400 text-xs md:text-sm italic">
                             Dịch: {currentScript.questionVi}
                           </Paragraph>
                         </div>
@@ -863,8 +870,8 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                     </div>
 
                     {/* Phần User chọn Đáp án để nói */}
-                    <div className="space-y-3 mb-6">
-                      <Text type="secondary" className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">
+                    <div className="space-y-3 mb-4 md:mb-6">
+                      <Text type="secondary" className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
                         Chọn 1 phương án bên dưới và Đọc to lên:
                       </Text>
                       {currentScript.options.map((opt: IDialogueOption, idx: number) => {
@@ -877,17 +884,17 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                               setSelectedOptionIdx(idx);
                               setGuidedResult(null);
                             }}
-                            className={`p-4 rounded-2xl border border-solid transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
+                            className={`p-3 md:p-4 rounded-2xl border border-solid transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
                               isSelected
                                 ? "bg-indigo-50 border-indigo-400 shadow-sm animate-pulse-glow-subtle"
                                 : "bg-white border-gray-200 hover:bg-slate-50"
                             }`}
                           >
-                            <div className="flex-1 z-10">
-                              <Text className={`text-base font-semibold font-mplus ${isSelected ? "text-indigo-700" : "text-gray-700"}`}>
+                            <div className="flex-1 z-10 min-w-0 pr-2">
+                              <Text className={`text-sm md:text-base font-semibold font-mplus block ${isSelected ? "text-indigo-700" : "text-gray-700"}`}>
                                 {opt.jp}
                               </Text>
-                              <div className="text-xs text-gray-400 mt-1 italic">
+                              <div className="text-[10px] md:text-xs text-gray-400 mt-1 italic block">
                                 Nghĩa: {opt.vi}
                               </div>
                             </div>
@@ -907,7 +914,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                                 setGuidedResult(null);
                                 playBrowserTTS(opt.jp);
                               }}
-                              className="hover:text-indigo-600 z-10"
+                              className="hover:text-indigo-600 z-10 flex-shrink-0"
                             />
                           </div>
                         );
@@ -916,17 +923,17 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
 
                     {/* Hiển thị phân tích chữ lỗi hoặc trạng thái Loading */}
                     {loading ? (
-                      <Card className="border border-solid border-indigo-200 rounded-2xl shadow-md bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-4 mb-6 animate-pulse-glow">
-                        <div className="flex items-center gap-6">
-                          <div className="relative flex items-center justify-center w-16 h-16 bg-white/80 rounded-full shadow-inner">
+                      <Card className="border border-solid border-indigo-200 rounded-2xl shadow-md bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 md:p-4 mb-4 md:mb-6 animate-pulse-glow">
+                        <div className="flex items-center gap-4 md:gap-6">
+                          <div className="relative flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-full shadow-inner">
                             <Spin size="default" />
                             <div className="absolute inset-0 border border-solid border-indigo-400 rounded-full animate-ping opacity-25"></div>
                           </div>
                           <div className="flex-1">
-                            <Title level={5} className="m-0 font-bold text-indigo-800 flex items-center gap-2">
+                            <Title level={5} className="!text-sm md:!text-base m-0 font-bold text-indigo-800 flex items-center gap-2">
                               <span className="animate-bounce">🤖</span> AI đang chấm điểm đối thoại...
                             </Title>
-                            <Paragraph className="m-0 mt-1 text-indigo-600 text-sm">
+                            <Paragraph className="m-0 mt-1 text-indigo-600 text-xs md:text-sm">
                               Hệ thống đang chấm điểm phát âm câu hội thoại dựa trên ngữ cảnh chủ đề.
                             </Paragraph>
                           </div>
@@ -935,7 +942,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                     ) : guidedResult ? (() => {
                       const theme = getScoreFeedbackTheme(guidedResult.score);
                       return (
-                        <Card className={`border border-solid rounded-2xl p-4 mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
+                        <Card className={`border border-solid rounded-2xl p-3 md:p-4 mb-4 md:mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
                           {/* Decorative particles for EXCELLENT score */}
                           {guidedResult.score >= 85 && (
                             <div className="absolute inset-0 pointer-events-none">
@@ -945,37 +952,45 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                               <span className="absolute text-lg animate-float-particle-4" style={{ right: '5%', bottom: '15%' }}>🌟</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-6 mb-4 relative z-10">
-                            <div className="relative">
+                          <div className="flex items-center gap-4 md:gap-6 mb-3 md:mb-4 relative z-10">
+                            <div className="relative flex-shrink-0">
+                              <Progress
+                                type="circle"
+                                percent={guidedResult.score}
+                                strokeColor={getScoreColor(guidedResult.score)}
+                                width={60}
+                                className="md:hidden"
+                              />
                               <Progress
                                 type="circle"
                                 percent={guidedResult.score}
                                 strokeColor={getScoreColor(guidedResult.score)}
                                 width={75}
+                                className="hidden md:block"
                               />
                               {guidedResult.score >= 85 && (
                                 <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 shadow-md animate-bounce">
-                                  <PiSparkleBold className="text-sm" />
+                                  <PiSparkleBold className="text-[10px] md:text-sm" />
                                 </div>
                               )}
                             </div>
                             <div className="flex-1">
-                              <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-lg`}>
-                                Độ chuẩn xác: {guidedResult.score}% ({theme.badge}) <span className="text-xl">{theme.emoji}</span>
+                              <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-sm md:text-lg`}>
+                                Điểm: {guidedResult.score}% ({theme.badge}) <span className="text-base md:text-xl">{theme.emoji}</span>
                               </Title>
-                              <Paragraph className="m-0 mt-1.5 text-gray-700 text-sm leading-relaxed">
+                              <Paragraph className="m-0 mt-1 text-gray-700 text-xs md:text-sm leading-relaxed">
                                 {guidedResult.feedback || theme.description}
                               </Paragraph>
                             </div>
                           </div>
 
                           {/* Highlight từ sai */}
-                          <div className="flex flex-wrap gap-1.5 justify-center bg-white/85 p-3 rounded-xl border border-solid border-gray-100 relative z-10">
+                          <div className="flex flex-wrap gap-1 md:gap-1.5 justify-center bg-white/85 p-2 md:p-3 rounded-xl border border-solid border-gray-100 relative z-10">
                             {guidedResult.wordsAnalysis && guidedResult.wordsAnalysis.length > 0 ? (
                               guidedResult.wordsAnalysis.map((item, idx) => (
                                 <Tooltip key={idx} title={item.isCorrect ? "Đúng!" : item.phonemeError || "Lỗi phát âm"}>
                                   <span
-                                    className={`text-lg font-bold font-mplus px-2 py-0.5 rounded-lg border border-solid transition-all duration-200 ${
+                                    className={`text-sm md:text-lg font-bold font-mplus px-1.5 md:px-2 py-0.5 rounded-lg border border-solid transition-all duration-200 ${
                                       item.isCorrect
                                         ? "text-emerald-700 bg-emerald-50 border-emerald-200"
                                         : "text-rose-700 bg-rose-50 border-rose-200 hover:scale-105"
@@ -986,7 +1001,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                                 </Tooltip>
                               ))
                             ) : (
-                              <Text className="font-mplus font-bold text-gray-800">{currentScript.options[selectedOptionIdx]?.jp}</Text>
+                              <Text className="font-mplus font-bold text-gray-800 text-sm md:text-base">{currentScript.options[selectedOptionIdx]?.jp}</Text>
                             )}
                           </div>
                         </Card>
@@ -994,7 +1009,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                     })() : null}
 
                     {/* Mic hold to talk */}
-                    <div className="flex flex-col items-center gap-4 mt-6">
+                    <div className="flex flex-col items-center gap-3 mt-4 md:mt-6">
                       {isRecording && (
                         <div className="flex items-center gap-1.5 h-6">
                           <span className="text-xs text-red-500 font-bold animate-pulse">REC {recordingDuration}s</span>
@@ -1010,9 +1025,9 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
                         {guidedResult && (
-                          <Button size="large" disabled={loading} icon={<PiXBold />} onClick={() => setGuidedResult(null)}>
+                          <Button size="large" disabled={loading} icon={<PiXBold />} onClick={() => setGuidedResult(null)} className="text-xs md:text-base h-10 md:h-12">
                             Nói lại
                           </Button>
                         )}
@@ -1026,7 +1041,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                           icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
                           onClick={isRecording ? stopRecordingAndSubmit : startRecording}
                           disabled={loading}
-                          className={`speaking-mic-btn h-14 px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 ${
+                          className={`speaking-mic-btn h-11 md:h-14 px-5 md:px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
                             selectedOptionIdx === -1
                               ? "bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300 hover:border-gray-300"
                               : isRecording
@@ -1034,7 +1049,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                               : "bg-indigo-600 border-indigo-600"
                           }`}
                         >
-                          {loading ? "AI đang chấm điểm..." : isRecording ? "Bấm để Nộp bài" : "Bắt đầu nói"}
+                          {loading ? "AI đang chấm..." : isRecording ? "Nộp bài" : "Bắt đầu nói"}
                         </Button>
 
                         {guidedResult && (
@@ -1043,14 +1058,14 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                             size="large"
                             icon={<PiArrowRightBold />}
                             onClick={handleNextDialogue}
-                            className="bg-indigo-600 border-indigo-600 hover:bg-indigo-700 hover:border-indigo-700"
+                            className="bg-indigo-600 border-indigo-600 hover:bg-indigo-700 hover:border-indigo-700 text-xs md:text-base h-10 md:h-12"
                           >
-                            Câu tiếp theo
+                            Câu tiếp
                           </Button>
                         )}
                       </div>
-                      <Text type="secondary" className="text-xs">
-                        Chọn đáp án gợi ý ➔ Bấm nút Micro để đọc ➔ Bấm lại lần nữa để gửi.
+                      <Text type="secondary" className="text-[10px] md:text-xs">
+                        Mẹo: Chọn câu ➔ Bấm Mic để nói ➔ Bấm lại để gửi.
                       </Text>
                     </div>
                   </>
@@ -1064,17 +1079,17 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
             <div className="flex-1 flex flex-col h-full justify-between">
               
               {/* Cửa sổ chat cuộn */}
-              <div className="flex-1 min-h-[300px] overflow-y-auto bg-white border border-solid border-gray-200 rounded-2xl p-4 shadow-inner mb-6 space-y-4 flex flex-col">
+              <div className="flex-1 min-h-[220px] md:min-h-[300px] overflow-y-auto bg-white border border-solid border-gray-200 rounded-2xl p-3 md:p-4 shadow-inner mb-4 md:mb-6 space-y-4 flex flex-col">
                 {chatMessages.map((msg, index) => (
                   <div
                     key={index}
-                    className={`flex items-start gap-3 max-w-[85%] ${
+                    className={`flex items-start gap-2 md:gap-3 max-w-[90%] md:max-w-[85%] ${
                       msg.sender === "user" ? "self-end flex-row-reverse" : "self-start"
                     }`}
                   >
                     {/* Avatar đại diện */}
                     <div
-                      className={`p-2 rounded-xl text-xs font-bold shadow-sm ${
+                      className={`p-1.5 md:p-2 rounded-xl text-[10px] md:text-xs font-bold shadow-sm flex-shrink-0 ${
                         msg.sender === "user"
                           ? "bg-blue-600 text-white"
                           : "bg-emerald-50 border border-solid border-emerald-200 text-emerald-600"
@@ -1083,27 +1098,28 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                       {msg.sender === "user" ? "ME" : "AI"}
                     </div>
 
-                    <div className="flex flex-col">
+                    <div className="flex flex-col max-w-[calc(100%-40px)]">
                       <div
-                        className={`rounded-2xl p-4 shadow-sm border border-solid ${
+                        className={`rounded-2xl p-3 md:p-4 shadow-sm border border-solid ${
                           msg.sender === "user"
                             ? "bg-blue-50 border-blue-100 text-gray-800"
                             : "bg-emerald-50/50 border-emerald-100 text-gray-800"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="font-mplus font-bold text-base">{msg.text}</span>
+                        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+                          <span className="font-mplus font-bold text-sm md:text-base break-words">{msg.text}</span>
                           <Button
                             shape="circle"
                             size="small"
                             type="text"
                             icon={<PiSpeakerHighBold />}
                             onClick={() => playBrowserTTS(msg.text)}
+                            className="flex-shrink-0"
                           />
                         </div>
 
                         {msg.translation && (
-                          <div className="text-xs text-gray-400 italic mt-1.5 border-t border-dashed border-gray-200/60 pt-1">
+                          <div className="text-[10px] md:text-xs text-gray-400 italic mt-1.5 border-t border-dashed border-gray-200/60 pt-1">
                             Dịch: {msg.translation}
                           </div>
                         )}
@@ -1111,13 +1127,13 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
 
                       {/* Phản hồi điểm số & ngữ pháp nếu có (Chỉ tin nhắn của User) */}
                       {msg.sender === "user" && msg.score !== undefined && (
-                        <div className="mt-2 pl-2 space-y-1.5 animate-fade-in-up">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-semibold text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" style={{ backgroundColor: getScoreColor(msg.score) }}>
+                        <div className="mt-2 pl-1 md:pl-2 space-y-1.5 animate-fade-in-up">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] md:text-[11px] font-semibold text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" style={{ backgroundColor: getScoreColor(msg.score) }}>
                               {msg.score >= 85 ? "🌟" : "🎙️"} Phát âm: {msg.score}đ
                             </span>
                             {msg.feedback && (
-                              <span className="text-xs text-gray-600 italic font-medium bg-slate-100 px-2 py-0.5 rounded-md">
+                              <span className="text-[10px] md:text-xs text-gray-600 italic font-medium bg-slate-100 px-2 py-0.5 rounded-md">
                                 {msg.feedback}
                               </span>
                             )}
@@ -1129,12 +1145,12 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                               showIcon
                               icon={<PiSparkleBold className="text-blue-500 animate-pulse" />}
                               message={
-                                <div className="text-[11px] text-gray-700 leading-relaxed font-medium">
+                                <div className="text-[10px] md:text-[11px] text-gray-700 leading-relaxed font-medium">
                                   <span className="font-bold text-blue-600">Nhận xét ngữ pháp: </span>
                                   {msg.grammarFeedback}
                                 </div>
                               }
-                              className="py-1.5 px-3 rounded-lg border-blue-100 bg-blue-50/50 shadow-sm"
+                              className="py-1 md:py-1.5 px-2.5 md:px-3 rounded-lg border-blue-100 bg-blue-50/50 shadow-sm"
                             />
                           )}
                         </div>
@@ -1144,20 +1160,20 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                 ))}
                 
                 {loading && (
-                  <div className="self-start flex items-center gap-3 animate-fade-in-up">
-                    <div className="p-2 rounded-xl bg-emerald-50 border border-solid border-emerald-200 text-emerald-600 text-xs font-bold animate-pulse">
+                  <div className="self-start flex items-center gap-2 md:gap-3 animate-fade-in-up">
+                    <div className="p-1.5 md:p-2 rounded-xl bg-emerald-50 border border-solid border-emerald-200 text-emerald-600 text-[10px] md:text-xs font-bold animate-pulse flex-shrink-0">
                       AI
                     </div>
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50/30 border border-solid border-emerald-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm animate-pulse-glow-subtle">
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50/30 border border-solid border-emerald-100 rounded-2xl p-3 md:p-4 flex items-center gap-2 md:gap-3 shadow-sm animate-pulse-glow-subtle">
                       <Spin size="small" />
-                      <Text type="secondary" italic className="text-xs font-medium text-emerald-800">AI đang nghe và chuẩn bị trả lời...</Text>
+                      <Text type="secondary" italic className="text-[10px] md:text-xs font-medium text-emerald-800">AI đang chuẩn bị trả lời...</Text>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Nút thao tác ghi âm dạng click toggle */}
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-3">
                 {isRecording && (
                   <div className="flex items-center gap-1.5 h-6">
                     <span className="text-xs text-red-500 font-bold animate-pulse">ĐANG THU ÂM KAIWA ({recordingDuration}s)</span>
@@ -1173,9 +1189,9 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   </div>
                 )}
 
-                <div className="flex items-center gap-4">
-                  <Button size="large" type="dashed" danger icon={<PiChatCenteredTextBold />} onClick={handleResetChat}>
-                    Làm mới đoạn chat
+                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
+                  <Button size="large" type="dashed" danger icon={<PiChatCenteredTextBold />} onClick={handleResetChat} className="text-xs md:text-base h-10 md:h-12 px-3 md:px-4">
+                    Làm mới
                   </Button>
 
                   {/* NÚT CLICK TO TOGGLE */}
@@ -1188,7 +1204,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                     icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
                     onClick={isRecording ? stopRecordingAndSubmit : startRecording}
                     disabled={loading}
-                    className={`speaking-mic-btn h-14 px-10 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 ${
+                    className={`speaking-mic-btn h-11 md:h-14 px-6 md:px-10 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
                       isRecording ? "bg-red-600 border-red-600" : "bg-emerald-600 border-emerald-600 hover:bg-emerald-700"
                     }`}
                   >
@@ -1196,8 +1212,8 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   </Button>
                 </div>
                 
-                <Text type="secondary" className="text-xs">
-                  Mẹo: Bấm một lần để bắt đầu nói, nói tự do bằng tiếng Nhật. Bấm lại để nộp (hoặc hệ thống tự ngắt sau 3 giây im lặng).
+                <Text type="secondary" className="text-[10px] md:text-xs">
+                  Mẹo: Bấm 1 lần để nói tự do. Bấm lại để gửi.
                 </Text>
               </div>
 
@@ -1208,6 +1224,29 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
       </div>
       {/* Custom Styles for animations and glow effects */}
       <style>{`
+        @media (max-width: 767px) {
+          .speaking-practice-modal {
+            max-width: 95vw !important;
+            width: 95vw !important;
+            margin: 10px auto !important;
+            top: 10px !important;
+          }
+          .speaking-level-selector {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            width: 100% !important;
+            gap: 4px !important;
+            margin-top: 8px;
+          }
+          .speaking-level-selector .ant-radio-button-wrapper {
+            flex: 1 1 auto !important;
+            text-align: center !important;
+            font-size: 11px !important;
+            padding: 0 4px !important;
+            height: 32px !important;
+            line-height: 30px !important;
+          }
+        }
         @keyframes laser-scan {
           0% { top: 0%; opacity: 0.3; }
           50% { top: 100%; opacity: 1; }
