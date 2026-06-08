@@ -69,7 +69,7 @@ export default function MainLayout() {
     };
 
     return (
-        <div className="bg-[#f7f8fa] font-sans min-h-screen m-0 object-cover overflow-y-overlay">
+        <div className="bg-[#f7f8fa] font-sans min-h-screen m-0 object-cover overflow-y-overlay overflow-x-hidden">
             {/* Sidebar cố định */}
             <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
             {/* Nội dung chính */}
@@ -78,8 +78,8 @@ export default function MainLayout() {
                 <AppHeader onMenuClick={() => setSidebarOpen(true)} />
 
                 {/* Content */}
-                <main className="flex-1 overflow-y-auto mt-[64px]">
-                    <div className="max-w-[1380px] mx-auto">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden mt-[64px]">
+                    <div className="max-w-[1380px] mx-auto px-0">
                         <Outlet />
                     </div>
                 </main>
