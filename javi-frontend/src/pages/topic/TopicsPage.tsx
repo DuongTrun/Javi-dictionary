@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Button, Typography, Spin, Pagination, Empty, Breadcrumb } from "antd";
+import { Card, Button, Typography, Spin, Pagination, Empty, Breadcrumb, Tag } from "antd";
 import {
     PiCompass,
     PiBriefcase,
@@ -59,11 +59,24 @@ const defaultStyle = {
     borderClass: "border-slate-200",
 };
 
+const JLPT_LEVELS = ["Tất cả", "N5", "N4", "N3", "N2", "N1"] as const;
+type JlptFilter = typeof JLPT_LEVELS[number];
+
+const levelColorMap: Record<string, { bg: string; text: string; border: string; activeBg: string }> = {
+    "Tất cả": { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200", activeBg: "bg-gray-700" },
+    N5: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", activeBg: "bg-emerald-600" },
+    N4: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200", activeBg: "bg-sky-600" },
+    N3: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", activeBg: "bg-amber-600" },
+    N2: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", activeBg: "bg-orange-600" },
+    N1: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200", activeBg: "bg-rose-600" },
+};
+
 export default function TopicsPage() {
     const [topics, setTopics] = useState<ITopic[]>([]);
     const [loadingTopics, setLoadingTopics] = useState(true);
     const [selectedTopic, setSelectedTopic] = useState<ITopic | null>(null);
     const [isSpeakingModalOpen, setIsSpeakingModalOpen] = useState(false);
+    const [jlptFilter, setJlptFilter] = useState<JlptFilter>("Tất cả");
 
     // State cho danh sách từ vựng thuộc chủ đề
     const [vocabList, setVocabList] = useState<IVocabResponse[]>([]);
@@ -90,18 +103,23 @@ export default function TopicsPage() {
         fetchTopics();
     }, []);
 
-    // Load danh sách từ vựng khi chọn chủ đề hoặc đổi trang
+    // Load danh sách từ vựng khi chọn chủ đề, đổi trang, hoặc đổi filter JLPT
     useEffect(() => {
         if (!selectedTopic) return;
 
         const fetchVocabs = async () => {
             setLoadingVocab(true);
             try {
-                // Gọi API lấy từ vựng lọc theo chủ đề qua spring-filter
+                // Xây dựng filter kết hợp chủ đề + cấp độ JLPT
+                let filter = `topics.id : ${selectedTopic.id}`;
+                if (jlptFilter !== "Tất cả") {
+                    filter += ` and level : '${jlptFilter}'`;
+                }
+
                 const res = await callGetVocabularyPage({
                     page: page - 1,
                     size: pageSize,
-                    filter: `topics.id : ${selectedTopic.id}`,
+                    filter,
                 });
                 if (res.data && res.data.result) {
                     const content = res.data.result.content || [];
@@ -123,7 +141,7 @@ export default function TopicsPage() {
         };
 
         fetchVocabs();
-    }, [selectedTopic, page]);
+    }, [selectedTopic, page, jlptFilter]);
 
     // Trở lại danh sách chủ đề
     const handleBack = () => {
@@ -132,6 +150,13 @@ export default function TopicsPage() {
         setSelectedVocab(null);
         setPage(1);
         setTotalVocabs(0);
+        setJlptFilter("Tất cả");
+    };
+
+    // Đổi filter JLPT => reset về trang 1
+    const handleJlptFilter = (level: JlptFilter) => {
+        setJlptFilter(level);
+        setPage(1);
     };
 
     if (loadingTopics) {
@@ -246,12 +271,37 @@ export default function TopicsPage() {
                         </Button>
                     </div>
 
+                    {/* Bộ lọc cấp độ JLPT */}
+                    <div className="mb-5 flex items-center gap-2 flex-wrap">
+                        <Text className="text-sm font-semibold text-gray-500 mr-1">Cấp độ:</Text>
+                        {JLPT_LEVELS.map((level) => {
+                            const isActive = jlptFilter === level;
+                            const colors = levelColorMap[level];
+                            return (
+                                <button
+                                    key={level}
+                                    onClick={() => handleJlptFilter(level)}
+                                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border border-solid transition-all duration-200 cursor-pointer
+                                        ${isActive
+                                            ? `${colors.activeBg} text-white border-transparent shadow-sm scale-105`
+                                            : `${colors.bg} ${colors.text} ${colors.border} hover:shadow-sm hover:scale-105`
+                                        }`}
+                                >
+                                    {level}
+                                </button>
+                            );
+                        })}
+                    </div>
+
                     {/* Khung nội dung song song */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Danh sách từ (Bên trái) */}
                         <div className="lg:col-span-5 bg-white border border-gray-200 border-solid rounded-2xl p-4 shadow-sm">
                             <Title level={5} className="mt-0 mb-4 font-bold text-gray-700">
                                 Danh sách từ vựng ({totalVocabs})
+                                {jlptFilter !== "Tất cả" && (
+                                    <Tag color="blue" className="ml-2 text-xs align-middle">{jlptFilter}</Tag>
+                                )}
                             </Title>
 
                             {loadingVocab ? (
