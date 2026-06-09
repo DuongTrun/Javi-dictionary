@@ -243,7 +243,8 @@ export default function VocabularyDetail({ data }: Props) {
                     {Array.isArray(data.meanings) && data.meanings.length > 0 ? (
                         data.meanings.map((m: IMeaning, idx: number) => {
                             const rawHtml = m.meaningVn || "";
-                            const sanitized = formatMeaningHtml(DOMPurify.sanitize(rawHtml));
+                            const cleanedHtml = cleanHanhVietMeaning(rawHtml);
+                            const sanitized = formatMeaningHtml(DOMPurify.sanitize(cleanedHtml));
                             
                             // Check if explanation has examples
                             const tempDiv = document.createElement("div");
@@ -342,6 +343,21 @@ export default function VocabularyDetail({ data }: Props) {
             />
         </div>
     );
+}
+
+// === Helper function to clean capitalized Hán-Việt prefix ===
+function cleanHanhVietMeaning(html: string): string {
+    if (!html) return "";
+    let cleaned = html.trim();
+    const regex = /^(<[^>]+>)?\s*•?\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĐẰẮẲẴẶẦẤẨẪẬỀẾỂỄỆỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s]{3,})\s+(?=\d+\.|\d|•|\(|[a-zà-ỹ])/;
+    const match = cleaned.match(regex);
+    if (match) {
+        const prefix = match[1] || "";
+        cleaned = prefix + cleaned.substring(match[0].length).trim();
+    }
+    // Xóa thêm dấu chấm tròn ở đầu nếu có mà không đi kèm Hán Việt
+    cleaned = cleaned.replace(/^(<[^>]+>)?\s*•\s*/, "$1");
+    return cleaned;
 }
 
 // === Helper function to dynamically wrap numbered meanings on new lines ===

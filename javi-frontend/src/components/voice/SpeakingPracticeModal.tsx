@@ -133,6 +133,19 @@ const guidedDialogues: Record<string, IVoiceDialogueResponse[]> = {
 
 
 
+// Hàm lọc bỏ âm Hán-Việt viết hoa ở đầu nghĩa tiếng Việt
+const cleanHanhVietMeaning = (text: string): string => {
+  if (!text) return "";
+  let cleaned = text.replace(/<[^>]*>/g, "").trim();
+  const regex = /^•?\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĐẰẮẲẴẶẦẤẨẪẬỀẾỂỄỆỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s]{3,})\s+(?=\d+\.|\d|•|\(|[a-zà-ỹ])/;
+  const match = cleaned.match(regex);
+  if (match) {
+    cleaned = cleaned.substring(match[0].length).trim();
+  }
+  cleaned = cleaned.replace(/^•\s*/, "");
+  return cleaned;
+};
+
 export default function SpeakingPracticeModal({ visible, onClose, topic, vocabList }: SpeakingPracticeModalProps) {
   const [level, setLevel] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -592,11 +605,11 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
         </div>
 
         {/* NỘI DUNG CHÍNH */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col justify-between">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 flex flex-col justify-between">
           
           {/* LEVEL 1: ĐỌC THEO MẪU */}
           {level === 1 && (
-            <div className="flex-1 flex flex-col justify-between">
+            <div className="flex-1 min-h-0 flex flex-col justify-between">
               {cleanVocabList.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">
                   Chủ đề này chưa được gán từ vựng nào để luyện tập.
@@ -604,7 +617,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
               ) : (
                 <div className="space-y-6">
                   {/* Khung Hiển thị Từ mẫu */}
-                  <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-sm border border-outline-variant/10 text-center flex flex-col items-center gap-stack-md">
+                  <section className="bg-surface-container-lowest rounded-xl p-4 md:p-6 shadow-sm border border-outline-variant/10 text-center flex flex-col items-center gap-stack-md">
                     <span className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider block">Target Sentence</span>
                     
                     <div className="font-japanese-display text-japanese-display text-on-surface mt-2">
@@ -624,20 +637,20 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                       )}
                     </div>
 
-                    <div className="mt-4 flex flex-col gap-1 items-center">
+                    <div className="mt-3 flex flex-col gap-1 items-center">
                       {cleanVocabList[vocabIndex]?.hiragana && (
                         <div className="font-body-lg text-body-lg text-on-surface-variant bg-surface-container px-4 py-2 rounded-lg inline-block">
                           Cách đọc: {cleanVocabList[vocabIndex].hiragana} ({toRomaji(cleanVocabList[vocabIndex].hiragana)})
                         </div>
                       )}
-                      <div className="font-body-md text-body-md text-outline mt-2 italic">
-                        Ý nghĩa: "{cleanVocabList[vocabIndex]?.meanings?.[0]?.meaningVn?.replace(/<[^>]*>/g, "") || "—"}"
+                      <div className="font-body-md text-body-md text-outline mt-1.5 italic">
+                        Ý nghĩa: "{cleanHanhVietMeaning(cleanVocabList[vocabIndex]?.meanings?.[0]?.meaningVn) || "—"}"
                       </div>
                     </div>
 
                     <button
                       onClick={() => playBrowserTTS(cleanVocabList[vocabIndex]?.word)}
-                      className="mt-4 text-primary hover:bg-primary/5 px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 font-label-md text-label-md border border-solid border-primary/20 bg-transparent cursor-pointer"
+                      className="mt-3 text-primary hover:bg-primary/5 px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 font-label-md text-label-md border border-solid border-primary/20 bg-transparent cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-lg">volume_up</span> Nghe phát âm mẫu
                     </button>
@@ -706,7 +719,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
 
           {/* LEVEL 2: GỢI Ý HỘI THOẠI */}
           {level === 2 && (
-            <div className="flex-1 flex flex-col justify-between">
+            <div className="flex-1 min-h-0 flex flex-col justify-between">
               {(() => {
                 const staticDialogues = guidedDialogues[topic.nameVi] || [];
                 const allDialogues = [...staticDialogues, ...dynamicDialogues];
@@ -896,10 +909,10 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
 
           {/* LEVEL 3: KAIWA TỰ DO */}
           {level === 3 && (
-            <div className="flex-1 flex flex-col h-full justify-between">
+            <div className="flex-1 min-h-0 flex flex-col h-full justify-between">
               
               {/* Cửa sổ chat cuộn */}
-              <div className="flex-grow min-h-[250px] md:min-h-[350px] overflow-y-auto bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-4 shadow-inner mb-6 space-y-4 flex flex-col">
+              <div className="flex-grow min-h-[150px] md:min-h-[250px] overflow-y-auto bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-4 shadow-inner mb-6 space-y-4 flex flex-col">
                 {chatMessages.map((msg, index) => {
                   const isUser = msg.sender === "user";
                   return (
@@ -1002,7 +1015,7 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
         </div>
 
         {/* BOTTOM ACTION AREA */}
-        <footer className="mt-auto py-6 bg-surface border-t border-outline-variant/10 shadow-sm flex flex-col items-center gap-4 shrink-0 z-10">
+        <footer className="mt-auto py-4 bg-surface border-t border-outline-variant/10 shadow-sm flex flex-col items-center gap-3 shrink-0 z-10">
           {/* Active visualizer wave */}
           {isRecording ? (
             <div className="flex items-center justify-center gap-1.5 h-16 w-full max-w-xs">
