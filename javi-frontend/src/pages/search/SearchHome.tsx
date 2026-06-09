@@ -1,6 +1,5 @@
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
-import RecentComments from "../../components/comment/RecentComments";
 import SearchSection from "@/components/search/SearchSection";
 
 export default function SearchHome() {
@@ -24,17 +23,10 @@ export default function SearchHome() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-            <div className="w-full lg:w-[75%] flex flex-col gap-6">
-                <SearchSection onSubmit={handleSearch} activeTab={activeTab} />
-
-                <div className="flex flex-col gap-6">
-                    <Outlet />
-                </div>
-            </div>
-
-            <div className="w-full lg:w-[25%]">
-                <RecentComments />
+        <div className="w-full max-w-container-max-width mx-auto flex flex-col gap-6">
+            <SearchSection onSubmit={handleSearch} activeTab={activeTab} />
+            <div className="flex flex-col gap-6">
+                <Outlet />
             </div>
         </div>
     );

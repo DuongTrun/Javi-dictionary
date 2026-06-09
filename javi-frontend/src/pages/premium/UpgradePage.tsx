@@ -255,19 +255,19 @@ export default function UpgradePage(): JSX.Element {
                 {/* left column */}
                 <div className="lg:col-span-3">
                     <div className="w-full">
-                        <div className="w-[160px] sm:w-[180px] md:w-[260px] h-[36px] sm:h-[40px] mx-auto flex items-center justify-center text-center text-[13px] sm:text-[15px] font-bold mb-6 sm:mb-8 rounded-full bg-blue-50 text-[#3e66d4] border border-blue-100 shadow-sm uppercase tracking-wider">
-                            Javi Premium
+                        <div className="w-[160px] sm:w-[180px] md:w-[260px] h-[36px] sm:h-[40px] mx-auto flex items-center justify-center text-center text-xs sm:text-sm font-semibold mb-6 sm:mb-8 rounded-full bg-primary/10 text-primary border border-primary/20 shadow-sm uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-sm mr-1.5 icon-fill">workspace_premium</span> Javi Premium
                         </div>
                         <div
                             ref={scrollRef}
-                            className="grid grid-cols-1 sm:flex sm:flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center items-stretch gap-4 sm:gap-6 sm:overflow-x-auto lg:overflow-x-visible overflow-y-hidden pb-4 sm:pb-6 sm:snap-x sm:snap-mandatory max-w-full scroll-x-thin"
+                            className="flex flex-nowrap lg:grid lg:grid-cols-3 justify-start lg:justify-center items-stretch gap-4 sm:gap-6 overflow-x-auto lg:overflow-x-visible overflow-y-hidden pb-4 sm:pb-6 snap-x snap-mandatory max-w-full scroll-x-thin"
                         >
                             {PLANS.map((plan) => {
                                 const isHighlight = !!plan.highlight;
                                 return (
                                     <div
                                         key={plan.id}
-                                        className="min-w-0 sm:min-w-[280px] lg:min-w-0 snap-center p-1"
+                                        className="min-w-[285px] sm:min-w-[290px] lg:min-w-0 snap-center p-1"
                                         data-plan-id={plan.id}
                                         data-highlight={
                                             isHighlight ? "true" : undefined
@@ -279,10 +279,10 @@ export default function UpgradePage(): JSX.Element {
                                                     state: { plan },
                                                 });
                                             }}
-                                            className={`relative rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer h-full min-h-[200px] sm:min-h-[320px] transition-premium select-none border-2 ${
+                                            className={`relative rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer h-full min-h-[300px] sm:min-h-[320px] transition-premium select-none border ${
                                                 isHighlight
-                                                    ? "bg-gradient-to-br from-[#3e66d4] to-[#6366f1] border-blue-300/30 text-white shadow-xl shadow-indigo-500/15 sm:scale-[1.02] lg:scale-[1.04] hover:scale-[1.02] sm:hover:scale-[1.04] lg:hover:scale-[1.06]"
-                                                    : "bg-white border-slate-100 hover:border-[#3e66d4] hover:shadow-lg hover:-translate-y-1"
+                                                    ? "bg-gradient-to-br from-primary to-surface-tint border-primary/10 text-white shadow-lg sm:scale-[1.02] lg:scale-[1.04] hover:scale-[1.02] sm:hover:scale-[1.04] lg:hover:scale-[1.06]"
+                                                    : "bg-surface-container-lowest border-outline-variant/30 text-on-surface hover:border-primary hover:shadow-md hover:-translate-y-0.5"
                                             }`}
                                         >
                                             {/* Top Section */}
@@ -291,7 +291,7 @@ export default function UpgradePage(): JSX.Element {
                                                     <span className={`text-[11px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full ${
                                                         isHighlight
                                                             ? "bg-white/20 backdrop-blur-md text-white border border-white/20"
-                                                            : "bg-[#f1f5fd] text-[#3e66d4]"
+                                                            : "bg-primary-container/10 text-primary-fixed-variant"
                                                     }`}>
                                                         {plan.type}
                                                     </span>
@@ -303,7 +303,7 @@ export default function UpgradePage(): JSX.Element {
                                                 </div>
 
                                                 <h3 className={`text-xl sm:text-2xl font-black tracking-tight ${
-                                                    isHighlight ? "text-white" : "text-slate-800"
+                                                    isHighlight ? "text-white" : "text-on-surface"
                                                 }`}>
                                                     {plan.months} Tháng
                                                 </h3>
@@ -318,17 +318,17 @@ export default function UpgradePage(): JSX.Element {
                                                 )}
                                                 <div className="flex items-baseline gap-1">
                                                     <span className={`text-3xl sm:text-4xl font-black ${
-                                                        isHighlight ? "text-white" : "text-slate-800"
+                                                        isHighlight ? "text-white" : "text-on-surface"
                                                     }`}>
                                                         {plan.price}
                                                     </span>
                                                     <span className={`text-lg font-bold ${
-                                                        isHighlight ? "text-white/90" : "text-slate-500"
+                                                        isHighlight ? "text-white/90" : "text-on-surface-variant"
                                                     }`}>
                                                         đ
                                                     </span>
                                                     <span className={`text-[13px] ml-1.5 ${
-                                                        isHighlight ? "text-white/70" : "text-slate-500"
+                                                        isHighlight ? "text-white/70" : "text-on-surface-variant"
                                                     }`}>
                                                         / gói
                                                     </span>
@@ -336,10 +336,10 @@ export default function UpgradePage(): JSX.Element {
                                             </div>
 
                                             {/* Button CTA */}
-                                            <button className={`w-full py-3 rounded-2xl font-extrabold text-[13px] tracking-wider uppercase transition-all duration-300 transform active:scale-95 ${
+                                            <button className={`w-full py-3 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 transform active:scale-95 ${
                                                 isHighlight
-                                                    ? "bg-white text-[#3e66d4] hover:bg-slate-50 hover:shadow-lg hover:shadow-white/10"
-                                                    : "bg-slate-50 hover:bg-[#3e66d4] hover:text-white border border-slate-200/60 hover:border-[#3e66d4] text-slate-700 shadow-sm"
+                                                    ? "bg-white text-primary hover:bg-slate-50 hover:shadow-md"
+                                                    : "bg-surface border border-outline-variant/30 hover:bg-primary/5 hover:border-primary/50 text-on-surface shadow-sm"
                                             }`}>
                                                 Đăng ký ngay
                                             </button>
@@ -351,25 +351,25 @@ export default function UpgradePage(): JSX.Element {
                     </div>
 
                     {/* Người dùng nói gì (reviews) */}
-                    <div className="mt-6 sm:mt-8 glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/50 overflow-hidden">
+                    <div className="mt-6 sm:mt-8 bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-4 sm:p-6 shadow-sm overflow-hidden">
                         <div className="px-0 sm:px-1">
-                            <h3 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <h3 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
                                 💬 Người dùng nói gì về Javi Premium
                             </h3>
                             <div className="scroll-x-thin flex gap-3 sm:gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scroll-smooth -mx-1">
                                 {MOCK_REVIEWS.map((r) => (
                                     <div
                                         key={r.id}
-                                        className="min-w-[220px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-slate-50/70 border border-slate-100/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-sm transition-all duration-300"
+                                        className="min-w-[220px] sm:min-w-[280px] md:min-w-[320px] snap-start bg-surface-container-low border border-outline-variant/10 rounded-2xl p-3 sm:p-4 hover:shadow-sm transition-all duration-300"
                                     >
                                         <div className="flex items-start gap-3 mb-2.5">
                                             <img
                                                 src={r.avatar}
                                                 alt={r.name}
-                                                className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-sm"
+                                                className="w-9 h-9 rounded-full object-cover border border-outline-variant/20 shadow-sm"
                                             />
                                             <div className="flex-1">
-                                                <div className="text-[13px] font-bold text-slate-800">
+                                                <div className="text-[13px] font-bold text-on-surface">
                                                     {r.name}
                                                 </div>
                                                 <div className="mt-0.5 flex items-center gap-0.5">
@@ -393,7 +393,7 @@ export default function UpgradePage(): JSX.Element {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-[13px] text-slate-600 leading-relaxed meaning-clamp">
+                                        <div className="text-[13px] text-on-surface-variant leading-relaxed meaning-clamp">
                                             {r.text}
                                         </div>
                                     </div>
@@ -407,9 +407,9 @@ export default function UpgradePage(): JSX.Element {
                 <div className="lg:col-span-1 flex flex-col gap-5 sm:gap-6">
                     <div
                         id="benefits"
-                        className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/50"
+                        className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-4 sm:p-5 shadow-sm"
                     >
-                        <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                        <h4 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2 border-b border-outline-variant/10 pb-2">
                             ✨ Quyền lợi Premium
                         </h4>
                         <List
@@ -419,16 +419,15 @@ export default function UpgradePage(): JSX.Element {
                                     <List.Item.Meta
                                         avatar={
                                             <span
-                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-50"
+                                                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary"
                                             >
                                                 <IoIosCheckmarkCircle
                                                     size={15}
-                                                    color="#3e66d4"
                                                 />
                                             </span>
                                         }
                                         title={
-                                            <span className="text-[13px] font-medium text-slate-700">
+                                            <span className="text-[13px] font-medium text-on-surface">
                                                 {item}
                                             </span>
                                         }
@@ -438,8 +437,8 @@ export default function UpgradePage(): JSX.Element {
                         />
                     </div>
 
-                    <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/50">
-                        <h4 className="text-[16px] font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-4 sm:p-5 shadow-sm">
+                        <h4 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2 border-b border-outline-variant/10 pb-2">
                             ❓ Câu hỏi thường gặp
                         </h4>
                         <Collapse
@@ -448,13 +447,13 @@ export default function UpgradePage(): JSX.Element {
                             className="faq-collapse"
                         >
                             <Panel
-                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
-                                header={<span className="text-[13px] font-bold text-slate-700">Sau khi đăng ký Javi premium, tôi có quyền lợi gì?</span>}
+                                className="pb-3.5 border-b border-outline-variant/10 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-on-surface">Sau khi đăng ký Javi premium, tôi có quyền lợi gì?</span>}
                                 key="1"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-on-surface-variant"
                                 >
                                     Sau khi nâng cấp từ điển Javi bạn sẽ được bỏ
                                     hoàn toàn quảng cáo và sử dụng tất cả tính
@@ -465,13 +464,13 @@ export default function UpgradePage(): JSX.Element {
                                 </Text>
                             </Panel>
                             <Panel
-                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
-                                header={<span className="text-[13px] font-bold text-slate-700">Làm sao để biết các ưu đãi của Javi?</span>}
+                                className="pb-3.5 border-b border-outline-variant/10 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-on-surface">Làm sao để biết các ưu đãi của Javi?</span>}
                                 key="2"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-on-surface-variant"
                                 >
                                     Về chương trình ưu đãi, Bạn có thể theo dõi
                                     trên các kênh truyền thông của Javi như:
@@ -480,13 +479,13 @@ export default function UpgradePage(): JSX.Element {
                                 </Text>
                             </Panel>
                             <Panel
-                                className="pb-3.5 border-b border-slate-100 last:border-none last:pb-0"
-                                header={<span className="text-[13px] font-bold text-slate-700">Gói Premium dùng chung nhiều thiết bị không?</span>}
+                                className="pb-3.5 border-b border-outline-variant/10 last:border-none last:pb-0"
+                                header={<span className="text-[13px] font-bold text-on-surface">Gói Premium dùng chung nhiều thiết bị không?</span>}
                                 key="3"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-on-surface-variant"
                                 >
                                     Chỉ với 01 tài khoản, bạn có thể đồng bộ
                                     trên 3 thiết bị Web, Android, IOS rất tiện
@@ -497,12 +496,12 @@ export default function UpgradePage(): JSX.Element {
                             </Panel>
                             <Panel
                                 className="last:pb-0"
-                                header={<span className="text-[13px] font-bold text-slate-700">Tôi ở Nhật có mua Javi Premium được không?</span>}
+                                header={<span className="text-[13px] font-bold text-on-surface">Tôi ở Nhật có mua Javi Premium được không?</span>}
                                 key="4"
                             >
                                 <Text
                                     type="secondary"
-                                    className="text-[12px] font-medium leading-relaxed font-system italic text-slate-500"
+                                    className="text-[12px] font-medium leading-relaxed font-system italic text-on-surface-variant"
                                 >
                                     Có. Liên hệ Zalo để được hướng dẫn cách
                                     thanh toán quốc tế hoặc chuyển khoản. Tại

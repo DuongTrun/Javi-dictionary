@@ -1,20 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Modal, Button, Radio, Typography, Card, Spin, Tooltip, Progress, message, Alert } from "antd";
+import { Modal, Typography, Spin, Tooltip, message } from "antd";
 import confetti from "canvas-confetti";
-import {
-  PiMicrophoneBold,
-  PiStopBold,
-  PiXBold,
-  PiSpeakerHighBold,
-  PiSparkleBold,
-  PiChatCenteredTextBold,
-  PiArrowRightBold,
-} from "react-icons/pi";
 import { callEvaluateSimpleVoice, callEvaluateChatVoice, callGenerateDialogue, IVoiceEvaluationResponse, IVoiceDialogueResponse, IDialogueOption } from "@/apis/voiceApi";
 import { ITopic, IVocabResponse } from "@/types/backend";
 import { toRomaji } from "wanakana";
 
-const { Title, Paragraph, Text } = Typography;
+const { Text } = Typography;
 
 interface SpeakingPracticeModalProps {
   visible: boolean;
@@ -140,37 +131,7 @@ const guidedDialogues: Record<string, IVoiceDialogueResponse[]> = {
   ]
 };
 
-// Helper function to get theme for score feedback
-const getScoreFeedbackTheme = (score: number) => {
-  if (score >= 85) {
-    return {
-      bgClass: "bg-emerald-50/70 border-emerald-300 shadow-emerald-100/50 shadow-lg animate-fade-in-up",
-      titleColor: "text-emerald-800",
-      badge: "Xuất sắc! 🥇",
-      emoji: "🎉",
-      description: "Phát âm cực kỳ chuẩn xác và tự nhiên như người bản xứ!",
-      glowClass: "shadow-[0_0_15px_rgba(16,185,129,0.35)]"
-    };
-  }
-  if (score >= 50) {
-    return {
-      bgClass: "bg-amber-50/70 border-amber-300 shadow-amber-100/50 shadow-md animate-fade-in-up",
-      titleColor: "text-amber-800",
-      badge: "Khá tốt 👍",
-      emoji: "✨",
-      description: "Phát âm rõ ràng, người nghe hoàn toàn có thể hiểu được.",
-      glowClass: "shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-    };
-  }
-  return {
-    bgClass: "bg-rose-50/70 border-rose-300 shadow-rose-100/50 shadow-md animate-fade-in-up",
-    titleColor: "text-rose-800",
-    badge: "Cần cố gắng 💪",
-    emoji: "📝",
-    description: "Có một vài chỗ phát âm chưa chuẩn xác. Hãy nghe lại mẫu và thử lại nhé!",
-    glowClass: "shadow-[0_0_15px_rgba(239,68,68,0.2)]"
-  };
-};
+
 
 export default function SpeakingPracticeModal({ visible, onClose, topic, vocabList }: SpeakingPracticeModalProps) {
   const [level, setLevel] = useState<number>(1);
@@ -579,38 +540,55 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
       width={900}
       title={null}
       destroyOnClose
-      closeIcon={<PiXBold className="text-xl text-gray-500 hover:text-red-500" />}
+      closeIcon={null}
       className="speaking-practice-modal"
       bodyStyle={{ padding: 0 }}
     >
-      <div className="flex flex-col h-[85vh] sm:h-[80vh] md:h-[85vh] bg-slate-50 rounded-2xl overflow-hidden font-sans">
+      <div className="flex flex-col h-[85vh] sm:h-[80vh] md:h-[85vh] bg-surface rounded-2xl overflow-hidden font-body-md text-on-surface antialiased">
         
         {/* BANNER HEADER */}
-        <div className="p-4 md:p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between shadow-md">
-          <div>
-            <Title level={3} className="!text-white font-bold flex items-center gap-2 m-0 !text-xl md:!text-2xl">
-              🎙️ AI Voice Coach
-            </Title>
-            <Paragraph className="m-0 text-blue-100 text-xs md:text-sm mt-1">
-              Chủ đề: <span className="font-semibold text-white">{topic.nameJa} — {topic.nameVi}</span>
-            </Paragraph>
+        <header className="bg-gradient-to-r from-primary to-on-primary-fixed-variant text-on-primary px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center shadow-sm shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[28px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>graphic_eq</span>
+            <h1 className="font-headline-md text-headline-md text-white m-0">AI Voice Coach</h1>
           </div>
-          
-          <Radio.Group
-            value={level}
-            onChange={(e) => {
-              setLevel(e.target.value);
-              setSimpleResult(null);
-              setGuidedResult(null);
-            }}
-            optionType="button"
-            buttonStyle="solid"
-            className="speaking-level-selector flex flex-wrap md:flex-nowrap"
+          <button
+            onClick={onClose}
+            aria-label="Close modal"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white border-none bg-transparent cursor-pointer"
           >
-            <Radio.Button value={1} className="flex-1 text-center text-xs md:text-sm">Cấp 1: Đọc theo mẫu</Radio.Button>
-            <Radio.Button value={2} className="flex-1 text-center text-xs md:text-sm">Cấp 2: Gợi ý</Radio.Button>
-            <Radio.Button value={3} className="flex-1 text-center text-xs md:text-sm">Cấp 3: Kaiwa tự do</Radio.Button>
-          </Radio.Group>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </header>
+        
+        {/* TABS LEVEL SELECTOR */}
+        <div className="px-margin-mobile md:px-margin-desktop py-stack-md shrink-0 flex justify-center bg-surface border-b border-outline-variant/20 shadow-sm">
+          <div className="bg-surface-container-high rounded-lg p-1 flex shadow-sm max-w-fit gap-1">
+            {[
+              { key: 1, label: "Level 1: Beginner" },
+              { key: 2, label: "Level 2: Intermediate" },
+              { key: 3, label: "Level 3: Native" },
+            ].map((t) => {
+              const isActive = level === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => {
+                    setLevel(t.key);
+                    setSimpleResult(null);
+                    setGuidedResult(null);
+                  }}
+                  className={`px-5 py-2 rounded-md font-label-md text-label-md transition-all border-none cursor-pointer ${
+                    isActive
+                      ? "bg-surface-container-lowest text-primary shadow-sm font-bold"
+                      : "bg-transparent text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* NỘI DUNG CHÍNH */}
@@ -624,182 +602,104 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   Chủ đề này chưa được gán từ vựng nào để luyện tập.
                 </div>
               ) : (
-                <>
+                <div className="space-y-6">
                   {/* Khung Hiển thị Từ mẫu */}
-                  <div className="text-center my-auto py-4">
-                    <Text type="secondary" className="text-xs tracking-widest uppercase font-bold text-blue-500 block mb-2">
-                      Câu/Từ mẫu #{vocabIndex + 1}
-                    </Text>
+                  <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-sm border border-outline-variant/10 text-center flex flex-col items-center gap-stack-md">
+                    <span className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider block">Target Sentence</span>
                     
-                    {/* Bôi đỏ/xanh kết quả phân tích nếu có */}
-                    {simpleResult ? (
-                      renderSimpleAnalysis(simpleResult)
-                    ) : loading ? (
-                      <div className="relative inline-block my-2 overflow-hidden px-4">
-                        <Title level={1} className="!text-3xl md:!text-5xl m-0 font-bold font-mplus text-gray-300 select-none filter blur-[0.5px]">
+                    <div className="font-japanese-display text-japanese-display text-on-surface mt-2">
+                      {simpleResult ? (
+                        renderSimpleAnalysis(simpleResult)
+                      ) : loading ? (
+                        <div className="relative inline-block my-2 overflow-hidden px-4">
+                          <span className="text-3xl md:text-5xl font-bold font-mplus text-gray-300 select-none filter blur-[0.5px]">
+                            {cleanVocabList[vocabIndex]?.word}
+                          </span>
+                          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-laser-scan"></div>
+                        </div>
+                      ) : (
+                        <span className="text-3xl md:text-5xl font-bold font-mplus text-gray-800">
                           {cleanVocabList[vocabIndex]?.word}
-                        </Title>
-                        {/* Wave scanner line */}
-                        <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-laser-scan"></div>
-                      </div>
-                    ) : (
-                      <Title level={1} className="!text-3xl md:!text-5xl m-0 font-bold font-mplus text-gray-800 hover:scale-102 transition-transform duration-200">
-                        {cleanVocabList[vocabIndex]?.word}
-                      </Title>
-                    )}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="mt-4 flex flex-col gap-1 items-center">
-                       {cleanVocabList[vocabIndex]?.hiragana && (
-                        <Text className="text-gray-500 text-base md:text-lg font-medium">
+                      {cleanVocabList[vocabIndex]?.hiragana && (
+                        <div className="font-body-lg text-body-lg text-on-surface-variant bg-surface-container px-4 py-2 rounded-lg inline-block">
                           Cách đọc: {cleanVocabList[vocabIndex].hiragana} ({toRomaji(cleanVocabList[vocabIndex].hiragana)})
-                        </Text>
+                        </div>
                       )}
-                      <Text type="secondary" className="text-sm md:text-base italic max-w-lg px-2">
-                        Ý nghĩa: {cleanVocabList[vocabIndex]?.meanings?.[0]?.meaningVn?.replace(/<[^>]*>/g, "") || "—"}
-                      </Text>
+                      <div className="font-body-md text-body-md text-outline mt-2 italic">
+                        Ý nghĩa: "{cleanVocabList[vocabIndex]?.meanings?.[0]?.meaningVn?.replace(/<[^>]*>/g, "") || "—"}"
+                      </div>
                     </div>
 
-                    <div className="mt-5">
-                      <Button
-                        shape="circle"
-                        type="dashed"
-                        disabled={loading}
-                        icon={<PiSpeakerHighBold className="text-xl" />}
-                        onClick={() => playBrowserTTS(cleanVocabList[vocabIndex]?.word)}
-                        className="hover:border-blue-500 hover:text-blue-500 flex items-center justify-center mx-auto"
-                        title="Nghe phát âm mẫu"
-                      />
-                    </div>
-                  </div>
+                    <button
+                      onClick={() => playBrowserTTS(cleanVocabList[vocabIndex]?.word)}
+                      className="mt-4 text-primary hover:bg-primary/5 px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 font-label-md text-label-md border border-solid border-primary/20 bg-transparent cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-lg">volume_up</span> Nghe phát âm mẫu
+                    </button>
+                  </section>
 
                   {/* Vùng trạng thái đang chấm điểm (Loading) */}
                   {loading && (
-                    <Card className="border border-solid border-blue-200 rounded-2xl shadow-md bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 md:p-4 mb-4 md:mb-6 animate-pulse-glow">
-                      <div className="flex items-center gap-4 md:gap-6">
-                        <div className="relative flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-full shadow-inner">
-                          <Spin size="default" />
-                          <div className="absolute inset-0 border border-solid border-blue-400 rounded-full animate-ping opacity-25"></div>
-                        </div>
-                        <div className="flex-1">
-                          <Title level={5} className="!text-sm md:!text-base m-0 font-bold text-blue-800 flex items-center gap-2">
-                            <span className="animate-bounce">🤖</span> AI đang phân tích phát âm...
-                          </Title>
-                          <Paragraph className="m-0 mt-1 text-blue-600 text-xs md:text-sm">
-                            Đang phân tích độ chuẩn xác, ngữ điệu và phát âm từng âm tiết.
-                          </Paragraph>
-                        </div>
+                    <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-sm border border-primary/10 flex items-center gap-4 animate-pulse">
+                      <Spin size="default" />
+                      <div className="flex-1">
+                        <h3 className="m-0 font-bold text-primary flex items-center gap-2 text-sm md:text-base">
+                          🤖 AI đang phân tích phát âm...
+                        </h3>
+                        <p className="m-0 mt-1 text-on-surface-variant text-xs md:text-sm">
+                          Đang phân tích độ chuẩn xác, ngữ điệu và phát âm từng âm tiết.
+                        </p>
                       </div>
-                    </Card>
+                    </section>
                   )}
 
                   {/* Vùng kết quả điểm số */}
-                  {simpleResult && (() => {
-                    const theme = getScoreFeedbackTheme(simpleResult.score);
-                    return (
-                      <Card className={`border border-solid rounded-2xl p-3 md:p-4 mb-4 md:mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
-                        {/* Decorative particles for EXCELLENT score */}
-                        {simpleResult.score >= 85 && (
-                          <div className="absolute inset-0 pointer-events-none">
-                            <span className="absolute text-lg animate-float-particle-1" style={{ left: '10%', top: '20%' }}>🎉</span>
-                            <span className="absolute text-lg animate-float-particle-2" style={{ right: '15%', top: '30%' }}>✨</span>
-                            <span className="absolute text-lg animate-float-particle-3" style={{ left: '25%', bottom: '15%' }}>🌸</span>
-                            <span className="absolute text-lg animate-float-particle-4" style={{ right: '8%', bottom: '20%' }}>🌟</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                          <div className="relative flex-shrink-0">
-                            <Progress
-                              type="circle"
-                              percent={simpleResult.score}
-                              strokeColor={getScoreColor(simpleResult.score)}
-                              width={60}
-                              className="font-bold md:hidden"
-                            />
-                            <Progress
-                              type="circle"
-                              percent={simpleResult.score}
-                              strokeColor={getScoreColor(simpleResult.score)}
-                              width={80}
-                              className="font-bold hidden md:block"
-                            />
-                            {simpleResult.score >= 85 && (
-                              <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 shadow-md animate-bounce">
-                                <PiSparkleBold className="text-[10px] md:text-sm" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-sm md:text-lg`}>
-                              {theme.badge} <span className="text-base md:text-xl">{theme.emoji}</span>
-                            </Title>
-                            <Paragraph className="m-0 mt-1 text-gray-700 text-xs md:text-sm leading-relaxed">
-                              {simpleResult.feedback || theme.description}
-                            </Paragraph>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })()}
-
-                  {/* Nút bấm Ghi âm / Thao tác */}
-                  <div className="flex flex-col items-center gap-3 mt-4 md:mt-6">
-                    {/* Visualizer Sóng âm ảo khi ghi âm */}
-                    {isRecording && (
-                      <div className="flex items-center gap-1.5 h-6">
-                        <span className="text-xs text-red-500 font-bold animate-pulse">REC {recordingDuration}s</span>
-                        <div className="flex items-end gap-0.5 h-full">
-                          {[...Array(8)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="bg-red-500 w-1 rounded-full transition-all duration-75"
-                              style={{ height: `${Math.max(10, Math.min(100, volumeBar * (0.5 + Math.random() * 0.5)))}%` }}
-                            />
-                          ))}
+                  {simpleResult && (
+                    <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-card border border-primary/10 flex flex-col gap-stack-lg animate-fade-in-up">
+                      {/* Score Header */}
+                      <div className="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+                        <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2 m-0 text-base md:text-xl">
+                          <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {simpleResult.score >= 85 ? "stars" : "check_circle"}
+                          </span>
+                          Kết quả phát âm
+                        </h3>
+                        <div className="flex items-baseline gap-1 bg-tertiary-container/10 px-4 py-2 rounded-xl border border-solid border-tertiary/20">
+                          <span className="text-display-lg font-display-lg text-tertiary text-2xl md:text-4xl">{simpleResult.score}</span>
+                          <span className="text-tertiary font-label-md text-label-md font-bold">/ 100</span>
                         </div>
                       </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-                      {simpleResult && (
-                        <Button size="large" disabled={loading} icon={<PiXBold />} onClick={handleRetryVocab} className="text-xs md:text-base h-10 md:h-12">
-                          Đọc lại
-                        </Button>
-                      )}
                       
-                      {/* NÚT CLICK TO TOGGLE */}
-                      <Button
-                        type="primary"
-                        shape="round"
-                        size="large"
-                        danger={isRecording}
-                        loading={loading}
-                        disabled={loading}
-                        icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
-                        onClick={isRecording ? stopRecordingAndSubmit : startRecording}
-                        className={`speaking-mic-btn h-11 md:h-14 px-5 md:px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
-                          isRecording ? "animate-pulse bg-red-600 border-red-600" : "bg-blue-600 border-blue-600"
-                        }`}
-                      >
-                        {loading ? "AI đang chấm..." : isRecording ? "Nộp bài" : "Bắt đầu nói"}
-                      </Button>
+                      {/* Progress Bar */}
+                      <div className="w-full flex flex-col gap-2">
+                        <div className="flex justify-between font-label-md text-label-md text-on-surface-variant">
+                          <span>Độ lưu loát & chính xác</span>
+                          <span className="text-tertiary font-bold">
+                            {simpleResult.score >= 85 ? "Xuất sắc! 🥇" : simpleResult.score >= 50 ? "Khá tốt 👍" : "Cần cố gắng 💪"}
+                          </span>
+                        </div>
+                        <div className="w-full bg-surface-container-high rounded-full h-3 overflow-hidden shadow-inner">
+                          <div className="bg-gradient-to-r from-tertiary-fixed-dim to-tertiary h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${simpleResult.score}%` }}></div>
+                        </div>
+                      </div>
 
-                      {simpleResult && (
-                        <Button
-                          type="primary"
-                          size="large"
-                          icon={<PiArrowRightBold />}
-                          onClick={handleNextVocab}
-                          className="bg-emerald-600 border-emerald-600 hover:bg-emerald-700 hover:border-emerald-700 text-xs md:text-base h-10 md:h-12"
-                        >
-                          Câu tiếp
-                        </Button>
+                      {/* Feedback Tip */}
+                      {simpleResult.feedback && (
+                        <div className="bg-surface-container-low p-4 rounded-lg flex gap-3 items-start border border-solid border-primary-fixed-dim/30">
+                          <span className="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+                          <p className="font-body-md text-body-md text-on-surface-variant m-0 leading-relaxed">
+                            {simpleResult.feedback}
+                          </p>
+                        </div>
                       )}
-                    </div>
-                    <Text type="secondary" className="text-[10px] md:text-xs">
-                      Mẹo: Bấm một lần để nói. Bấm lại để nộp bài.
-                    </Text>
-                  </div>
-                </>
+                    </section>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -816,260 +716,179 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
                   return (
                     <div className="text-center py-20 text-gray-400 flex flex-col items-center justify-center gap-4">
                       <p className="m-0 font-medium text-gray-500">Chủ đề này chưa có kịch bản hội thoại mặc định.</p>
-                      <Button
-                        type="primary"
-                        icon={<PiSparkleBold />}
-                        loading={aiGenerating}
+                      <button
+                        type="button"
                         onClick={handleGenerateAiDialogue}
-                        className="bg-indigo-600 border-indigo-600 hover:bg-indigo-700 hover:border-indigo-700 flex items-center gap-1.5 shadow-sm"
+                        className="flex items-center gap-1.5 px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-md text-label-md border-none cursor-pointer shadow-sm hover:bg-primary-container"
                       >
-                        Tạo hội thoại mới bằng AI
-                      </Button>
+                        <span className="material-symbols-outlined text-sm">auto_awesome</span> Tạo hội thoại mới bằng AI
+                      </button>
                     </div>
                   );
                 }
 
                 return (
-                  <>
+                  <div className="space-y-6">
                     {/* Header thông tin hội thoại */}
-                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between mb-4">
-                      <Text type="secondary" className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-indigo-600">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
+                      <span className="text-label-md font-label-md text-primary uppercase tracking-wider font-bold">
                         Hội thoại #{dialogueIndex + 1} {currentScript.isAiGenerated ? " (Tạo bởi AI 🤖)" : " (Mặc định)"}
-                      </Text>
-                      <Button
-                        type="dashed"
-                        icon={<PiSparkleBold className="text-indigo-500 animate-pulse" />}
+                      </span>
+                      <button
                         onClick={handleGenerateAiDialogue}
-                        loading={aiGenerating}
-                        className="hover:border-indigo-500 hover:text-indigo-500 flex items-center gap-1 text-xs px-2.5 py-1.5 h-auto self-start sm:self-auto"
+                        disabled={aiGenerating}
+                        className="flex items-center gap-1.5 px-4 py-2 border border-solid border-primary/20 hover:bg-primary/5 text-primary rounded-full font-label-md text-label-md bg-transparent cursor-pointer"
                       >
-                        Tạo câu mới bằng AI
-                      </Button>
+                        <span className="material-symbols-outlined text-sm">auto_awesome</span> Tạo câu mới bằng AI
+                      </button>
                     </div>
+
                     {/* Phần hội thoại AI Hỏi */}
-                    <div className="mb-4 md:mb-6">
-                      <div className="flex items-start gap-3 md:gap-4">
-                        <div className="p-2 md:p-3 bg-indigo-50 border border-solid border-indigo-200 rounded-2xl shadow-sm text-indigo-600 font-bold text-xs md:text-sm">
-                          AI
-                        </div>
-                        <div className="bg-white border border-solid border-gray-200 rounded-2xl p-3 md:p-4 shadow-sm max-w-full md:max-w-xl">
-                          <Title level={4} className="!text-base md:!text-xl m-0 font-bold text-gray-800 font-mplus flex items-center gap-2">
-                            {currentScript.question}
-                            <Button
-                              shape="circle"
-                              size="small"
-                              type="text"
-                              icon={<PiSpeakerHighBold />}
-                              onClick={() => playBrowserTTS(currentScript.question)}
-                            />
-                          </Title>
-                          <Paragraph className="m-0 mt-1 md:mt-2 text-gray-400 text-xs md:text-sm italic">
-                            Dịch: {currentScript.questionVi}
-                          </Paragraph>
-                        </div>
+                    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/10 flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+                        <span className="font-label-md text-label-md text-outline font-semibold">AI Assistant Hỏi:</span>
                       </div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-japanese-display text-on-surface m-0 text-xl md:text-2xl font-bold font-mplus">
+                          {currentScript.question}
+                        </h3>
+                        <button
+                          onClick={() => playBrowserTTS(currentScript.question)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-primary border-none cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-lg">volume_up</span>
+                        </button>
+                      </div>
+                      <p className="m-0 text-on-surface-variant text-xs md:text-sm italic">
+                        Ý nghĩa: {currentScript.questionVi}
+                      </p>
                     </div>
 
                     {/* Phần User chọn Đáp án để nói */}
-                    <div className="space-y-3 mb-4 md:mb-6">
-                      <Text type="secondary" className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
-                        Chọn 1 phương án bên dưới và Đọc to lên:
-                      </Text>
+                    <div className="flex flex-col gap-3">
+                      <span className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider block mb-1">
+                        Chọn 1 phương án dưới đây và luyện đọc:
+                      </span>
                       {currentScript.options.map((opt: IDialogueOption, idx: number) => {
                         const isSelected = selectedOptionIdx === idx;
                         return (
                           <div
                             key={idx}
                             onClick={() => {
-                              if (loading) return; // Không cho phép chọn khi đang chấm điểm
+                              if (loading) return;
                               setSelectedOptionIdx(idx);
                               setGuidedResult(null);
                             }}
-                            className={`p-3 md:p-4 rounded-2xl border border-solid transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
+                            className={`p-4 rounded-xl border border-solid transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
                               isSelected
-                                ? "bg-indigo-50 border-indigo-400 shadow-sm animate-pulse-glow-subtle"
-                                : "bg-white border-gray-200 hover:bg-slate-50"
+                                ? "bg-primary/5 border-primary shadow-sm"
+                                : "bg-surface-container-lowest border-outline-variant/20 hover:bg-surface-container-low"
                             }`}
                           >
-                            <div className="flex-1 z-10 min-w-0 pr-2">
-                              <Text className={`text-sm md:text-base font-semibold font-mplus block ${isSelected ? "text-indigo-700" : "text-gray-700"}`}>
+                            <div className="flex-1 pr-4 min-w-0">
+                              <span className={`font-japanese-body text-japanese-body block text-sm md:text-base font-bold ${isSelected ? "text-primary" : "text-on-surface"}`}>
                                 {opt.jp}
-                              </Text>
-                              <div className="text-[10px] md:text-xs text-gray-400 mt-1 italic block">
+                              </span>
+                              <span className="text-[12px] text-on-surface-variant mt-1 block italic">
                                 Nghĩa: {opt.vi}
-                              </div>
+                              </span>
                             </div>
-                            {/* Đường quét laser quét qua câu được chọn */}
                             {loading && isSelected && (
                               <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-laser-scan"></div>
                             )}
-                            <Button
-                              shape="circle"
-                              size="small"
-                              type="text"
-                              disabled={loading}
-                              icon={<PiSpeakerHighBold />}
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedOptionIdx(idx);
                                 setGuidedResult(null);
                                 playBrowserTTS(opt.jp);
                               }}
-                              className="hover:text-indigo-600 z-10 flex-shrink-0"
-                            />
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-primary border-none cursor-pointer flex-shrink-0"
+                            >
+                              <span className="material-symbols-outlined text-lg">volume_up</span>
+                            </button>
                           </div>
                         );
                       })}
                     </div>
 
                     {/* Hiển thị phân tích chữ lỗi hoặc trạng thái Loading */}
-                    {loading ? (
-                      <Card className="border border-solid border-indigo-200 rounded-2xl shadow-md bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 md:p-4 mb-4 md:mb-6 animate-pulse-glow">
-                        <div className="flex items-center gap-4 md:gap-6">
-                          <div className="relative flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-full shadow-inner">
-                            <Spin size="default" />
-                            <div className="absolute inset-0 border border-solid border-indigo-400 rounded-full animate-ping opacity-25"></div>
-                          </div>
-                          <div className="flex-1">
-                            <Title level={5} className="!text-sm md:!text-base m-0 font-bold text-indigo-800 flex items-center gap-2">
-                              <span className="animate-bounce">🤖</span> AI đang chấm điểm đối thoại...
-                            </Title>
-                            <Paragraph className="m-0 mt-1 text-indigo-600 text-xs md:text-sm">
-                              Hệ thống đang chấm điểm phát âm câu hội thoại dựa trên ngữ cảnh chủ đề.
-                            </Paragraph>
+                    {loading && (
+                      <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-sm border border-primary/10 flex items-center gap-4 animate-pulse">
+                        <Spin size="default" />
+                        <div className="flex-1">
+                          <h3 className="m-0 font-bold text-primary flex items-center gap-2 text-sm md:text-base">
+                            🤖 AI đang chấm điểm đối thoại...
+                          </h3>
+                          <p className="m-0 mt-1 text-on-surface-variant text-xs md:text-sm">
+                            Hệ thống đang chấm điểm phát âm câu hội thoại dựa trên ngữ cảnh chủ đề.
+                          </p>
+                        </div>
+                      </section>
+                    )}
+
+                    {guidedResult && (
+                      <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-card border border-primary/10 flex flex-col gap-stack-lg animate-fade-in-up">
+                        {/* Score Header */}
+                        <div className="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+                          <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2 m-0 text-base md:text-xl">
+                            <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                              {guidedResult.score >= 85 ? "stars" : "check_circle"}
+                            </span>
+                            Kết quả phát âm đối thoại
+                          </h3>
+                          <div className="flex items-baseline gap-1 bg-tertiary-container/10 px-4 py-2 rounded-xl border border-solid border-tertiary/20">
+                            <span className="text-display-lg font-display-lg text-tertiary text-2xl md:text-4xl">{guidedResult.score}</span>
+                            <span className="text-tertiary font-label-md text-label-md font-bold">/ 100</span>
                           </div>
                         </div>
-                      </Card>
-                    ) : guidedResult ? (() => {
-                      const theme = getScoreFeedbackTheme(guidedResult.score);
-                      return (
-                        <Card className={`border border-solid rounded-2xl p-3 md:p-4 mb-4 md:mb-6 transition-all duration-300 ${theme.bgClass} ${theme.glowClass} relative overflow-hidden`}>
-                          {/* Decorative particles for EXCELLENT score */}
-                          {guidedResult.score >= 85 && (
-                            <div className="absolute inset-0 pointer-events-none">
-                              <span className="absolute text-lg animate-float-particle-1" style={{ left: '8%', top: '15%' }}>🎉</span>
-                              <span className="absolute text-lg animate-float-particle-2" style={{ right: '12%', top: '25%' }}>✨</span>
-                              <span className="absolute text-lg animate-float-particle-3" style={{ left: '20%', bottom: '10%' }}>🌸</span>
-                              <span className="absolute text-lg animate-float-particle-4" style={{ right: '5%', bottom: '15%' }}>🌟</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-4 md:gap-6 mb-3 md:mb-4 relative z-10">
-                            <div className="relative flex-shrink-0">
-                              <Progress
-                                type="circle"
-                                percent={guidedResult.score}
-                                strokeColor={getScoreColor(guidedResult.score)}
-                                width={60}
-                                className="md:hidden"
-                              />
-                              <Progress
-                                type="circle"
-                                percent={guidedResult.score}
-                                strokeColor={getScoreColor(guidedResult.score)}
-                                width={75}
-                                className="hidden md:block"
-                              />
-                              {guidedResult.score >= 85 && (
-                                <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 shadow-md animate-bounce">
-                                  <PiSparkleBold className="text-[10px] md:text-sm" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <Title level={5} className={`m-0 font-bold ${theme.titleColor} flex items-center gap-2 text-sm md:text-lg`}>
-                                Điểm: {guidedResult.score}% ({theme.badge}) <span className="text-base md:text-xl">{theme.emoji}</span>
-                              </Title>
-                              <Paragraph className="m-0 mt-1 text-gray-700 text-xs md:text-sm leading-relaxed">
-                                {guidedResult.feedback || theme.description}
-                              </Paragraph>
-                            </div>
-                          </div>
-
-                          {/* Highlight từ sai */}
-                          <div className="flex flex-wrap gap-1 md:gap-1.5 justify-center bg-white/85 p-2 md:p-3 rounded-xl border border-solid border-gray-100 relative z-10">
-                            {guidedResult.wordsAnalysis && guidedResult.wordsAnalysis.length > 0 ? (
-                              guidedResult.wordsAnalysis.map((item, idx) => (
-                                <Tooltip key={idx} title={item.isCorrect ? "Đúng!" : item.phonemeError || "Lỗi phát âm"}>
-                                  <span
-                                    className={`text-sm md:text-lg font-bold font-mplus px-1.5 md:px-2 py-0.5 rounded-lg border border-solid transition-all duration-200 ${
-                                      item.isCorrect
-                                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                                        : "text-rose-700 bg-rose-50 border-rose-200 hover:scale-105"
-                                    }`}
-                                  >
-                                    {item.word}
-                                  </span>
-                                </Tooltip>
-                              ))
-                            ) : (
-                              <Text className="font-mplus font-bold text-gray-800 text-sm md:text-base">{currentScript.options[selectedOptionIdx]?.jp}</Text>
-                            )}
-                          </div>
-                        </Card>
-                      );
-                    })() : null}
-
-                    {/* Mic hold to talk */}
-                    <div className="flex flex-col items-center gap-3 mt-4 md:mt-6">
-                      {isRecording && (
-                        <div className="flex items-center gap-1.5 h-6">
-                          <span className="text-xs text-red-500 font-bold animate-pulse">REC {recordingDuration}s</span>
-                          <div className="flex items-end gap-0.5 h-full">
-                            {[...Array(8)].map((_, i) => (
-                              <div
-                                key={i}
-                                className="bg-red-500 w-1 rounded-full transition-all duration-75"
-                                style={{ height: `${Math.max(10, Math.min(100, volumeBar * (0.5 + Math.random() * 0.5)))}%` }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-                        {guidedResult && (
-                          <Button size="large" disabled={loading} icon={<PiXBold />} onClick={() => setGuidedResult(null)} className="text-xs md:text-base h-10 md:h-12">
-                            Nói lại
-                          </Button>
-                        )}
                         
-                        <Button
-                          type="primary"
-                          shape="round"
-                          size="large"
-                          danger={isRecording}
-                          loading={loading}
-                          icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
-                          onClick={isRecording ? stopRecordingAndSubmit : startRecording}
-                          disabled={loading}
-                          className={`speaking-mic-btn h-11 md:h-14 px-5 md:px-8 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
-                            selectedOptionIdx === -1
-                              ? "bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300 hover:border-gray-300"
-                              : isRecording
-                              ? "animate-pulse bg-red-600 border-red-600"
-                              : "bg-indigo-600 border-indigo-600"
-                          }`}
-                        >
-                          {loading ? "AI đang chấm..." : isRecording ? "Nộp bài" : "Bắt đầu nói"}
-                        </Button>
+                        {/* Progress Bar */}
+                        <div className="w-full flex flex-col gap-2">
+                          <div className="flex justify-between font-label-md text-label-md text-on-surface-variant">
+                            <span>Độ lưu loát & chính xác</span>
+                            <span className="text-tertiary font-bold">
+                              {guidedResult.score >= 85 ? "Xuất sắc! 🥇" : guidedResult.score >= 50 ? "Khá tốt 👍" : "Cần cố gắng 💪"}
+                            </span>
+                          </div>
+                          <div className="w-full bg-surface-container-high rounded-full h-3 overflow-hidden shadow-inner">
+                            <div className="bg-gradient-to-r from-tertiary-fixed-dim to-tertiary h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${guidedResult.score}%` }}></div>
+                          </div>
+                        </div>
 
-                        {guidedResult && (
-                          <Button
-                            type="primary"
-                            size="large"
-                            icon={<PiArrowRightBold />}
-                            onClick={handleNextDialogue}
-                            className="bg-indigo-600 border-indigo-600 hover:bg-indigo-700 hover:border-indigo-700 text-xs md:text-base h-10 md:h-12"
-                          >
-                            Câu tiếp
-                          </Button>
+                        {/* Word-by-word Analysis details */}
+                        <div className="flex flex-wrap gap-2 justify-center py-2 bg-surface-container-low rounded-xl border border-solid border-outline-variant/10 p-3">
+                          {guidedResult.wordsAnalysis && guidedResult.wordsAnalysis.length > 0 ? (
+                            guidedResult.wordsAnalysis.map((item, idx) => (
+                              <Tooltip key={idx} title={item.isCorrect ? "Chính xác!" : item.phonemeError || "Sai phát âm"}>
+                                <div className={`flex flex-col items-center justify-center p-3 rounded-lg min-w-[70px] border border-solid ${
+                                  item.isCorrect
+                                    ? "bg-tertiary-container/10 border-tertiary/30 text-tertiary"
+                                    : "bg-error-container/30 border-error/30 text-error"
+                                }`}>
+                                  <span className="font-japanese-body text-japanese-body text-on-surface text-lg font-bold">{item.word}</span>
+                                  <span className="font-label-md text-label-md mt-1 text-xs">{item.isCorrect ? "Great" : "Incorrect"}</span>
+                                </div>
+                              </Tooltip>
+                            ))
+                          ) : (
+                            <span className="font-mplus font-bold text-gray-800 text-sm md:text-base">{currentScript.options[selectedOptionIdx]?.jp}</span>
+                          )}
+                        </div>
+
+                        {/* Feedback Tip */}
+                        {guidedResult.feedback && (
+                          <div className="bg-surface-container-low p-4 rounded-lg flex gap-3 items-start border border-solid border-primary-fixed-dim/30">
+                            <span className="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+                            <p className="font-body-md text-body-md text-on-surface-variant m-0 leading-relaxed">
+                              {guidedResult.feedback}
+                            </p>
+                          </div>
                         )}
-                      </div>
-                      <Text type="secondary" className="text-[10px] md:text-xs">
-                        Mẹo: Chọn câu ➔ Bấm Mic để nói ➔ Bấm lại để gửi.
-                      </Text>
-                    </div>
-                  </>
+                      </section>
+                    )}
+                  </div>
                 );
               })()}
             </div>
@@ -1080,231 +899,218 @@ export default function SpeakingPracticeModal({ visible, onClose, topic, vocabLi
             <div className="flex-1 flex flex-col h-full justify-between">
               
               {/* Cửa sổ chat cuộn */}
-              <div className="flex-1 min-h-[220px] md:min-h-[300px] overflow-y-auto bg-white border border-solid border-gray-200 rounded-2xl p-3 md:p-4 shadow-inner mb-4 md:mb-6 space-y-4 flex flex-col">
-                {chatMessages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-start gap-2 md:gap-3 max-w-[90%] md:max-w-[85%] ${
-                      msg.sender === "user" ? "self-end flex-row-reverse" : "self-start"
-                    }`}
-                  >
-                    {/* Avatar đại diện */}
+              <div className="flex-grow min-h-[250px] md:min-h-[350px] overflow-y-auto bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-4 shadow-inner mb-6 space-y-4 flex flex-col">
+                {chatMessages.map((msg, index) => {
+                  const isUser = msg.sender === "user";
+                  return (
                     <div
-                      className={`p-1.5 md:p-2 rounded-xl text-[10px] md:text-xs font-bold shadow-sm flex-shrink-0 ${
-                        msg.sender === "user"
-                          ? "bg-blue-600 text-white"
-                          : "bg-emerald-50 border border-solid border-emerald-200 text-emerald-600"
+                      key={index}
+                      className={`flex items-start gap-3 max-w-[85%] ${
+                        isUser ? "self-end flex-row-reverse" : "self-start animate-fade-in-up"
                       }`}
                     >
-                      {msg.sender === "user" ? "ME" : "AI"}
-                    </div>
+                      {/* Avatar đại diện */}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 ${
+                        isUser
+                          ? "bg-primary text-on-primary"
+                          : "bg-tertiary-container text-on-tertiary-container"
+                      }`}>
+                        {isUser ? "ME" : "AI"}
+                      </div>
 
-                    <div className="flex flex-col max-w-[calc(100%-40px)]">
-                      <div
-                        className={`rounded-2xl p-3 md:p-4 shadow-sm border border-solid ${
-                          msg.sender === "user"
-                            ? "bg-blue-50 border-blue-100 text-gray-800"
-                            : "bg-emerald-50/50 border-emerald-100 text-gray-800"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                          <span className="font-mplus font-bold text-sm md:text-base break-words">{msg.text}</span>
-                          <Button
-                            shape="circle"
-                            size="small"
-                            type="text"
-                            icon={<PiSpeakerHighBold />}
-                            onClick={() => playBrowserTTS(msg.text)}
-                            className="flex-shrink-0"
-                          />
+                      <div className="flex flex-col gap-1 max-w-[calc(100%-48px)]">
+                        <div
+                          className={`rounded-xl p-4 shadow-sm border ${
+                            isUser
+                              ? "bg-primary/5 border-primary/20 text-on-surface"
+                              : "bg-tertiary-container/10 border-tertiary/20 text-on-surface"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-japanese-body text-japanese-body text-sm md:text-base font-semibold leading-relaxed break-words">{msg.text}</span>
+                            <button
+                              onClick={() => playBrowserTTS(msg.text)}
+                              className="w-7 h-7 flex items-center justify-center rounded-full bg-surface hover:bg-surface-container transition-colors text-primary border-none cursor-pointer flex-shrink-0"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">volume_up</span>
+                            </button>
+                          </div>
+
+                          {msg.translation && (
+                            <div className="text-[12px] text-on-surface-variant mt-2 border-t border-dashed border-outline-variant/20 pt-1">
+                              Dịch: {msg.translation}
+                            </div>
+                          )}
                         </div>
 
-                        {msg.translation && (
-                          <div className="text-[10px] md:text-xs text-gray-400 italic mt-1.5 border-t border-dashed border-gray-200/60 pt-1">
-                            Dịch: {msg.translation}
+                        {/* Phản hồi điểm số & ngữ pháp nếu có (Chỉ tin nhắn của User) */}
+                        {isUser && msg.score !== undefined && (
+                          <div className="flex flex-col gap-1.5 mt-1 animate-fade-in-up">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" style={{ backgroundColor: getScoreColor(msg.score) }}>
+                                {msg.score >= 85 ? "🌟" : "🎙️"} {msg.score}đ
+                              </span>
+                              {msg.feedback && (
+                                <span className="text-[11px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">
+                                  {msg.feedback}
+                                </span>
+                              )}
+                            </div>
+
+                            {msg.grammarFeedback && (
+                              <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-[12px] text-on-surface-variant flex gap-2 items-start">
+                                <span className="material-symbols-outlined text-primary text-sm mt-0.5">auto_awesome</span>
+                                <p className="m-0 leading-relaxed">
+                                  <strong className="text-primary">AI sửa lỗi ngữ pháp: </strong>
+                                  {msg.grammarFeedback}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-
-                      {/* Phản hồi điểm số & ngữ pháp nếu có (Chỉ tin nhắn của User) */}
-                      {msg.sender === "user" && msg.score !== undefined && (
-                        <div className="mt-2 pl-1 md:pl-2 space-y-1.5 animate-fade-in-up">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[10px] md:text-[11px] font-semibold text-white px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" style={{ backgroundColor: getScoreColor(msg.score) }}>
-                              {msg.score >= 85 ? "🌟" : "🎙️"} Phát âm: {msg.score}đ
-                            </span>
-                            {msg.feedback && (
-                              <span className="text-[10px] md:text-xs text-gray-600 italic font-medium bg-slate-100 px-2 py-0.5 rounded-md">
-                                {msg.feedback}
-                              </span>
-                            )}
-                          </div>
-
-                          {msg.grammarFeedback && (
-                            <Alert
-                              type="info"
-                              showIcon
-                              icon={<PiSparkleBold className="text-blue-500 animate-pulse" />}
-                              message={
-                                <div className="text-[10px] md:text-[11px] text-gray-700 leading-relaxed font-medium">
-                                  <span className="font-bold text-blue-600">Nhận xét ngữ pháp: </span>
-                                  {msg.grammarFeedback}
-                                </div>
-                              }
-                              className="py-1 md:py-1.5 px-2.5 md:px-3 rounded-lg border-blue-100 bg-blue-50/50 shadow-sm"
-                            />
-                          )}
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 
                 {loading && (
-                  <div className="self-start flex items-center gap-2 md:gap-3 animate-fade-in-up">
-                    <div className="p-1.5 md:p-2 rounded-xl bg-emerald-50 border border-solid border-emerald-200 text-emerald-600 text-[10px] md:text-xs font-bold animate-pulse flex-shrink-0">
+                  <div className="self-start flex items-center gap-3 animate-fade-in-up">
+                    <div className="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-sm shadow-sm">
                       AI
                     </div>
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50/30 border border-solid border-emerald-100 rounded-2xl p-3 md:p-4 flex items-center gap-2 md:gap-3 shadow-sm animate-pulse-glow-subtle">
+                    <div className="bg-tertiary-container/10 border border-tertiary/20 rounded-xl p-4 flex items-center gap-2 shadow-sm">
                       <Spin size="small" />
-                      <Text type="secondary" italic className="text-[10px] md:text-xs font-medium text-emerald-800">AI đang chuẩn bị trả lời...</Text>
+                      <span className="text-xs text-on-surface-variant italic">AI đang chuẩn bị câu trả lời...</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Nút thao tác ghi âm dạng click toggle */}
-              <div className="flex flex-col items-center gap-3">
-                {isRecording && (
-                  <div className="flex items-center gap-1.5 h-6">
-                    <span className="text-xs text-red-500 font-bold animate-pulse">ĐANG THU ÂM KAIWA ({recordingDuration}s)</span>
-                    <div className="flex items-end gap-0.5 h-full">
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="bg-red-500 w-1 rounded-full transition-all duration-75"
-                          style={{ height: `${Math.max(10, Math.min(100, volumeBar * (0.5 + Math.random() * 0.5)))}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-                  <Button size="large" type="dashed" danger icon={<PiChatCenteredTextBold />} onClick={handleResetChat} className="text-xs md:text-base h-10 md:h-12 px-3 md:px-4">
-                    Làm mới
-                  </Button>
-
-                  {/* NÚT CLICK TO TOGGLE */}
-                  <Button
-                    type="primary"
-                    shape="round"
-                    size="large"
-                    danger={isRecording}
-                    loading={loading}
-                    icon={isRecording ? <PiStopBold /> : <PiMicrophoneBold />}
-                    onClick={isRecording ? stopRecordingAndSubmit : startRecording}
-                    disabled={loading}
-                    className={`speaking-mic-btn h-11 md:h-14 px-6 md:px-10 font-semibold shadow-md transform active:scale-95 transition-all flex items-center gap-2 text-xs md:text-base ${
-                      isRecording ? "bg-red-600 border-red-600" : "bg-emerald-600 border-emerald-600 hover:bg-emerald-700"
-                    }`}
-                  >
-                    {loading ? "AI đang trả lời..." : isRecording ? "Bấm để Nộp bài" : "Bắt đầu nói Kaiwa"}
-                  </Button>
-                </div>
-                
-                <Text type="secondary" className="text-[10px] md:text-xs">
-                  Mẹo: Bấm 1 lần để nói tự do. Bấm lại để gửi.
-                </Text>
+              {/* Nút thao tác reset */}
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={handleResetChat}
+                  className="flex items-center gap-1.5 px-4 py-2 border border-solid border-outline-variant hover:bg-surface-container-high rounded-full font-label-md text-label-md bg-transparent cursor-pointer text-on-surface-variant"
+                >
+                  <span className="material-symbols-outlined text-sm">replay</span> Làm mới cuộc trò chuyện
+                </button>
               </div>
 
             </div>
           )}
 
         </div>
+
+        {/* BOTTOM ACTION AREA */}
+        <footer className="mt-auto py-6 bg-surface border-t border-outline-variant/10 shadow-sm flex flex-col items-center gap-4 shrink-0 z-10">
+          {/* Active visualizer wave */}
+          {isRecording ? (
+            <div className="flex items-center justify-center gap-1.5 h-16 w-full max-w-xs">
+              <span className="text-xs text-error font-bold animate-pulse mr-2">REC {recordingDuration}s</span>
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-error w-1.5 rounded-full transition-all duration-75"
+                  style={{ height: `${Math.max(12, Math.min(64, volumeBar * (0.3 + Math.random() * 0.7)))}px` }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="h-16 flex items-center justify-center text-outline text-sm">
+              Sẵn sàng ghi âm
+            </div>
+          )}
+
+          {/* Microphone button trigger */}
+          <div className="flex items-center justify-center gap-4">
+            {/* Retrying / Next triggers depending on result */}
+            {level === 1 && simpleResult && (
+              <button
+                onClick={handleRetryVocab}
+                className="flex items-center gap-1.5 px-4 py-2 border border-solid border-outline-variant hover:bg-surface-container-high rounded-full font-label-md text-label-md bg-transparent cursor-pointer text-on-surface-variant"
+              >
+                Đọc lại
+              </button>
+            )}
+            
+            {level === 2 && guidedResult && (
+              <button
+                onClick={() => setGuidedResult(null)}
+                className="flex items-center gap-1.5 px-4 py-2 border border-solid border-outline-variant hover:bg-surface-container-high rounded-full font-label-md text-label-md bg-transparent cursor-pointer text-on-surface-variant"
+              >
+                Nói lại
+              </button>
+            )}
+
+            {/* Main Mic Button */}
+            <button
+              onClick={isRecording ? stopRecordingAndSubmit : startRecording}
+              disabled={loading || (level === 2 && selectedOptionIdx === -1)}
+              style={{ cursor: (loading || (level === 2 && selectedOptionIdx === -1)) ? "not-allowed" : "pointer" }}
+              className={`w-18 h-18 rounded-full border-4 border-solid border-surface shadow-md flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 ${
+                (level === 2 && selectedOptionIdx === -1)
+                  ? "bg-gray-300 text-gray-500 shadow-none border-gray-100"
+                  : isRecording
+                  ? "bg-error text-on-error shadow-[0_8px_24px_rgba(186,26,26,0.3)] animate-pulse"
+                  : "bg-primary text-on-primary shadow-[0_8px_24px_rgba(4,81,211,0.3)] hover:bg-primary-container"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[32px] text-white">
+                {loading ? "pending" : isRecording ? "stop" : "mic"}
+              </span>
+            </button>
+
+            {/* Next triggers */}
+            {level === 1 && simpleResult && (
+              <button
+                onClick={handleNextVocab}
+                className="flex items-center gap-1.5 px-4 py-2 bg-tertiary text-on-tertiary hover:bg-tertiary-container rounded-full font-label-md text-label-md border-none cursor-pointer shadow-sm"
+              >
+                Từ tiếp <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            )}
+            
+            {level === 2 && guidedResult && (
+              <button
+                onClick={handleNextDialogue}
+                className="flex items-center gap-1.5 px-4 py-2 bg-tertiary text-on-tertiary hover:bg-tertiary-container rounded-full font-label-md text-label-md border-none cursor-pointer shadow-sm"
+              >
+                Câu tiếp <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            )}
+          </div>
+
+          <p className="font-label-md text-label-md text-on-surface-variant m-0">
+            {level === 2 && selectedOptionIdx === -1
+              ? "Vui lòng chọn một phương án trả lời trước khi ghi âm"
+              : isRecording
+              ? "Bấm nút một lần nữa để kết thúc và chấm điểm"
+              : "Chạm nút Micro để bắt đầu luyện nói"}
+          </p>
+        </footer>
       </div>
-      {/* Custom Styles for animations and glow effects */}
+
       <style>{`
-        @media (max-width: 767px) {
-          .speaking-practice-modal {
-            max-width: 95vw !important;
-            width: 95vw !important;
-            margin: 10px auto !important;
-            top: 10px !important;
-          }
-          .speaking-level-selector {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            width: 100% !important;
-            gap: 4px !important;
-            margin-top: 8px;
-          }
-          .speaking-level-selector .ant-radio-button-wrapper {
-            flex: 1 1 auto !important;
-            text-align: center !important;
-            font-size: 11px !important;
-            padding: 0 4px !important;
-            height: 32px !important;
-            line-height: 30px !important;
-          }
-        }
         @keyframes laser-scan {
           0% { top: 0%; opacity: 0.3; }
           50% { top: 100%; opacity: 1; }
           100% { top: 0%; opacity: 0.3; }
         }
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 0.95; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.008); }
-        }
-        @keyframes pulse-glow-subtle {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.003); }
-        }
         @keyframes fade-in-up {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes float-particle-1 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.6; }
-          50% { transform: translate(-8px, -15px) rotate(12deg); opacity: 1; }
-        }
-        @keyframes float-particle-2 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.6; }
-          50% { transform: translate(10px, -18px) rotate(-15deg); opacity: 1; }
-        }
-        @keyframes float-particle-3 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.5; }
-          50% { transform: translate(-12px, -8px) rotate(-8deg); opacity: 0.9; }
-        }
-        @keyframes float-particle-4 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.5; }
-          50% { transform: translate(8px, -12px) rotate(22deg); opacity: 0.9; }
         }
         .animate-laser-scan {
           position: absolute;
           animation: laser-scan 2.2s infinite ease-in-out;
         }
-        .animate-pulse-glow {
-          animation: pulse-glow 2s infinite ease-in-out;
-        }
-        .animate-pulse-glow-subtle {
-          animation: pulse-glow-subtle 2s infinite ease-in-out;
-        }
         .animate-fade-in-up {
           animation: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .animate-float-particle-1 {
-          animation: float-particle-1 3s infinite ease-in-out;
-        }
-        .animate-float-particle-2 {
-          animation: float-particle-2 3.5s infinite ease-in-out;
-        }
-        .animate-float-particle-3 {
-          animation: float-particle-3 4s infinite ease-in-out;
-        }
-        .animate-float-particle-4 {
-          animation: float-particle-4 4.5s infinite ease-in-out;
+        .speaking-practice-modal .ant-modal-content {
+          padding: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
       `}</style>
     </Modal>

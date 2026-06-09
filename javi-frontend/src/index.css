@@ -14,7 +14,7 @@
 @layer base {
   html,
   body {
-    @apply font-sans text-slate-800 bg-[#f8fafc];
+    @apply font-sans text-on-surface bg-background;
   }
 
   img,

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { IoSearchOutline } from "react-icons/io5";
 import * as wanakana from "wanakana";
 
 interface SearchBarProps {
@@ -160,12 +159,12 @@ export default function SearchBar({
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
             <div className="flex flex-nowrap items-center w-full gap-3 h-[52px] md:h-[58px]">
                 {/* Select ngôn ngữ */}
-                <select className="md:hidden flex-shrink-0 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white text-[14px] font-semibold px-3.5 h-full rounded-2xl outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
+                <select className="md:hidden flex-shrink-0 bg-gradient-to-r from-primary to-primary-container text-white text-[14px] font-semibold px-3.5 h-full rounded-full outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
                     <option className="text-slate-800">JA - VI</option>
                     <option className="text-slate-800">VI - JA</option>
                 </select>
 
-                <select className="hidden lg:block flex-shrink-0 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white text-[15px] font-semibold px-5 h-full rounded-2xl outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
+                <select className="hidden lg:block flex-shrink-0 bg-gradient-to-r from-primary to-primary-container text-white text-[15px] font-semibold px-5 h-full rounded-full outline-none hover:shadow-md cursor-pointer transition-all duration-300 appearance-none border-none">
                     <option className="text-slate-800">Nhật - Việt</option>
                     <option className="text-slate-800">Việt - Nhật</option>
                 </select>
@@ -175,23 +174,23 @@ export default function SearchBar({
                     {/* Icon tìm kiếm */}
                     <button
                         type="submit"
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3e66d4] p-1.5 transition-colors duration-300"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary p-1 transition-colors duration-300 bg-transparent border-none cursor-pointer flex items-center justify-center"
                         title="Tìm kiếm"
                     >
-                        <IoSearchOutline className="text-2xl" />
+                        <span className="material-symbols-outlined text-[24px]">search</span>
                     </button>
 
                     <input
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         placeholder={placeholderMap[activeTab]}
-                        className="w-full h-full border-2 border-slate-200/90 rounded-2xl pl-12 pr-4 md:pr-[120px] text-[15px] md:text-[16px] text-slate-800 placeholder-slate-400 outline-none focus:border-[#3e66d4] focus:ring-4 focus:ring-blue-50/70 transition-all duration-300"
+                        className="w-full h-full bg-surface-container-lowest border border-solid border-outline-variant/50 rounded-full pl-12 pr-4 md:pr-[120px] text-[15px] md:text-[16px] text-on-surface placeholder-outline focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm transition-all duration-300"
                     />
 
                     {/* Nút tìm kiếm bên phải */}
                     <button
                         type="submit"
-                        className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] hover:scale-[1.02] active:scale-[0.98] text-white rounded-xl px-6 py-2.5 text-[15px] font-medium shadow-md transition-all duration-300"
+                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary-container text-on-primary hover:scale-[1.02] active:scale-[0.98] rounded-full px-6 py-2.5 text-[15px] font-semibold shadow-sm transition-all duration-300 border-none cursor-pointer h-[80%] items-center justify-center"
                     >
                         Tìm kiếm
                     </button>

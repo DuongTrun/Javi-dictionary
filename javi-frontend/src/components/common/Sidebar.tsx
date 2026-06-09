@@ -1,94 +1,57 @@
 import { Link, useLocation } from "react-router-dom";
-import {
-    PiTranslateLight,
-    PiCube,
-    PiCrownSimpleLight,
-    PiCrownSimpleFill,
-    PiBookBookmarkFill,
-    PiBookBookmark,
-    PiNotebook,
-    PiNotebookFill,
-    PiBookOpen,
-    PiBookOpenFill,
-} from "react-icons/pi";
-import { BsCursor, BsCursorFill } from "react-icons/bs";
-import javi from "../../assets/javi-logo.png";
-import {
-    IoCube,
-    IoEarth,
-    IoEarthOutline,
-    IoLayers,
-    IoLayersOutline,
-    IoReader,
-    IoReaderOutline,
-} from "react-icons/io5";
 import { hasAnyPermission } from "@/utils/permission";
 import { useAuthStore } from "@/stores/useAuthStore";
-
-import {
-    MdAdminPanelSettings,
-    MdLockPerson,
-    MdManageAccounts,
-    MdOutlineAdminPanelSettings,
-    MdOutlineLockPerson,
-    MdOutlineManageAccounts,
-    MdOutlinePayment,
-    MdPayment,
-} from "react-icons/md";
+import javi from "../../assets/javi-logo.png";
 
 const links = [
     // Public menu
     {
         path: "/search/word",
         label: "Tra cứu",
-        icon: <IoEarthOutline />,
-        selectIcon: <IoEarth />,
+        icon: "search",
     },
-    { path: "/translate", label: "Dịch", icon: <PiTranslateLight /> },
+    { 
+        path: "/translate", 
+        label: "Dịch AI", 
+        icon: "translate" 
+    },
     {
         path: "/jlpt",
         label: "JLPT",
-        icon: <PiBookBookmark />,
-        selectIcon: <PiBookBookmarkFill />,
+        icon: "menu_book",
     },
     {
         path: "/topics",
         label: "Chủ đề",
-        icon: <PiBookOpen />,
-        selectIcon: <PiBookOpenFill />,
+        icon: "category",
     },
     {
         path: "/study-decks",
         label: "Sổ tay",
-        icon: <PiNotebook />,
-        selectIcon: <PiNotebookFill />,
+        icon: "style",
     },
     {
         path: "/intro",
         label: "Giới thiệu",
-        icon: <PiCube />,
-        selectIcon: <IoCube />,
+        icon: "help_outline",
     },
     {
         path: "/premium",
-        label: "Nâng cấp",
-        icon: <PiCrownSimpleLight />,
-        selectIcon: <PiCrownSimpleFill />,
+        label: "Nâng cấp VIP",
+        icon: "workspace_premium",
     },
 
-    // Admin menu — thêm required permission
+    // Admin menu
     {
         path: "/admin/users",
         label: "QL Người dùng",
-        icon: <MdOutlineManageAccounts />,
-        selectIcon: <MdManageAccounts />,
+        icon: "manage_accounts",
         required: ["MANAGE_USER", "CREATE_USER"],
     },
     {
         path: "/admin/word",
         label: "QL Từ Vựng",
-        icon: <BsCursor />,
-        selectIcon: <BsCursorFill />,
+        icon: "edit_document",
         required: [
             "CREATE_VOCABULARY",
             "UPDATE_VOCABULARY",
@@ -98,41 +61,35 @@ const links = [
     {
         path: "/admin/kanji",
         label: "QL Kanji",
-        icon: <IoLayersOutline />,
-        selectIcon: <IoLayers />,
+        icon: "layers",
         required: ["CREATE_KANJI", "UPDATE_KANJI", "DELETE_KANJI"],
     },
     {
         path: "/admin/grammar",
         label: "QL Ngữ Pháp",
-        icon: <IoReaderOutline />,
-        selectIcon: <IoReader />,
+        icon: "book",
         required: ["CREATE_GRAMMAR", "UPDATE_GRAMMAR", "DELETE_GRAMMAR"],
     },
     {
         path: "/admin/roles",
         label: "QL Vai Trò",
-        icon: <MdOutlineAdminPanelSettings />,
-        selectIcon: <MdAdminPanelSettings />,
+        icon: "admin_panel_settings",
         required: ["MANAGE_ROLE"],
     },
     {
         path: "/admin/permissions",
         label: "QL Quyền",
-        icon: <MdOutlineLockPerson />,
-        selectIcon: <MdLockPerson />,
+        icon: "vpn_key",
         required: ["MANAGE_PERMISSION"],
     },
     {
         path: "/admin/payment-orders",
         label: "QL Thanh toán",
-        icon: <MdOutlinePayment />,
-        selectIcon: <MdPayment />,
+        icon: "payments",
         required: ["MANAGE_USER"],
     },
 ];
 
-// Thêm interface cho props
 interface SidebarProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -143,7 +100,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
     const user = useAuthStore((s) => s.user);
 
     const visibleLinks = links.filter((link) => {
-        if (!link.required) return true; // link public
+        if (!link.required) return true;
         return hasAnyPermission(user, link.required);
     });
 
@@ -160,62 +117,57 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
             {/* Sidebar cố định */}
             <aside
                 className={`fixed top-0 left-0 z-50 h-screen w-[214px]
-                            glass-sidebar text-slate-200 flex flex-col transform transition-transform duration-300
+                            bg-surface border-r border-outline-variant/10 text-on-surface flex flex-col transform transition-transform duration-300
                             ${open ? "translate-x-0" : "-translate-x-full"}
-                            lg:translate-x-0 lg:z-40 shadow-2xl`}
+                            lg:translate-x-0 lg:z-40 shadow-md`}
             >
-                <Link to="/">
-                    <div className="flex justify-center items-center my-5 transition-transform duration-300 hover:scale-105">
+                {/* Logo section */}
+                <Link to="/" onClick={() => setOpen(false)}>
+                    <div className="flex justify-center items-center my-6 transition-transform duration-300 hover:scale-102">
                         <img
                             src={javi}
                             alt="Javi logo"
-                            className="w-[105px] h-[48px] object-cover drop-shadow-[0_0_8px_rgba(62,102,212,0.3)]"
+                            className="w-[105px] h-[48px] object-cover"
                         />
                     </div>
                 </Link>
 
-                {/* Menu */}
-                <nav className="flex-1 overflow-y-auto px-2 py-2">
-                    <ul className="space-y-1">
-                        {visibleLinks.map(
-                            ({ path, label, icon, selectIcon }) => {
-                                // Nếu là "Tra cứu" (path bắt đầu /search) thì active cho tất cả /search/*
-                                const isSearch = path.startsWith("/search");
-                                const active = isSearch
-                                    ? location.pathname.startsWith("/search")
-                                    : location.pathname === path;
+                {/* Subheader Title */}
+                <div className="mb-4 px-6">
+                    <h2 className="font-semibold text-sm text-on-surface tracking-wide">JAVI Dictionary</h2>
+                    <p className="text-xs text-on-surface-variant mt-0.5">Master Japanese - Vietnamese</p>
+                </div>
 
-                                return (
-                                    <li key={path}>
-                                        <Link
-                                            to={path}
-                                            className={`flex items-center px-4 py-2.5 my-1 text-[15px] font-medium rounded-xl transition-all duration-300 transform ${
-                                                active
-                                                    ? "bg-gradient-to-r from-[#3e66d4] to-[#2c3f84] text-white shadow-lg glow-active scale-[1.02]"
-                                                    : "text-slate-400 hover:text-white hover:bg-white/5 hover:translate-x-1"
-                                            }`}
-                                            onClick={() => setOpen(false)}
-                                        >
-                                            {icon && (
-                                                <span
-                                                    className={`text-[20px] mr-3 flex-shrink-0 transition-colors duration-300 ${
-                                                        active
-                                                            ? "text-white"
-                                                            : "text-slate-400 group-hover:text-white"
-                                                    }`}
-                                                >
-                                                    {active && selectIcon
-                                                        ? selectIcon
-                                                        : icon}
-                                                </span>
-                                            )}
-                                            {label}
-                                        </Link>
-                                    </li>
-                                );
-                            }
-                        )}
-                    </ul>
+                {/* Menu Nav Links */}
+                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+                    {visibleLinks.map(({ path, label, icon }) => {
+                        const isSearch = path.startsWith("/search");
+                        const active = isSearch
+                            ? location.pathname.startsWith("/search")
+                            : location.pathname === path;
+
+                        return (
+                            <Link
+                                key={path}
+                                to={path}
+                                className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                    active
+                                        ? "bg-primary-container text-on-primary-container shadow-sm"
+                                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+                                }`}
+                                onClick={() => setOpen(false)}
+                            >
+                                <span
+                                    className={`material-symbols-outlined mr-3 text-lg flex-shrink-0 transition-colors duration-200 ${
+                                        active ? "icon-fill text-on-primary-container" : "text-on-surface-variant"
+                                    }`}
+                                >
+                                    {icon}
+                                </span>
+                                {label}
+                            </Link>
+                        );
+                    })}
                 </nav>
             </aside>
         </>

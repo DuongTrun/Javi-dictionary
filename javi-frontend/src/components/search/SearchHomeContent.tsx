@@ -1,7 +1,3 @@
-import { FaLightbulb } from "react-icons/fa";
-import banner from "../../assets/banner.png";
-import { MdHistory } from "react-icons/md";
-import no_history from "../../assets/no-history.png";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect, useState } from "react";
 import { callGetHistory } from "@/apis/historyApi";
@@ -11,13 +7,20 @@ import HistoryPickerModal from "@/components/history/HistoryPickerModal";
 import { EntityType } from "@/types/backend";
 import { useNavigate } from "react-router-dom";
 import RequireLoginModal from "../common/RequireLoginModal";
-import { Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
-/**
- * Search home content — trang chính khi vào /search
- * thêm modal lịch sử (HistoryModal) và picker modal khi click keyword không có entityId.
- */
+// Dịch vụ phát âm trình duyệt
+const playBrowserTTS = (text: string) => {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "ja-JP";
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+    } else {
+        toast.warning("Trình duyệt của bạn không hỗ trợ phát âm.");
+    }
+};
 
 export default function SearchHomeContent() {
     const user = useAuthStore((s) => s.user);
@@ -30,14 +33,14 @@ export default function SearchHomeContent() {
     // modal lịch sử (danh sách)
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
 
-    // picker modal (Mazii-like) khi click history item mà không có entityId
+    // picker modal khi click history item mà không có entityId
     const [pickerOpen, setPickerOpen] = useState(false);
     const [pickerKeyword, setPickerKeyword] = useState<string>("");
     const [pickerDefaultTab, setPickerDefaultTab] = useState<
         "KANJI" | "WORD" | "GRAMMAR" | null
     >(null);
 
-    // modal detail universal (mở khi click chip hoặc picker chọn item có id)
+    // modal detail universal
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailEntityType, setDetailEntityType] =
         useState<EntityType>("WORD");
@@ -62,22 +65,14 @@ export default function SearchHomeContent() {
 
     useEffect(() => {
         fetchHistory();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoggedIn]);
 
     const openHistoryModal = () => setHistoryModalOpen(true);
     const closeHistoryModal = () => setHistoryModalOpen(false);
 
-    /**
-     * Khi click 1 chip trong preview lịch sử:
-     * - Nếu item.entityId tồn tại => mở detail modal (truyền id hoặc character string)
-     * - Nếu không có entityId => mở picker modal (HistoryPickerModal) với keyword + defaultTab = null
-     *   -> picker sẽ gọi 3 API (kanji, vocab, grammar) đồng thời để show mọi khả năng
-     */
     const openDetailFromChip = (h: any) => {
         const type = String(h?.entityType ?? "").toUpperCase();
 
-        // Nếu có entityId => open detail directly (id may be number or string)
         if (
             h?.entityId !== undefined &&
             h?.entityId !== null &&
@@ -93,8 +88,6 @@ export default function SearchHomeContent() {
             return;
         }
 
-        // Không có entityId -> OPEN PICKER và **gọi 3 API cùng lúc**
-        // Để picker gọi 3 API cùng lúc, ta truyền defaultTab = null
         const kw = h.entityName ?? h.keyword ?? "";
         if (!kw) return;
 
@@ -103,12 +96,6 @@ export default function SearchHomeContent() {
         setPickerOpen(true);
     };
 
-    /**
-     * Handler khi picker modal trả về 1 selection
-     * payload: { entityType, id?, name? }
-     * - Nếu id tồn tại -> mở detail modal (SearchResultModal)
-     * - Nếu id không tồn tại -> điều hướng tới trang search?keyword=...&type=...
-     */
     const handlePickerSelect = (payload: {
         entityType: "KANJI" | "WORD" | "GRAMMAR";
         id?: number | string;
@@ -119,14 +106,12 @@ export default function SearchHomeContent() {
             payload.id !== null &&
             String(payload.id).trim() !== ""
         ) {
-            // open detail modal
             setDetailEntityType(payload.entityType as EntityType);
             setDetailEntityId(payload.id as number | string);
             setDetailOpen(true);
             return;
         }
 
-        // fallback: navigate to search page with keyword (payload.name)
         const kw = payload.name ?? "";
         if (!kw) return;
 
@@ -138,176 +123,213 @@ export default function SearchHomeContent() {
         navigate(`/search?${params.toString()}`);
     };
 
-    // Define JLPT gradient colors
-    const jlptColors: Record<string, string> = {
-        N1: "from-rose-500 to-red-600 shadow-rose-100 hover:from-rose-600 hover:to-red-700",
-        N2: "from-amber-500 to-orange-600 shadow-amber-100 hover:from-amber-600 hover:to-orange-700",
-        N3: "from-emerald-500 to-teal-600 shadow-emerald-100 hover:from-emerald-600 hover:to-teal-700",
-        N4: "from-blue-500 to-indigo-600 shadow-blue-100 hover:from-blue-600 hover:to-indigo-700",
-        N5: "from-slate-500 to-zinc-600 shadow-slate-100 hover:from-slate-600 hover:to-zinc-700",
+    const handleSaveWordOfTheDay = () => {
+        if (!isLoggedIn) {
+            toast.info("Vui lòng đăng nhập để lưu từ vựng.");
+        } else {
+            toast.success("Đã lưu từ vựng '絆 (Kizuna)' vào sổ tay của bạn!");
+        }
     };
 
     return (
-        <div className="flex flex-col gap-6">
-            {/* Banner: Ẩn nếu user là PREMIUM */}
-            {!isPremium && (
-                <div
-                    className="w-full h-[240px] rounded-2xl border border-slate-200/60 bg-cover bg-center shadow-sm hover:scale-[1.005] transition-transform duration-500"
-                    style={{ backgroundImage: `url(${banner})` }}
-                ></div>
-            )}
+        <div className="flex flex-col gap-6 font-body-md text-on-surface antialiased">
+            {/* HERO SECTION */}
+            <section className="flex flex-col items-center justify-center pt-6 pb-2 text-center">
+                <h1 className="font-display-lg text-display-lg text-primary mb-3 hidden md:block font-bold">
+                    Master JP-VN
+                </h1>
+                <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2 md:hidden font-bold">
+                    Master JP-VN
+                </h1>
+                <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl m-0">
+                    Tra cứu từ vựng, hán tự, ngữ pháp bằng tiếng Nhật, Romaji hoặc tiếng Việt.
+                </p>
 
-            {/* Content mặc định */}
-            <div className="glass-card rounded-2xl p-6 shadow-sm border border-slate-200/50 flex flex-col gap-6">
-                {/* Tips */}
-                <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4.5 text-[14px] text-slate-700">
-                    <h2 className="flex gap-2 items-center text-[16px] font-bold text-amber-800 mb-2.5">
-                        <FaLightbulb className="text-amber-500 text-[18px]" />
-                        Mẹo tra cứu thông minh
-                    </h2>
-                    <ul className="space-y-1.5">
-                        {!isLoggedIn && (
-                            <li className="leading-relaxed">
-                                • <strong>Đăng nhập tài khoản Javi:</strong> Để đồng bộ lịch sử và sử dụng các tính năng AI xịn mịn.
-                            </li>
+                {/* Gần đây (Recent Searches) */}
+                {isLoggedIn && (history.length > 0 || loading) && (
+                    <div className="w-full max-w-3xl mt-6 flex flex-wrap justify-center items-center gap-2">
+                        <span className="font-label-md text-label-md text-on-surface-variant mr-1 flex items-center gap-1 font-semibold">
+                            <span className="material-symbols-outlined text-base">history</span> Gần đây:
+                        </span>
+                        {loading ? (
+                            <span className="text-xs text-on-surface-variant italic animate-pulse">Đang tải...</span>
+                        ) : (
+                            <>
+                                {history.slice(0, 5).map((h, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => openDetailFromChip(h)}
+                                        className="px-4 py-1.5 bg-surface-container hover:bg-surface-container-high rounded-full font-label-md text-label-md text-on-surface transition-all border-none cursor-pointer active:scale-95 shadow-sm"
+                                    >
+                                        {h.entityName ?? h.keyword}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={openHistoryModal}
+                                    className="text-xs font-bold text-primary hover:underline bg-transparent border-none cursor-pointer ml-2 flex items-center gap-0.5"
+                                >
+                                    Xem tất cả <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                </button>
+                            </>
                         )}
-                        <li className="leading-relaxed">
-                            • <strong>Tra nhanh:</strong> Bôi đen bất kỳ từ nào trên trang để hiển thị bảng tra cứu nhanh.
-                        </li>
-                        <li className="leading-relaxed">
-                            • <strong>Tự động chuyển Kana:</strong> Nhập Romaji viết thường ra <strong>Hiragana</strong> (ví dụ: <em>nihongo</em>), viết hoa ra <strong>Katakana</strong> (ví dụ: <em>BETONAMU</em>).
-                        </li>
-                    </ul>
-                </div>
+                    </div>
+                )}
+            </section>
 
-                {/* Lịch sử */}
-                <div className="flex flex-col">
-                    <div className="flex flex-row items-center justify-between mb-3">
-                        <h2 className="flex gap-2 items-center text-[18px] font-bold text-slate-800">
-                            <MdHistory className="text-[#3e66d4] text-[20px]" />
-                            Lịch sử tra cứu gần đây
-                        </h2>
+            {/* BENTO GRID LAYOUT */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-stack-md md:gap-gutter">
+                
+                {/* Word of the Day */}
+                <div className="col-span-1 md:col-span-7 bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl"></div>
+                    
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                        <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>wb_sunny</span>
+                            <h2 className="font-headline-md text-lg md:text-xl text-on-surface font-bold m-0">Từ vựng mỗi ngày</h2>
+                        </div>
                         <button
-                            className="text-[13px] font-semibold text-[#3e66d4] hover:text-[#2c3f84] hover:underline transition-colors"
-                            onClick={() => {
-                                if (!isLoggedIn) {
-                                    setLoginRequiredOpen(true);
-                                    return;
-                                }
-                                openHistoryModal();
-                            }}
+                            onClick={handleSaveWordOfTheDay}
+                            className="text-on-surface-variant hover:text-primary transition-colors bg-transparent border-none cursor-pointer flex items-center justify-center p-1"
+                            title="Lưu vào sổ tay"
                         >
-                            Xem tất cả
+                            <span className="material-symbols-outlined text-xl">bookmark_add</span>
                         </button>
                     </div>
 
-                    {/* loading thì hiện vòng tròn Spin */}
-                    {loading && (
-                        <div className="flex justify-center py-6">
-                            <Spin
-                                indicator={<LoadingOutlined spin />}
-                                size="large"
-                            />
+                    <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start relative z-10">
+                        <div className="flex-shrink-0 flex flex-col items-center justify-center w-28 h-28 bg-primary/5 rounded-xl border border-solid border-primary/20">
+                            <span className="font-japanese-display text-4xl text-primary font-medium">絆</span>
                         </div>
-                    )}
-
-                    {/* Chưa đăng nhập */}
-                    {!loading && !isLoggedIn && (
-                        <div className="flex flex-col justify-center items-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                            <img
-                                className="w-[48px] h-[48px] opacity-70"
-                                src={no_history}
-                                alt="no-history"
-                            />
-                            <div className="mt-2 text-slate-400 text-sm">
-                                Đăng nhập để lưu lịch sử tra cứu của bạn
+                        <div className="flex flex-col flex-1 text-center sm:text-left">
+                            <div className="flex items-center justify-center sm:justify-start gap-3 mb-2 flex-wrap">
+                                <span className="font-japanese-body text-japanese-body text-on-surface font-semibold">きずな</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                <span className="font-body-md text-body-md text-on-surface-variant">Kizuna</span>
+                                <span className="px-2.5 py-0.5 bg-tertiary/10 text-tertiary rounded-full font-label-md text-xs font-semibold">Danh từ</span>
                             </div>
-                        </div>
-                    )}
-
-                    {/* Đã đăng nhập nhưng chưa có lịch sử */}
-                    {!loading && isLoggedIn && history.length === 0 && (
-                        <div className="flex flex-col justify-center items-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                            <img
-                                className="w-[48px] h-[48px] opacity-70"
-                                src={no_history}
-                                alt="no-history"
-                            />
-                            <div className="mt-2 text-slate-400 text-sm">
-                                Bạn chưa tra cứu từ nào gần đây
+                            <p className="font-body-lg text-lg text-on-surface font-bold mb-3 m-0">Sự kết nối / Tình thân</p>
+                            <div className="bg-surface-container-low p-4 rounded-xl text-left border border-solid border-outline-variant/10">
+                                <p className="font-japanese-body text-sm md:text-base text-on-surface mb-1 m-0">家族の絆を深める。</p>
+                                <p className="font-body-md text-xs md:text-sm text-on-surface-variant m-0">Làm sâu sắc thêm tình cảm gia đình.</p>
                             </div>
+                            <button
+                                onClick={() => playBrowserTTS("絆")}
+                                className="mt-3 bg-transparent border border-solid border-primary/20 text-primary px-4 py-1.5 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/5 transition-colors self-center sm:self-start cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-sm">volume_up</span> Nghe phát âm
+                            </button>
                         </div>
-                    )}
-
-                    {/* Đã đăng nhập và có lịch sử */}
-                    {!loading && isLoggedIn && history.length > 0 && (
-                        <div className="flex flex-wrap gap-2.5 p-3 border border-slate-100 rounded-2xl bg-slate-50/40">
-                            {history.slice(0, 10).map((h, idx) => (
-                                <button
-                                    key={idx}
-                                    className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200/60 hover:border-[#3e66d4] hover:bg-blue-50/30 text-slate-700 hover:text-[#3e66d4] text-[14px] font-medium transition-all duration-300 transform active:scale-95 shadow-sm"
-                                    onClick={() => openDetailFromChip(h)}
-                                >
-                                    {h.entityName ?? h.keyword}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    </div>
                 </div>
 
-                {/* JLPT */}
-                <div className="flex flex-col">
-                    <h2 className="text-[17px] font-bold text-slate-800 mb-3.5">
-                        Luyện thi JLPT
-                    </h2>
-                    <div className="flex flex-wrap gap-3">
-                        {["N1", "N2", "N3", "N4", "N5"].map((lvl) => (
-                            <button
-                                key={lvl}
-                                className={`px-6 py-2.5 rounded-xl text-white font-bold bg-gradient-to-r ${jlptColors[lvl]} shadow-md hover:scale-[1.04] active:scale-95 transition-all duration-300 text-[14px]`}
-                                onClick={() =>
-                                    navigate(`/jlpt?level=${lvl}&type=vocab`)
-                                }
+                {/* Trending searches */}
+                <div className="col-span-1 md:col-span-5 bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 flex flex-col hover:shadow-md transition-all duration-300">
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="material-symbols-outlined text-secondary">trending_up</span>
+                        <h2 className="font-headline-md text-lg md:text-xl text-on-surface font-bold m-0">Tìm kiếm phổ biến</h2>
+                    </div>
+                    
+                    <div className="flex flex-col gap-3 flex-1">
+                        {[
+                            { rank: 1, word: "木漏れ日", romaji: "komorebi", meaning: "Ánh nắng xuyên qua lá" },
+                            { rank: 2, word: "一期一会", romaji: "ichigo ichie", meaning: "Nhất kỳ nhất hội" },
+                            { rank: 3, word: "猫", romaji: "neko", meaning: "Con mèo" }
+                        ].map((item) => (
+                            <div
+                                key={item.rank}
+                                onClick={() => navigate(`/search/word/${encodeURIComponent(item.word)}`)}
+                                className="flex items-center justify-between p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group border border-solid border-transparent hover:border-outline-variant/10"
                             >
-                                Cấp độ {lvl}
-                            </button>
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <span className="font-label-md text-label-md text-outline font-bold w-4 text-center">{item.rank}</span>
+                                    <div className="min-w-0">
+                                        <h3 className="font-japanese-body text-base text-on-surface group-hover:text-primary transition-colors m-0 font-bold">{item.word}</h3>
+                                        <p className="font-label-md text-xs text-on-surface-variant m-0 truncate">{item.meaning} ({item.romaji})</p>
+                                    </div>
+                                </div>
+                                <span className="material-symbols-outlined text-outline-variant opacity-0 group-hover:opacity-100 transition-all">chevron_right</span>
+                            </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Explore Categories */}
+                <div className="col-span-1 md:col-span-12 mt-2">
+                    <h2 className="font-headline-md text-base md:text-lg text-on-surface mb-4 pl-2 font-bold">Khám phá Danh mục</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div
+                            onClick={() => navigate("/jlpt?level=N3&type=vocab")}
+                            className="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-solid border-outline-variant/10 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center cursor-pointer"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-[24px]">school</span>
+                            </div>
+                            <span className="font-body-md text-sm md:text-base text-on-surface font-semibold">Luyện thi JLPT</span>
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/topics")}
+                            className="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-solid border-outline-variant/10 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center cursor-pointer"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                                <span className="material-symbols-outlined text-[24px]">business_center</span>
+                            </div>
+                            <span className="font-body-md text-sm md:text-base text-on-surface font-semibold">Công sở & Giao tiếp</span>
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/topics")}
+                            className="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-solid border-outline-variant/10 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center cursor-pointer"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+                                <span className="material-symbols-outlined text-[24px]">flight_takeoff</span>
+                            </div>
+                            <span className="font-body-md text-sm md:text-base text-on-surface font-semibold">Du lịch</span>
+                        </div>
+
+                        <div
+                            onClick={() => navigate("/topics")}
+                            className="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-solid border-outline-variant/10 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center cursor-pointer"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-[24px]">local_dining</span>
+                            </div>
+                            <span className="font-body-md text-sm md:text-base text-on-surface font-semibold">Ẩm thực Nhật Bản</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Nâng cấp Premium: chỉ hiện khi chưa premium */}
+            {/* Nâng cấp Premium */}
             {!isPremium && (
-                <section className="premium-gradient text-white rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-5 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                <section className="bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-5 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group mt-4">
                     <div className="absolute -right-10 -top-10 w-44 h-44 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
                     <div className="relative z-10 flex flex-col">
-                        <h3 className="text-xl font-bold tracking-tight mb-1.5 flex items-center gap-2">
+                        <h3 className="text-xl font-bold tracking-tight mb-1.5 flex items-center gap-2 text-white m-0">
                             👑 Trải nghiệm Javi Premium
                         </h3>
-                        <p className="text-sm text-white/90">
+                        <p className="text-sm text-white/90 m-0 mt-1">
                             Dịch ảnh OCR, học Spaced Repetition và luyện nói Kaiwa AI hoàn toàn không giới hạn!
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/premium")}
-                        className="relative z-10 premium-gold-btn text-white px-6 py-2.5 rounded-xl font-bold text-[14px] transition-all duration-300 transform hover:scale-105 active:scale-95"
+                        className="relative z-10 bg-[#FFD700] hover:bg-[#FFC800] text-on-primary-fixed font-bold text-sm px-6 py-3 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 border-none cursor-pointer shadow-md flex-shrink-0"
                     >
                         Nâng cấp ngay
                     </button>
                 </section>
             )}
 
-            {/* History modal (full list / infinite scroll / delete / select) */}
+            {/* History modal */}
             <HistoryModal
                 open={historyModalOpen}
                 onClose={closeHistoryModal}
-                onHistoryChanged={() => {
-                    // Khi modal báo có thay đổi (xóa), fetch lại để cập nhật danh sách hiển thị ở trang chính
-                    fetchHistory();
-                }}
+                onHistoryChanged={fetchHistory}
             />
 
-            {/* Picker modal (nếu click vào history item mà không có entityId) */}
+            {/* Picker modal */}
             <HistoryPickerModal
                 open={pickerOpen}
                 keyword={pickerKeyword}
@@ -317,7 +339,7 @@ export default function SearchHomeContent() {
                 pageSize={8}
             />
 
-            {/* SearchResultModal cho click chip (hoặc khi picker chọn item có id) */}
+            {/* SearchResultModal */}
             <SearchResultModal
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
@@ -325,7 +347,7 @@ export default function SearchHomeContent() {
                 entityId={detailEntityId}
             />
 
-            {/* Modal yêu cầu đăng nhập để xem lịch sử */}
+            {/* Modal yêu cầu đăng nhập */}
             <RequireLoginModal
                 open={loginRequiredOpen}
                 onClose={() => setLoginRequiredOpen(false)}

@@ -1,8 +1,4 @@
 import { useState, useEffect } from "react";
-import { PiDiamondFill, PiBookBookmark } from "react-icons/pi";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import facebook from "@/assets/facebook.png";
-import x from "@/assets/x.png";
 import { Link } from "react-router-dom";
 import Comment from "@/components/comment/Comment";
 import { IVocabResponse, IMeaning } from "@/types/backend";
@@ -10,9 +6,10 @@ import { callExplainVocabulary } from "@/apis/vocabularyApi";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
-import { MdStar } from "react-icons/md";
 import SaveToDeckModal from "@/components/study-deck/SaveToDeckModal";
 import { toRomaji } from "wanakana";
+import facebook from "@/assets/facebook.png";
+import x from "@/assets/x.png";
 
 const wordTypeMap: Record<string, string> = {
     NOUN: "Danh từ",
@@ -33,6 +30,19 @@ const wordTypeMap: Record<string, string> = {
     CUSTOM: "Khác",
 };
 
+// Dịch vụ phát âm trình duyệt
+const playBrowserTTS = (text: string) => {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "ja-JP";
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+    } else {
+        toast.warning("Trình duyệt của bạn không hỗ trợ phát âm (TTS).");
+    }
+};
+
 interface Props {
     data: IVocabResponse;
 }
@@ -45,10 +55,18 @@ export default function VocabularyDetail({ data }: Props) {
     const [displayedText, setDisplayedText] = useState("");
     const [explanation, setExplanation] = useState("");
     const [loading, setLoading] = useState(false);
-    const [canRetry, setCanRetry] = useState(true); // Thêm biến để kiểm soát retry
+    const [canRetry, setCanRetry] = useState(true);
     const [saveModalOpen, setSaveModalOpen] = useState(false);
 
-    // Gọi API giải thích thật (có chặn spam)
+    // Reset explanation state when vocab changes
+    useEffect(() => {
+        setShowExplanation(false);
+        setDisplayedText("");
+        setExplanation("");
+        setLoading(false);
+        setCanRetry(true);
+    }, [data.id]);
+
     const handleExplain = async () => {
         if (!isLoggedIn) {
             toast.info("Vui lòng đăng nhập để xem giải thích chi tiết.");
@@ -56,10 +74,8 @@ export default function VocabularyDetail({ data }: Props) {
             return;
         }
 
-        // Nếu đang loading hoặc đang bị chặn retry, bỏ qua
         if (loading || !canRetry) return;
 
-        // Nếu đã có kết quả thành công → chỉ mở hiển thị, không gọi lại
         if (explanation) {
             setShowExplanation(true);
             return;
@@ -69,23 +85,20 @@ export default function VocabularyDetail({ data }: Props) {
         setDisplayedText("");
         setExplanation("");
         setLoading(true);
-        setCanRetry(false); // Chặn spam click
+        setCanRetry(false);
 
         try {
             const res = await callExplainVocabulary(data.word);
             setExplanation(res.data.result || "");
         } catch (err: any) {
-            console.error(" Lỗi khi gọi AI giải thích:", err);
+            console.error("Lỗi khi gọi AI giải thích:", err);
             toast.error(
                 err?.response?.data?.message ||
                     "Không thể giải thích từ vựng. Vui lòng thử lại!"
             );
-
-            //  Cho phép bấm lại sau 5 giây
             setTimeout(() => setCanRetry(true), 5000);
         } finally {
             setLoading(false);
-            // Nếu call thành công → vẫn giữ chặn retry vì đã có dữ liệu
             if (!explanation) setCanRetry(true);
         }
     };
@@ -105,7 +118,7 @@ export default function VocabularyDetail({ data }: Props) {
             } else {
                 clearInterval(intervalId);
             }
-        }, 15);
+        }, 12);
 
         return () => clearInterval(intervalId);
     }, [showExplanation, explanation, isLoggedIn]);
@@ -129,84 +142,68 @@ export default function VocabularyDetail({ data }: Props) {
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3">
-            <h2 className="text-[36px] font-medium text-[#3e67d6] font-mplus">
-                {data.word}
-            </h2>
-            <div className="flex item-center gap-3 mb-2">
-                {data.hiragana && (
-                    <p className="text-base text-gray-700">{data.hiragana} ({toRomaji(data.hiragana)})</p>
-                )}
+        <div className="flex flex-col gap-stack-lg">
+            {/* Main Word Card */}
+            <div className="bg-surface-container-lowest rounded-2xl shadow-card border border-outline-variant/10 p-6 md:p-8 flex flex-col gap-6">
+                
+                {/* Header Area: Badges & Word Title */}
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {data.wordType && (
+                                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-label-md text-xs font-semibold">
+                                    {wordTypeMap[data.wordType] ?? "Khác"}
+                                </span>
+                            )}
+                            {data.level && (
+                                <span className="px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-full font-label-md text-xs font-semibold">
+                                    JLPT {data.level}
+                                </span>
+                            )}
+                        </div>
+                        
+                        <h1 className="font-japanese-display text-japanese-display text-on-surface mt-3 mb-1 font-bold text-4xl md:text-5xl">
+                            {data.word}
+                        </h1>
 
-                {/* Hiển thị tên Hán-Việt của các chữ Kanji nếu có */}
-                {Array.isArray(data.kanjis) && data.kanjis.length > 0 && (
-                    <p className="text-base text-gray-600 mb-2">
-                        {/*Lấy tên hán-việt đầu tiên nếu có nhiều tên (tách bởi dấu , 、 hoặc fullwidth comma). Nếu không có sinoViName thì hiện '-' cho chữ đó.*/}
-                        「{" "}
-                        {data.kanjis
-                            .map((k) => {
-                                const raw = k.sinoViName;
-                                if (!raw) return "-";
-                                // tách theo chữ phẩy (bình thường, fullwidth, hoặc dấu Nhật)
-                                const first = raw.split(/[,\uFF0C、]/)[0];
-                                return first ? first.trim() : "-";
-                            })
-                            .join(" ")}{" "}
-                        」
-                    </p>
-                )}
-            </div>
+                        <div className="flex items-center gap-3 flex-wrap mt-1">
+                            {data.hiragana && (
+                                <span className="font-japanese-body text-japanese-body text-on-surface-variant text-base">
+                                    {data.hiragana}
+                                </span>
+                            )}
+                            <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                            {data.hiragana && (
+                                <span className="font-body-lg text-body-lg text-outline">
+                                    {toRomaji(data.hiragana)}
+                                </span>
+                            )}
+                            {Array.isArray(data.kanjis) && data.kanjis.length > 0 && (
+                                <>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                    <span className="text-sm text-secondary font-semibold">
+                                        Hán-Việt: {data.kanjis.map((k) => k.sinoViName ? k.sinoViName.split(/[,\uFF0C、]/)[0].trim() : "-").join(" ")}
+                                    </span>
+                                </>
+                            )}
+                            <button
+                                onClick={() => playBrowserTTS(data.word)}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-primary border-none cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-lg">volume_up</span>
+                            </button>
+                        </div>
+                    </div>
 
-            {data.wordType && (
-                <div className="p-3 text-lg text-[#ad6800] bg-gradient-to-r from-[#ffeecc] to-[#fffdf7] rounded-lg">
-                    <MdStar className="inline-block mr-1 mb-1" />
-                    {wordTypeMap[data.wordType] ?? "Khác"}
-                </div>
-            )}
-
-        <div>
-                {Array.isArray(data.meanings) && data.meanings.length > 0 ? (
-                    data.meanings.map((m: IMeaning, idx: number) => {
-                        const rawHtml = m.meaningVn || "";
-                        const sanitized = formatMeaningHtml(DOMPurify.sanitize(rawHtml));
-                        // Lấy text thuần để đếm ký tự
-                        const tempDiv = document.createElement("div");
-                        tempDiv.innerHTML = sanitized;
-                        const plainText = tempDiv.textContent || "";
-                        const isLong = plainText.length > 300;
-
-                        return (
-                            <MeaningBlock
-                                key={m.id ?? idx}
-                                sanitizedHtml={sanitized}
-                                isLong={isLong}
-                            />
-                        );
-                    })
-                ) : (
-                    <p className="text-gray-500 italic">
-                        Không có nghĩa nào được cung cấp.
-                    </p>
-                )}
-            </div>
-
-            {/* ==== GIẢI THÍCH + CHIA SẺ ==== */}
-            <div>
-                <div className="mt-3 flex items-center justify-between pb-3">
-                    <div className="flex gap-2">
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
                         <button
                             onClick={handleExplain}
                             disabled={loading || (!canRetry && !explanation)}
-                            className="bg-[#ffa800] text-white rounded-xl px-[12px] py-[6px] text-[18px] hover:bg-[#e59400] text-medium transition-all disabled:opacity-60 flex items-center gap-2"
+                            className="flex items-center gap-2 px-4 py-2 bg-[#FF7F50]/10 text-[#FF7F50] hover:bg-[#FF7F50]/20 rounded-full font-label-md text-xs font-semibold transition-colors border border-solid border-[#FF7F50]/20 cursor-pointer disabled:opacity-60"
                         >
-                            {loading ? (
-                                <>
-                                    <AiOutlineLoading3Quarters className="animate-spin text-[20px]" />
-                                    Đang giải thích...
-                                </>
-                            ) : (
-                                `${data.word} là gì?`
-                            )}
+                            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                            {loading ? "Đang phân tích..." : "Giải nghĩa AI"}
                         </button>
                         <button
                             onClick={() => {
@@ -216,63 +213,124 @@ export default function VocabularyDetail({ data }: Props) {
                                     setSaveModalOpen(true);
                                 }
                             }}
-                            className="bg-[#3e66d4] text-white rounded-xl px-[12px] py-[6px] text-[18px] hover:bg-[#2c4fa8] text-medium transition-all flex items-center gap-2"
+                            className="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-container text-on-primary rounded-full font-label-md text-xs font-semibold transition-transform hover:-translate-y-0.5 shadow-sm border-none cursor-pointer"
                         >
-                            <PiBookBookmark className="text-[20px]" />
+                            <span className="material-symbols-outlined text-sm">bookmark_add</span>
                             Lưu sổ tay
                         </button>
-                    </div>
-
-                    <div className="flex gap-2 items-end">
-                        <p className="text-sm underline text-gray-500">
-                            Chia sẻ với:
-                        </p>
-                        <button
-                            onClick={handleShareX}
-                            className="w-6 h-6 rounded-full overflow-hidden"
-                        >
-                            <img
-                                src={x}
-                                alt="x"
-                                className="w-full h-full object-cover"
-                            />
-                        </button>
-                        <button
-                            onClick={handleShareFacebook}
-                            className="w-6 h-6 rounded-full overflow-hidden"
-                        >
-                            <img
-                                src={facebook}
-                                alt="facebook"
-                                className="w-full h-full object-cover"
-                            />
-                        </button>
+                        
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleShareFacebook}
+                                className="w-8 h-8 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer border-none p-0 flex items-center justify-center bg-transparent"
+                                title="Chia sẻ Facebook"
+                            >
+                                <img src={facebook} alt="facebook" className="w-6 h-6 object-cover" />
+                            </button>
+                            <button
+                                onClick={handleShareX}
+                                className="w-8 h-8 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer border-none p-0 flex items-center justify-center bg-transparent"
+                                title="Chia sẻ X"
+                            >
+                                <img src={x} alt="x" className="w-6 h-6 object-cover" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+                {/* Meanings & Examples Panel */}
+                <div className="space-y-6">
+                    {Array.isArray(data.meanings) && data.meanings.length > 0 ? (
+                        data.meanings.map((m: IMeaning, idx: number) => {
+                            const rawHtml = m.meaningVn || "";
+                            const sanitized = formatMeaningHtml(DOMPurify.sanitize(rawHtml));
+                            
+                            // Check if explanation has examples
+                            const tempDiv = document.createElement("div");
+                            tempDiv.innerHTML = sanitized;
+                            const plainText = tempDiv.textContent || "";
+                            const isLong = plainText.length > 250;
+
+                            return (
+                                <div key={m.id ?? idx} className="space-y-4">
+                                    <div className="border-l-4 border-secondary pl-4 py-1.5">
+                                        <MeaningBlock sanitizedHtml={sanitized} isLong={isLong} />
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <p className="text-outline italic">Không có giải nghĩa cho từ vựng này.</p>
+                    )}
+                </div>
+
+                {/* AI Explanation block (typed or loading) */}
                 {showExplanation && (
-                    <div className="bg-[#f1f5fd] border border-[#bcc9e2] rounded-lg p-4 text-gray-700 text-[15px] leading-relaxed whitespace-pre-wrap transition-all duration-300 ease-in-out">
+                    <div className="bg-[#FF7F50]/5 border border-solid border-[#FF7F50]/20 rounded-2xl p-5 text-on-surface leading-relaxed text-sm md:text-base transition-all duration-300">
                         {loading ? (
-                            <div className="flex items-center gap-2 text-gray-500 italic">
-                                <AiOutlineLoading3Quarters className="animate-spin text-[18px]" />
-                                <span>Đang phân tích...</span>
+                            <div className="flex items-center gap-3 text-on-surface-variant italic">
+                                <span className="material-symbols-outlined animate-spin text-[#FF7F50]">sync</span>
+                                <span>AI đang phân tích từ vựng `{data.word}`...</span>
                             </div>
                         ) : isLoggedIn ? (
-                            <p>{displayedText}</p>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-[#FF7F50] font-bold text-sm mb-2">
+                                    <span className="material-symbols-outlined text-base">auto_awesome</span>
+                                    <span>Giải thích thông minh từ AI</span>
+                                </div>
+                                <p className="m-0 whitespace-pre-wrap">{displayedText}</p>
+                            </div>
                         ) : (
-                            <p className="text-gray-700 text-[15px]">
-                                <Link
-                                    to="/login"
-                                    className="underline hover:cursor-pointer"
-                                >
-                                    Đăng nhập để xem giải thích chi tiết
+                            <div className="text-on-surface-variant">
+                                <Link to="/login" className="underline hover:text-primary font-semibold">
+                                    Đăng nhập để xem giải thích chi tiết bằng AI
                                 </Link>
-                            </p>
+                            </div>
                         )}
                     </div>
                 )}
             </div>
 
+            {/* Kanji Decomposition Section */}
+            {Array.isArray(data.kanjis) && data.kanjis.length > 0 && (
+                <div>
+                    <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4 font-bold text-lg md:text-xl">
+                        Cấu tạo Kanji
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {data.kanjis.map((k) => (
+                            <div key={k.id} className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 p-5 flex gap-4">
+                                <div className="w-20 h-20 bg-surface-container-low rounded-xl flex items-center justify-center flex-shrink-0 relative">
+                                    <span className="font-japanese-display text-on-surface" style={{ fontSize: "40px", opacity: 0.2 }}>
+                                        {k.characterName}
+                                    </span>
+                                    <span className="font-japanese-display text-primary absolute" style={{ fontSize: "40px" }}>
+                                        {k.characterName}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col justify-center min-w-0 flex-1">
+                                    <div className="flex items-baseline gap-2 flex-wrap">
+                                        <h4 className="font-headline-md text-base font-bold text-on-surface m-0">{k.characterName}</h4>
+                                        <span className="font-body-md text-sm text-secondary font-bold uppercase">{k.sinoViName || "—"}</span>
+                                    </div>
+                                    <p className="font-body-md text-xs text-on-surface-variant mt-1 truncate" title={k.meaning}>
+                                        Ý nghĩa: {k.meaning || "—"}
+                                    </p>
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {k.level && (
+                                            <span className="px-2 py-0.5 bg-primary/10 rounded text-[10px] font-bold text-primary">
+                                                Cấp độ: {k.level}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Comment Section */}
             <Comment entityType="WORD" entityId={data.id} />
 
             <SaveToDeckModal
@@ -296,10 +354,9 @@ function formatMeaningHtml(html: string): string {
         for (const child of children) {
             if (child.nodeType === Node.TEXT_NODE) {
                 const text = child.nodeValue || "";
-                // Regex matches a space followed by a number (>= 2) and a dot with spaces (e.g. " 2. ")
                 const regex = /\s+([2-9]\d*\.\s+)/g;
                 if (regex.test(text)) {
-                    regex.lastIndex = 0; // reset regex index
+                    regex.lastIndex = 0;
                     const fragment = document.createDocumentFragment();
                     let lastIndex = 0;
                     let match;
@@ -337,10 +394,8 @@ function formatMeaningHtml(html: string): string {
 function MeaningBlock({ sanitizedHtml, isLong }: { sanitizedHtml: string; isLong: boolean }) {
     const [expanded, setExpanded] = useState(false);
 
-    // Cắt HTML thông minh: lấy tối đa 300 ký tự text thuần, nhưng cắt tại ranh giới thẻ <br/>
     const truncatedHtml = (() => {
         if (!isLong || expanded) return sanitizedHtml;
-        // Tách theo <br/> hoặc <br> hoặc <br />
         const parts = sanitizedHtml.split(/<br\s*\/?>/gi);
         let accumulated = "";
         let charCount = 0;
@@ -348,7 +403,7 @@ function MeaningBlock({ sanitizedHtml, isLong }: { sanitizedHtml: string; isLong
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = part;
             const partTextLen = (tempDiv.textContent || "").length;
-            if (charCount + partTextLen > 300 && accumulated) break;
+            if (charCount + partTextLen > 250 && accumulated) break;
             accumulated += (accumulated ? "<br/>" : "") + part;
             charCount += partTextLen;
         }
@@ -356,9 +411,8 @@ function MeaningBlock({ sanitizedHtml, isLong }: { sanitizedHtml: string; isLong
     })();
 
     return (
-        <div className="mb-4">
-            <h3 className="my-3 text-lg flex items-start gap-1 text-[#3e67d6]">
-                <PiDiamondFill className="text-[12px] mt-2 flex-shrink-0" />
+        <div>
+            <h3 className="m-0 text-lg text-on-surface font-semibold leading-relaxed">
                 <span
                     className="ql-render"
                     dangerouslySetInnerHTML={{ __html: isLong && !expanded ? truncatedHtml : sanitizedHtml }}
@@ -367,7 +421,7 @@ function MeaningBlock({ sanitizedHtml, isLong }: { sanitizedHtml: string; isLong
             {isLong && (
                 <button
                     onClick={() => setExpanded(!expanded)}
-                    className="ml-4 text-sm text-blue-500 hover:text-blue-700 hover:underline transition-colors cursor-pointer"
+                    className="mt-2 text-xs text-primary hover:underline transition-colors cursor-pointer border-none bg-transparent p-0"
                 >
                     {expanded ? "▲ Thu gọn" : "▼ Xem thêm..."}
                 </button>

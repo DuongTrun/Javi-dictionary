@@ -13,11 +13,15 @@ import { LoadingOutlined } from "@ant-design/icons";
 interface Props {
     pageSize?: number;
     username?: string | null;
+    layout?: "mini" | "full";
+    onViewAll?: () => void;
 }
 
 export default function UserActivityPanel({
     pageSize = 20,
     username = null,
+    layout = "full",
+    onViewAll,
 }: Props) {
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,11 +39,8 @@ export default function UserActivityPanel({
         number | string
     >(0);
 
-    /**
-     * fetchPage: tự động chọn API phù hợp:
-     *  - Nếu có username prop và khác currentUser.username -> callGetCommentsByUsername
-     *  - Ngược lại -> callGetMyComments
-     */
+    const actualPageSize = layout === "mini" ? 3 : pageSize;
+
     const fetchPage = async (pageIndex = 0, reset = false) => {
         if (loading || loadingMore) return;
         try {
@@ -47,44 +48,39 @@ export default function UserActivityPanel({
             else setLoadingMore(true);
 
             let res: any;
-            // Gọi API: helpers mong page là 1-based -> truyền pageIndex + 1
             if (username && username !== currentUser?.username) {
                 res = await callGetCommentsByUsername(
                     username,
                     pageIndex + 1,
-                    pageSize
+                    actualPageSize
                 );
             } else {
-                res = await callGetMyComments(pageIndex + 1, pageSize);
+                res = await callGetMyComments(pageIndex + 1, actualPageSize);
             }
 
             const data = res.data?.result;
             const list = data?.content ?? [];
 
-            // nếu reset thì thay mới, ngược lại append
             setItems((prev) => (reset ? list : [...prev, ...list]));
 
-            // hasMore = !last
             const lastFlag = Boolean(data?.last ?? true);
             setHasMore(!lastFlag);
 
-            // data.number từ backend là 0-based page index (nếu backend trả)
             const returnedNumber =
                 typeof data?.number !== "undefined" ? data.number : pageIndex;
             setPage(returnedNumber);
-            // Nếu còn trang tiếp và nội dung hiện tại chưa tạo scrollbar (chưa đủ cao)
-            // -> tự gọi trang kế để fill content (tránh trường hợp không có scroll và user không thể trigger)
-            setTimeout(() => {
-                const el2 = scrollRef.current;
-                if (!el2) return;
-                // true nếu chưa có scrollbar (nội dung fit trong container)
-                const contentFits = el2.scrollHeight <= el2.clientHeight;
 
-                if (contentFits && !loadingMore && !lastFlag) {
-                    // gọi trang kế (returnedNumber là index 0-based)
-                    fetchPage(returnedNumber + 1, false);
-                }
-            }, 120);
+            if (layout === "full") {
+                setTimeout(() => {
+                    const el2 = scrollRef.current;
+                    if (!el2) return;
+                    const contentFits = el2.scrollHeight <= el2.clientHeight;
+
+                    if (contentFits && !loadingMore && !lastFlag) {
+                        fetchPage(returnedNumber + 1, false);
+                    }
+                }, 120);
+            }
         } catch (err) {
             if (reset) setItems([]);
             setHasMore(false);
@@ -95,17 +91,17 @@ export default function UserActivityPanel({
     };
 
     useEffect(() => {
-        // Tải trang đầu tiên khi component mount
         fetchPage(0, true);
     }, [username]);
 
-    // Infinite scroll: tự động load trang tiếp theo khi cuộn gần cuối
+    // Infinite scroll: chỉ kích hoạt ở layout full
     useEffect(() => {
+        if (layout === "mini") return;
         const el = scrollRef.current;
         if (!el) return;
 
         let ticking = false;
-        const threshold = 260; // Khoảng cách từ đáy để trigger load thêm
+        const threshold = 260;
 
         const onScroll = () => {
             if (ticking) return;
@@ -114,7 +110,6 @@ export default function UserActivityPanel({
                 const remaining =
                     el.scrollHeight - el.scrollTop - el.clientHeight;
 
-                // Nếu còn trang tiếp theo và đã cuộn gần đáy → tải thêm
                 if (hasMore && !loadingMore && remaining < threshold) {
                     fetchPage(page + 1, false);
                 }
@@ -125,9 +120,8 @@ export default function UserActivityPanel({
 
         el.addEventListener("scroll", onScroll);
         return () => el.removeEventListener("scroll", onScroll);
-    }, [hasMore, loadingMore, page]);
+    }, [hasMore, loadingMore, page, layout]);
 
-    // Format ngày chỉ hiển thị dạng dd/MM/yyyy
     const formatDateOnly = (v?: string | null) => {
         if (!v) return "";
         const d = dayjs(v);
@@ -135,12 +129,10 @@ export default function UserActivityPanel({
         return String(v);
     };
 
-    // Khi click vào 1 comment → mở modal chi tiết
     const onClickComment = (c: ICommentResponse) => {
         if (!c) return;
         const key = String(c.entityType ?? "").toUpperCase();
 
-        // Với Kanji: ưu tiên dùng entityName (ký tự Hán)
         if (key === "KANJI") {
             if (c.entityName) {
                 setDetailEntityType(c.entityType);
@@ -157,7 +149,6 @@ export default function UserActivityPanel({
             return;
         }
 
-        // Các loại khác: ưu tiên entityId
         if (c.entityId !== undefined && c.entityId !== null) {
             setDetailEntityType(c.entityType);
             setDetailEntityIdOrName(c.entityId);
@@ -165,7 +156,6 @@ export default function UserActivityPanel({
             return;
         }
 
-        // Nếu không có id thì fallback sang entityName
         if (c.entityName) {
             setDetailEntityType(c.entityType);
             setDetailEntityIdOrName(c.entityName);
@@ -173,25 +163,124 @@ export default function UserActivityPanel({
         }
     };
 
-    // Map entity type sang tên tiếng Việt
     const mapEntityTypeLabel = (type?: string) => {
         switch ((type || "").toUpperCase()) {
             case "WORD":
-                return "TỪ VỰNG";
+                return "từ vựng";
             case "KANJI":
-                return "KANJI";
+                return "chữ Kanji";
             case "GRAMMAR":
-                return "NGỮ PHÁP";
+                return "ngữ pháp";
             default:
                 return type || "";
         }
     };
 
+    const getIconInfo = (type?: string) => {
+        switch ((type || "").toUpperCase()) {
+            case "WORD":
+                return {
+                    icon: "quiz",
+                    bgClass: "bg-primary-fixed/30 text-primary",
+                };
+            case "KANJI":
+                return {
+                    icon: "bookmark",
+                    bgClass: "bg-secondary-fixed/50 text-secondary",
+                };
+            case "GRAMMAR":
+                return {
+                    icon: "translate",
+                    bgClass: "bg-surface-container-highest text-on-surface-variant",
+                };
+            default:
+                return {
+                    icon: "chat_bubble",
+                    bgClass: "bg-surface-container-low text-on-surface-variant",
+                };
+        }
+    };
+
+    if (layout === "mini") {
+        return (
+            <>
+                <div className="w-full flex flex-col justify-between h-full">
+                    {loading && items.length === 0 ? (
+                        <div className="py-8 flex justify-center">
+                            <Spin indicator={<LoadingOutlined spin />} size="default" />
+                        </div>
+                    ) : items.length === 0 ? (
+                        <div className="p-4 text-center">
+                            <Empty description="Chưa có hoạt động gần đây" />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <ul className="flex flex-col gap-3">
+                                {items.map((c, idx) => {
+                                    const commentDate =
+                                        c.createdAt ?? (c as any).createdDate ?? null;
+                                    const entityName = (c as any).entityName ?? "";
+                                    const iconInfo = getIconInfo(c.entityType);
+                                    
+                                    return (
+                                        <div key={c.id || idx}>
+                                            <li
+                                                className="flex items-start gap-4 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer"
+                                                onClick={() => onClickComment(c)}
+                                            >
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconInfo.bgClass}`}>
+                                                    <span className="material-symbols-outlined text-[20px]">{iconInfo.icon}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-body-md text-sm font-semibold text-on-surface truncate">
+                                                        Đã bình luận tại {mapEntityTypeLabel(c.entityType)} {entityName ? `"${entityName}"` : ""}
+                                                    </h4>
+                                                    <p className="text-xs text-on-surface-variant font-medium mt-0.5 line-clamp-1">
+                                                        {c.content}
+                                                    </p>
+                                                    <p className="font-label-md text-[10px] text-outline mt-1">
+                                                        {formatDateOnly(commentDate)}
+                                                    </p>
+                                                </div>
+                                                <div className="font-label-md text-[11px] text-tertiary bg-tertiary-container/10 px-2 py-0.5 rounded-full shrink-0">
+                                                    +50 XP
+                                                </div>
+                                            </li>
+                                            {idx < items.length - 1 && (
+                                                <div className="h-[1px] w-[calc(100%-48px)] bg-outline-variant/20 ml-14 my-1"></div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </ul>
+                            {onViewAll && (
+                                <button
+                                    onClick={onViewAll}
+                                    className="w-full mt-2 py-2.5 font-label-md text-sm text-primary hover:bg-primary-fixed/40 rounded-xl transition-all duration-200 border border-primary/20 hover:border-transparent font-semibold flex items-center justify-center gap-1.5"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                    Xem tất cả hoạt động
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <SearchResultModal
+                    open={detailOpen}
+                    onClose={() => setDetailOpen(false)}
+                    entityType={detailEntityType}
+                    entityId={detailEntityIdOrName}
+                />
+            </>
+        );
+    }
+
     return (
         <>
             <div
                 ref={scrollRef}
-                className="max-h-[520px] overflow-auto bg-white rounded-2xl border border-gray-200"
+                className="max-h-[520px] overflow-auto bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm"
             >
                 {loading && items.length === 0 ? (
                     <div className="py-8 flex justify-center">
@@ -205,43 +294,41 @@ export default function UserActivityPanel({
                         <Empty description="Chưa có hoạt động" />
                     </div>
                 ) : (
-                    <div>
+                    <div className="divide-y divide-outline-variant/20">
                         {items.map((c) => {
                             const commentDate =
                                 c.createdAt ?? (c as any).createdDate ?? null;
                             const entityName = (c as any).entityName ?? "";
+                            const iconInfo = getIconInfo(c.entityType);
+
                             return (
                                 <div
                                     key={c.id}
-                                    className="flex items-start gap-3 py-2 px-3 border-b hover:bg-gray-50 cursor-pointer"
+                                    className="flex items-start gap-4 p-4 hover:bg-surface-container-low cursor-pointer transition-colors"
                                     onClick={() => onClickComment(c)}
                                 >
-                                    <div className="w-full">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconInfo.bgClass}`}>
+                                        <span className="material-symbols-outlined text-[20px]">{iconInfo.icon}</span>
+                                    </div>
+                                    <div className="w-full min-w-0">
                                         <div className="flex items-center justify-between text-xs w-full">
-                                            <div className="text-gray-400">
-                                                <span className="capitalize">
-                                                    {mapEntityTypeLabel(
-                                                        c.entityType
-                                                    )}
+                                            <div className="text-outline font-medium flex items-center gap-1">
+                                                <span className="capitalize font-semibold text-primary">
+                                                    {mapEntityTypeLabel(c.entityType)}
                                                 </span>
-                                                {entityName ? (
-                                                    <span className="mx-1">
-                                                        :
+                                                {entityName && (
+                                                    <span className="font-semibold text-on-surface-variant">
+                                                        : {entityName}
                                                     </span>
-                                                ) : null}
-                                                {entityName ? (
-                                                    <span className="font-medium text-[15px] text-gray-600">
-                                                        {entityName}
-                                                    </span>
-                                                ) : null}
+                                                )}
                                             </div>
 
-                                            <div className="text-gray-400 ml-4 text-nowrap">
+                                            <div className="text-outline ml-4 text-nowrap">
                                                 {formatDateOnly(commentDate)}
                                             </div>
                                         </div>
 
-                                        <div className="text-sm text-gray-700 mt-1 whitespace-pre-line break-words">
+                                        <div className="text-sm text-on-surface-variant font-medium mt-1.5 whitespace-pre-line break-words">
                                             {c.content}
                                         </div>
                                     </div>
@@ -261,7 +348,6 @@ export default function UserActivityPanel({
                 )}
             </div>
 
-            {/* Modal chi tiết */}
             <SearchResultModal
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}

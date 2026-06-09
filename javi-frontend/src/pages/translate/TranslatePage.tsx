@@ -11,7 +11,6 @@ import {
 } from "@/apis/translateApi";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
-import { MdHistory } from "react-icons/md";
 import { useAuthStore } from "@/stores/useAuthStore";
 import no_history from "@/assets/no-history.png";
 import RequireLoginModal from "@/components/common/RequireLoginModal";
@@ -32,7 +31,6 @@ export default function TranslatePage() {
             grammar: null,
         },
     ]);
-    // Lấy token trực tiếp từ Zustand store
     const token = useAuthStore((state) => state.token);
 
     const [requireLoginFor, setRequireLoginFor] = useState<
@@ -132,41 +130,31 @@ export default function TranslatePage() {
         if (!token) {
             return;
         }
-        // Nếu đã có token thì gọi fetch lịch sử bình thường
         fetchHistoryPage(0, true);
-    }, [token]); // chỉ chạy lại khi token thay đổi
+    }, [token, fetchHistoryPage]);
 
-    // Thay thế: lắng nghe scroll trên window thay vì element (không đổi logic dịch)
-    // Lý do: trang của bạn scroll toàn trang, không phải một container có overflow riêng,
-    // vậy listener gắn vào historyRef sẽ không được trigger khi user scroll toàn trang.
     useEffect(() => {
-        // Hàm xử lý scroll toàn trang
         const onWindowScroll = () => {
-            // Nếu đã hết trang hoặc đang tải trang tiếp theo thì không gọi
             if (!historyHasMore || historyLoadingMoreRef.current) return;
 
-            const threshold = 260; // pixel tới đáy thì gọi load tiếp
+            const threshold = 260;
             const remaining =
                 document.documentElement.scrollHeight -
                 window.scrollY -
                 window.innerHeight;
 
-            // Nếu khoảng cách đến đáy < threshold => tải trang kế tiếp
             if (remaining < threshold) {
                 const nextPage = historyPage + 1;
                 fetchHistoryPage(nextPage, false);
             }
         };
 
-        // passive để performance tốt hơn
         window.addEventListener("scroll", onWindowScroll, { passive: true });
-
         return () => {
             window.removeEventListener("scroll", onWindowScroll);
         };
     }, [historyHasMore, historyPage, fetchHistoryPage]);
 
-    // ----- block helpers -----
     const addBlock = useCallback((data?: Partial<TranslateBlockModel>) => {
         const id = data?.id ?? makeId();
         setBlocks((prev) => [
@@ -204,21 +192,16 @@ export default function TranslatePage() {
             return copy;
         });
 
-        // cleanup snapshot per-block
         delete previousTextRefPerBlock.current[id];
         delete previousEngineRefPerBlock.current[id];
         delete lastTranslateAtRefPerBlock.current[id];
     }, []);
 
-    // ----- translate handler (text or image) -----
-    // GHI CHÚ: hàm này nhận param `file` (tùy chọn) được truyền từ TranslateBlock khi người dùng chọn ảnh.
     const handleTranslate = useCallback(
         async (id: string, file?: File | undefined) => {
             const blk = blocks.find((b) => b.id === id);
             if (!blk) return;
 
-            // Nếu user chưa đăng nhập mà chọn engine AI -> mở modal yêu cầu đăng nhập
-            // Không gọi API, không thay đổi logic khác.
             if (blk.engine === "AI" && !token) {
                 setRequireLoginFor("AI");
                 return;
@@ -229,13 +212,10 @@ export default function TranslatePage() {
             const currentText = (blk.sourceText ?? "").trim();
             const currentEngine = blk.engine ?? "GOOGLE";
 
-            // Lấy snapshot cho block này (fallback "")
             const prevTextForBlock = previousTextRefPerBlock.current[id] ?? "";
             const prevEngineForBlock =
                 previousEngineRefPerBlock.current[id] ?? "";
 
-            // Nếu không có file được truyền (file param undefined) và cũng không có blk.file
-            // và nội dung giống snapshot trước -> chặn (đã dịch rồi)
             if (
                 typeof file === "undefined" &&
                 !blk.file &&
@@ -246,37 +226,25 @@ export default function TranslatePage() {
                 return;
             }
 
-            // Nếu không có file param nhưng blk.file tồn tại, we may still use image branch below
-
             isProcessingRef.current = true;
             updateBlock(id, { loading: true });
 
             try {
                 let translated = "";
-
-                // Logic quyết định (đã cố định):
-                // - Nếu có param `file` truyền vào → dùng nhánh dịch ảnh (vì người dùng vừa chọn ảnh)
-                // - Nếu đã có blk.file VÀ người dùng KHÔNG sửa sourceText từ lần dịch trước (currentText === previousTextRef.current) → dùng nhánh dịch ảnh
-                // - Nếu có blk.file NHƯNG người dùng đã chỉnh sửa sourceText → dùng nhánh dịch văn bản (và xóa file)
-                // - Nếu không có file → dịch văn bản bình thường
                 const shouldUseImageBranch =
-                    // Nếu hàm được gọi với param file (khi chọn ảnh) => bắt buộc sử dụng image branch
                     typeof file !== "undefined"
                         ? true
-                        : // Nếu không có param file, nhưng block đang có blk.file AND user chưa chỉnh sourceText so với snapshot
-                          !!blk.file && currentText === prevTextForBlock;
+                        : !!blk.file && currentText === prevTextForBlock;
 
                 if (
                     !!blk.file &&
                     !shouldUseImageBranch &&
                     typeof file === "undefined"
                 ) {
-                    // blk.file exists but user edited sourceText -> clear file and run text branch
                     updateBlock(id, { file: undefined });
                 }
 
                 if (shouldUseImageBranch && (file ?? blk.file)) {
-                    // ---------- image translation branch (OCR) ----------
                     const fileToSend = (file ?? blk.file) as File;
 
                     const res = await callTranslateImage({
@@ -318,7 +286,6 @@ export default function TranslatePage() {
                             : {}),
                     });
                 } else {
-                    // ---------- text translation ----------
                     const payload = {
                         sourceText: blk.sourceText ?? "",
                         sourceLang: blk.sourceLang ?? "ja",
@@ -340,25 +307,18 @@ export default function TranslatePage() {
                     updateBlock(id, { translatedText: translated });
                 }
 
-                // sau khi dịch thành công -> lưu snapshot per-block
                 previousTextRefPerBlock.current[id] = currentText;
                 previousEngineRefPerBlock.current[id] = currentEngine;
                 lastTranslateAtRefPerBlock.current[id] = Date.now();
 
                 setFillKeys((prev) => ({ ...prev, [id]: Date.now() }));
 
-                try {
-                    // Chỉ đồng bộ lịch sử nếu user đã đăng nhập (token tồn tại)
-                    // Tránh gọi API history khi chưa login để không kích luồng 401/refresh.
-                    if (token) {
-                        try {
-                            await fetchHistoryPage(0, true);
-                        } catch (e) {
-                            // ignore
-                        }
+                if (token) {
+                    try {
+                        await fetchHistoryPage(0, true);
+                    } catch (e) {
+                        // ignore
                     }
-                } catch (e) {
-                    // ignore
                 }
             } catch (err) {
                 toast.error("Dịch thất bại");
@@ -370,12 +330,10 @@ export default function TranslatePage() {
         [blocks, updateBlock, fetchHistoryPage, token]
     );
 
-    // ----- kiểm tra ngữ pháp -----
     const handleCheckGrammar = useCallback(
         async (id: string) => {
             const blk = blocks.find((b) => b.id === id);
             if (!blk) return;
-            // Nếu chưa đăng nhập -> mở modal yêu cầu đăng nhập
             if (!token) {
                 setRequireLoginFor("GRAMMAR");
                 return;
@@ -394,7 +352,6 @@ export default function TranslatePage() {
         [blocks, updateBlock, token]
     );
 
-    // ----- swap source/target -----
     const handleSwap = useCallback(
         (id: string) => {
             const blk = blocks.find((b) => b.id === id);
@@ -405,7 +362,6 @@ export default function TranslatePage() {
                 sourceText: blk.translatedText ?? "",
                 translatedText: blk.sourceText ?? "",
             });
-            // reset snapshot cho block này khi đổi chiều dịch
             previousTextRefPerBlock.current[id] = "";
             previousEngineRefPerBlock.current[id] = "";
             lastTranslateAtRefPerBlock.current[id] = 0;
@@ -417,9 +373,6 @@ export default function TranslatePage() {
 
     const renderedBlocks = useMemo(() => blocks, [blocks]);
 
-    // -------------------------
-    // HISTORY: delete handling
-    // -------------------------
     const toggleSelect = (id: number) => {
         setSelectedIds((prev) =>
             prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -428,8 +381,6 @@ export default function TranslatePage() {
 
     const onDeleteSelected = async () => {
         if (!selectedIds.length) return;
-
-        // Nếu chưa đăng nhập thì không gọi API xóa
         if (!token) {
             toast.warning("Vui lòng đăng nhập để xóa lịch sử.");
             return;
@@ -450,7 +401,6 @@ export default function TranslatePage() {
     };
 
     const onDeleteAll = async () => {
-        // Nếu chưa đăng nhập thì không gọi API xóa
         if (!token) {
             toast.warning("Vui lòng đăng nhập để xóa lịch sử.");
             return;
@@ -469,13 +419,9 @@ export default function TranslatePage() {
         }
     };
 
-    // -------------------------
-    // formatTime
-    // -------------------------
     const formatTime = (v?: any) => {
         if (!v && v !== 0) return "";
         try {
-            // case: ISO string
             if (typeof v === "string") {
                 const d = dayjs(v);
                 if (d.isValid()) return d.format("DD/MM/YYYY HH:mm");
@@ -492,7 +438,6 @@ export default function TranslatePage() {
                 const [y, m, d, hh = 0, mm = 0, ss = 0] = v.map((x) =>
                     Number(x)
                 );
-                // guard values
                 if (
                     !Number.isFinite(y) ||
                     !Number.isFinite(m) ||
@@ -507,7 +452,6 @@ export default function TranslatePage() {
                 return String(v);
             }
 
-            // fallback
             const d = dayjs(v);
             if (d.isValid()) return d.format("DD/MM/YYYY HH:mm");
             return String(v);
@@ -517,10 +461,21 @@ export default function TranslatePage() {
     };
 
     return (
-        <div className="w-full px-2 pb-20 pt-3">
+        <div className="w-full max-w-container-max-width mx-auto p-4 md:p-8 font-body-md text-on-surface antialiased">
+            {/* Header Title */}
+            <div className="mb-stack-lg pt-2">
+                <h1 className="font-headline-lg text-headline-lg md:font-display-lg md:text-display-lg text-on-surface mb-stack-sm font-bold">
+                    Translate & Learn
+                </h1>
+                <p className="text-on-surface-variant font-body-lg text-body-lg">
+                    Dịch chính xác tích hợp ngữ cảnh và phân tích lỗi ngữ pháp bằng AI.
+                </p>
+            </div>
+
+            {/* Translation blocks list */}
             <div className="space-y-6">
                 {renderedBlocks.map((b) => (
-                    <div key={b.id}>
+                    <div key={b.id} className="bg-surface-container-lowest rounded-2xl shadow-sm border border-solid border-outline-variant/10 p-5">
                         <TranslateBlock
                             block={b}
                             removable={renderedBlocks.length > 1}
@@ -541,23 +496,24 @@ export default function TranslatePage() {
                 ))}
             </div>
 
+            {/* Add translation block trigger */}
             <div className="mt-6 flex justify-center">
                 <button
                     onClick={() => addBlock()}
-                    className="px-4 py-2 bg-white border rounded"
+                    className="flex items-center gap-1.5 px-6 py-2.5 bg-transparent border border-solid border-primary hover:bg-primary/5 text-primary rounded-full font-label-md text-sm font-semibold transition-all cursor-pointer"
                 >
-                    + Thêm bản dịch
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    Thêm khung dịch mới
                 </button>
             </div>
 
-            {/* HISTORY: header controls */}
-            <div className="mt-8">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="flex items-center font-normal bg-[#ffa800] text-white text-[15px] py-[6px] px-3 rounded-full">
-                        <MdHistory className="text-xl mr-[2px]" />
-                        Lịch sử
+            {/* HISTORY SECTION */}
+            <div className="mt-12 border-t border-solid border-outline-variant/10 pt-stack-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <h2 className="flex items-center gap-2 font-headline-md text-lg md:text-xl text-on-surface font-bold m-0">
+                        <span className="material-symbols-outlined text-primary">history</span>
+                        Lịch sử dịch thuật
                     </h2>
-                    {/* Hiển thị nhóm nút Xóa CHỈ khi đã đăng nhập */}
                     {token && (
                         <div className="flex items-center gap-2">
                             {!deleteMode ? (
@@ -566,7 +522,7 @@ export default function TranslatePage() {
                                         setDeleteMode(true);
                                         setSelectedIds([]);
                                     }}
-                                    className="px-3 py-1 rounded-md bg-red-600 text-white"
+                                    className="px-4 py-2 bg-error-container/20 hover:bg-error-container/30 text-error rounded-full font-label-md text-xs font-semibold border-none cursor-pointer transition-colors"
                                 >
                                     Xóa lịch sử
                                 </button>
@@ -577,20 +533,24 @@ export default function TranslatePage() {
                                             setDeleteMode(false);
                                             setSelectedIds([]);
                                         }}
-                                        className="px-3 py-1 rounded-md bg-gray-200 text-gray-700"
+                                        className="px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant rounded-full font-label-md text-xs font-semibold border-none cursor-pointer transition-colors"
                                     >
                                         Hủy
                                     </button>
                                     <button
                                         onClick={onDeleteSelected}
                                         disabled={!selectedIds.length}
-                                        className="px-3 py-1 rounded-md bg-red-600 text-white disabled:opacity-60"
+                                        className={`px-4 py-2 rounded-full font-label-md text-xs font-semibold border-none cursor-pointer transition-colors ${
+                                            !selectedIds.length
+                                                ? "bg-surface-container-high text-on-surface-variant cursor-not-allowed"
+                                                : "bg-error text-on-error hover:bg-error/80"
+                                        }`}
                                     >
                                         Xóa đã chọn
                                     </button>
                                     <button
                                         onClick={onDeleteAll}
-                                        className="px-3 py-1 rounded-md bg-red-500 text-white"
+                                        className="px-4 py-2 bg-error text-on-error hover:bg-error/80 rounded-full font-label-md text-xs font-semibold border-none cursor-pointer transition-colors"
                                     >
                                         Xóa tất cả
                                     </button>
@@ -602,25 +562,25 @@ export default function TranslatePage() {
 
                 <div
                     ref={historyRef}
-                    className="bg-white rounded-lg border p-3"
+                    className="bg-surface-container-lowest rounded-2xl border border-solid border-outline-variant/10 p-5 shadow-sm"
                 >
                     {historyLoading && historyList.length === 0 ? (
-                        <div className="py-10 text-center text-gray-500">
-                            Đang tải...
+                        <div className="py-10 text-center text-on-surface-variant italic">
+                            Đang tải lịch sử dịch...
                         </div>
                     ) : historyList.length === 0 ? (
-                        <div className="flex flex-col justify-center items-center py-5">
+                        <div className="flex flex-col justify-center items-center py-8">
                             <img
-                                className="w-[50px] h-[50px]"
+                                className="w-12 h-12 opacity-55"
                                 src={no_history}
                                 alt="no-history"
                             />
-                            <div className="mt-2 text-center text-gray-500">
-                                Chưa có lịch sử
+                            <div className="mt-2 text-center text-on-surface-variant text-sm">
+                                Chưa có lịch sử dịch thuật nào.
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {historyList.map((h: any) => {
                                 const sourceText =
                                     h.keyword ?? h.sourceText ?? h.text ?? "-";
@@ -675,7 +635,6 @@ export default function TranslatePage() {
                                                 ...prev,
                                                 [id]: Date.now(),
                                             }));
-                                            // đồng bộ snapshot per-block ở parent để ngăn gọi API không cần thiết
                                             previousTextRefPerBlock.current[
                                                 id
                                             ] = String(
@@ -741,7 +700,6 @@ export default function TranslatePage() {
                                                         ...prev,
                                                         [id]: Date.now(),
                                                     }));
-                                                    // đồng bộ snapshot per-block ở parent để ngăn gọi API không cần thiết
                                                     previousTextRefPerBlock.current[
                                                         id
                                                     ] = String(
@@ -759,51 +717,18 @@ export default function TranslatePage() {
                                                 }
                                             }
                                         }}
-                                        className="p-3 border rounded cursor-pointer hover:bg-gray-50"
+                                        className={`p-4 rounded-xl border border-solid transition-all cursor-pointer flex flex-col justify-between ${
+                                            deleteMode
+                                                ? "bg-surface-container-low border-outline-variant"
+                                                : "bg-surface-container-lowest border-outline-variant/10 hover:border-primary hover:shadow-sm"
+                                        }`}
                                         aria-label={`Mở lịch sử: ${sourceText}`}
                                     >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="text-xs text-gray-500">
-                                                {formatTime(
-                                                    h.createdAt ??
-                                                        h.searchedAt ??
-                                                        h.createdDate
-                                                )}
-                                            </div>
-
-                                            {deleteMode ? (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={
-                                                        h.id
-                                                            ? selectedIds.includes(
-                                                                  h.id
-                                                              )
-                                                            : false
-                                                    }
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                    onChange={(e) => {
-                                                        e.stopPropagation();
-                                                        if (h.id)
-                                                            toggleSelect(h.id);
-                                                    }}
-                                                    className="shrink-0"
-                                                    aria-label="Chọn lịch sử"
-                                                />
-                                            ) : null}
-                                        </div>
-
-                                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                                            {sourceText}
-                                        </div>
-
-                                        <div className="text-xs text-gray-400 mt-1">
-                                            <span className="capitalize">
+                                        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-solid border-outline-variant/10">
+                                            <span className="text-[11px] font-bold text-[#FF7F50] bg-[#FF7F50]/10 px-2 py-0.5 rounded-full">
                                                 {(() => {
                                                     if (!h.entityType)
-                                                        return "";
+                                                        return "Bản dịch";
                                                     const k = String(
                                                         h.entityType
                                                     ).toUpperCase();
@@ -819,27 +744,48 @@ export default function TranslatePage() {
                                                     return String(h.entityType);
                                                 })()}
                                             </span>
+                                            <div className="flex items-center gap-2 text-[11px] text-on-surface-variant font-mono">
+                                                <span>{formatTime(h.createdAt ?? h.searchedAt ?? h.createdDate)}</span>
+                                                {deleteMode && h.id && (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedIds.includes(h.id)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleSelect(h.id);
+                                                        }}
+                                                        className="shrink-0"
+                                                        aria-label="Chọn lịch sử"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="text-sm text-on-surface font-semibold line-clamp-2 leading-relaxed">
+                                            {sourceText}
                                         </div>
                                     </div>
                                 );
                             })}
 
                             {historyLoadingMore && (
-                                <div className="py-4 text-center">
-                                    Đang tải thêm...
+                                <div className="col-span-1 md:col-span-2 py-4 text-center text-xs text-on-surface-variant italic animate-pulse">
+                                    Đang tải thêm lịch sử dịch...
                                 </div>
                             )}
 
                             {!historyHasMore && historyList.length > 0 && (
-                                <div className="py-3 text-center text-gray-400">
-                                    Đã hiển thị tất cả lịch sử
+                                <div className="col-span-1 md:col-span-2 py-3 text-center text-xs text-on-surface-variant/60">
+                                    Đã hiển thị tất cả lịch sử dịch thuật.
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
             </div>
-            {/* Modal yêu cầu đăng nhập — message tuỳ theo hành động */}
+
+            {/* Modal yêu cầu đăng nhập */}
             <RequireLoginModal
                 open={requireLoginFor !== null}
                 onClose={() => setRequireLoginFor(null)}

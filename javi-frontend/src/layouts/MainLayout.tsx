@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "../components/common/Sidebar";
 import AppHeader from "../components/common/Header";
 import Footer from "../components/common/Footer";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 import { useGlobalErrorStore } from "@/stores/useGlobalErrorStore";
 import ServerError from "@/components/common/ServerError";
 import ChatWidget from "@/components/common/ChatWidget";
@@ -33,6 +33,7 @@ export default function MainLayout() {
     >(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const { serverDown, setServerDown } = useGlobalErrorStore();
     const token = useAuthStore((s) => s.token);
@@ -69,7 +70,7 @@ export default function MainLayout() {
     };
 
     return (
-        <div className="bg-[#f7f8fa] font-sans min-h-screen m-0 object-cover overflow-y-overlay overflow-x-hidden">
+        <div className="bg-background font-sans min-h-screen m-0 object-cover overflow-y-overlay overflow-x-hidden">
             {/* Sidebar cố định */}
             <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
             {/* Nội dung chính */}
@@ -78,17 +79,75 @@ export default function MainLayout() {
                 <AppHeader onMenuClick={() => setSidebarOpen(true)} />
 
                 {/* Content */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden mt-[64px]">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden mt-[64px] pb-[72px] lg:pb-0">
                     <div className="max-w-[1380px] mx-auto px-0">
                         <Outlet />
                     </div>
                 </main>
 
                 {/* Footer */}
-                <div className="px-2 lg:px-4 mt-4">
+                <div className="px-2 lg:px-4 mt-4 mb-[76px] lg:mb-0">
                     <Footer />
                 </div>
             </div>
+            {/* BottomNavBar (Mobile Only) */}
+            <nav className="fixed bottom-0 left-0 w-full z-50 rounded-t-xl shadow-[0_-4px_16px_rgba(0,0,0,0.05)] bg-surface border-t border-outline-variant/10 lg:hidden flex justify-around items-center px-4 py-2">
+                <Link
+                    to="/search/word"
+                    className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 rounded-2xl min-w-[64px] ${
+                        location.pathname.startsWith("/search")
+                            ? "bg-primary-container text-on-primary-container font-bold"
+                            : "text-on-surface-variant"
+                    }`}
+                >
+                    <span className={`material-symbols-outlined ${location.pathname.startsWith("/search") ? "icon-fill" : ""}`}>
+                        search
+                    </span>
+                    <span className="font-medium text-[10px] mt-0.5">Tra cứu</span>
+                </Link>
+
+                <Link
+                    to="/topics"
+                    className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 rounded-2xl min-w-[64px] ${
+                        location.pathname === "/topics"
+                            ? "bg-primary-container text-on-primary-container font-bold"
+                            : "text-on-surface-variant"
+                    }`}
+                >
+                    <span className={`material-symbols-outlined ${location.pathname === "/topics" ? "icon-fill" : ""}`}>
+                        category
+                    </span>
+                    <span className="font-medium text-[10px] mt-0.5">Chủ đề</span>
+                </Link>
+
+                <Link
+                    to="/study-decks"
+                    className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 rounded-2xl min-w-[64px] ${
+                        location.pathname === "/study-decks"
+                            ? "bg-primary-container text-on-primary-container font-bold"
+                            : "text-on-surface-variant"
+                    }`}
+                >
+                    <span className={`material-symbols-outlined ${location.pathname === "/study-decks" ? "icon-fill" : ""}`}>
+                        style
+                    </span>
+                    <span className="font-medium text-[10px] mt-0.5">Sổ tay</span>
+                </Link>
+
+                <Link
+                    to="/users/my-info"
+                    className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 rounded-2xl min-w-[64px] ${
+                        location.pathname === "/users/my-info"
+                            ? "bg-primary-container text-on-primary-container font-bold"
+                            : "text-on-surface-variant"
+                    }`}
+                >
+                    <span className={`material-symbols-outlined ${location.pathname === "/users/my-info" ? "icon-fill" : ""}`}>
+                        person
+                    </span>
+                    <span className="font-medium text-[10px] mt-0.5">Hồ sơ</span>
+                </Link>
+            </nav>
             {/* Chat widget toàn cục (luôn fixed trên màn hình) */}
             <ChatWidget />
             <SelectionSearchButton
