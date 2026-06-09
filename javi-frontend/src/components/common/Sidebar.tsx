@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { hasAnyPermission } from "@/utils/permission";
 import { useAuthStore } from "@/stores/useAuthStore";
-import javi from "../../assets/javi-logo.png";
+import javi from "../../assets/blue-javi.png";
 
 const links = [
     // Public menu
