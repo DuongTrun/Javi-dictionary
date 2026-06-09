@@ -47,8 +47,19 @@ export default function SearchHomeContent() {
     const [detailEntityId, setDetailEntityId] = useState<number | string>(0);
 
     const [loginRequiredOpen, setLoginRequiredOpen] = useState(false);
+    const [tourStep, setTourStep] = useState<number>(0);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem("javi_onboarding_seen");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                setTourStep(1);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     /** Gọi API lấy lịch sử khi đã đăng nhập */
     const fetchHistory = () => {
@@ -144,6 +155,12 @@ export default function SearchHomeContent() {
                 <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl m-0">
                     Tra cứu từ vựng, hán tự, ngữ pháp bằng tiếng Nhật, Romaji hoặc tiếng Việt.
                 </p>
+                <button
+                    onClick={() => setTourStep(1)}
+                    className="mt-3 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-1.5 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all border-none cursor-pointer active:scale-95 shadow-sm"
+                >
+                    <span className="material-symbols-outlined text-[16px]">info</span> Hướng dẫn sử dụng nhanh
+                </button>
 
                 {/* Gần đây (Recent Searches) */}
                 {isLoggedIn && (history.length > 0 || loading) && (
@@ -180,7 +197,7 @@ export default function SearchHomeContent() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-stack-md md:gap-gutter">
                 
                 {/* Word of the Day */}
-                <div className="col-span-1 md:col-span-7 bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                <div id="word-of-the-day-card" className="col-span-1 md:col-span-7 bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10 relative overflow-hidden group hover:shadow-md transition-all duration-300">
                     <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl"></div>
                     
                     <div className="flex items-center justify-between mb-6 relative z-10">
@@ -255,7 +272,7 @@ export default function SearchHomeContent() {
                 </div>
 
                 {/* Explore Categories */}
-                <div className="col-span-1 md:col-span-12 mt-2">
+                <div id="explore-categories-section" className="col-span-1 md:col-span-12 mt-2">
                     <h2 className="font-headline-md text-base md:text-lg text-on-surface mb-4 pl-2 font-bold">Khám phá Danh mục</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div
@@ -353,6 +370,170 @@ export default function SearchHomeContent() {
                 onClose={() => setLoginRequiredOpen(false)}
                 message="Bạn cần đăng nhập để xem toàn bộ lịch sử tra cứu."
             />
+
+            {tourStep > 0 && (
+                <TooltipOverlay
+                    targetSelector={
+                        tourStep === 1
+                            ? "#search-input"
+                            : tourStep === 2
+                            ? "#word-of-the-day-card"
+                            : "#explore-categories-section"
+                    }
+                    title={
+                        tourStep === 1
+                            ? "🔍 1. Tìm kiếm nhanh"
+                            : tourStep === 2
+                            ? "☀️ 2. Từ vựng mỗi ngày"
+                            : "📚 3. Luyện thi & Chủ đề"
+                    }
+                    description={
+                        tourStep === 1
+                            ? "Nhập từ khóa tiếng Nhật (Romaji, Kana, Kanji) hoặc nghĩa tiếng Việt tại đây để tra từ điển nhanh chóng."
+                            : tourStep === 2
+                            ? "Javi đề xuất một từ vựng hay mỗi ngày kèm âm thanh và ví dụ sinh động giúp bạn tích lũy từ mới."
+                            : "Khám phá kho từ vựng ôn thi JLPT từ N5 đến N1 hoặc ôn từ vựng theo các chủ đề du lịch, ẩm thực, công sở."
+                    }
+                    onNext={() => {
+                        if (tourStep < 3) {
+                            setTourStep(tourStep + 1);
+                        } else {
+                            localStorage.setItem("javi_onboarding_seen", "true");
+                            setTourStep(0);
+                        }
+                    }}
+                    onSkip={() => {
+                        localStorage.setItem("javi_onboarding_seen", "true");
+                        setTourStep(0);
+                    }}
+                    isLast={tourStep === 3}
+                    tourStep={tourStep}
+                />
+            )}
         </div>
+    );
+}
+
+interface TooltipOverlayProps {
+    targetSelector: string;
+    title: string;
+    description: string;
+    onNext: () => void;
+    onSkip: () => void;
+    isLast: boolean;
+    tourStep: number;
+}
+
+function TooltipOverlay({
+    targetSelector,
+    title,
+    description,
+    onNext,
+    onSkip,
+    isLast,
+    tourStep,
+}: TooltipOverlayProps) {
+    const [coords, setCoords] = useState<{
+        top: number;
+        left: number;
+        width: number;
+        height: number;
+    } | null>(null);
+
+    useEffect(() => {
+        const updateCoords = () => {
+            const el = document.querySelector(targetSelector);
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                setCoords({
+                    top: rect.top + window.scrollY,
+                    left: rect.left + window.scrollX,
+                    width: rect.width,
+                    height: rect.height,
+                });
+            } else {
+                setCoords(null);
+            }
+        };
+
+        const timer = setTimeout(updateCoords, 100);
+
+        window.addEventListener("resize", updateCoords);
+        window.addEventListener("scroll", updateCoords);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener("resize", updateCoords);
+            window.removeEventListener("scroll", updateCoords);
+        };
+    }, [targetSelector, tourStep]);
+
+    if (!coords) return null;
+
+    const isCloseToBottom = coords.top + coords.height + 200 > document.documentElement.scrollHeight;
+    const bubbleTop = isCloseToBottom 
+        ? coords.top - 180 
+        : coords.top + coords.height + 12;
+
+    const bubbleStyle: React.CSSProperties = {
+        position: "absolute",
+        top: bubbleTop,
+        left: Math.max(
+            16,
+            Math.min(window.innerWidth - 320, coords.left + coords.width / 2 - 150)
+        ),
+        width: 290,
+        zIndex: 10000,
+    };
+
+    return (
+        <>
+            <div
+                className="fixed inset-0 bg-black/40 pointer-events-auto"
+                style={{ zIndex: 9998 }}
+                onClick={onSkip}
+            />
+
+            <div
+                className="absolute border-2 border-solid border-primary rounded-2xl pointer-events-none transition-all duration-300"
+                style={{
+                    top: coords.top - 6,
+                    left: coords.left - 6,
+                    width: coords.width + 12,
+                    height: coords.height + 12,
+                    zIndex: 9999,
+                    boxShadow:
+                        "0 0 0 9999px rgba(0, 0, 0, 0.45), 0 0 15px rgba(4, 81, 211, 0.5)",
+                }}
+            />
+
+            <div
+                className="bg-surface-container-lowest text-on-surface rounded-2xl p-5 shadow-xl border border-solid border-outline-variant/30 flex flex-col gap-3 transition-all duration-300"
+                style={bubbleStyle}
+            >
+                <div className="flex justify-between items-center">
+                    <h4 className="font-bold text-primary m-0 text-sm">{title}</h4>
+                    <span className="text-[11px] text-outline font-semibold">
+                        Bước {tourStep}/3
+                    </span>
+                </div>
+                <p className="m-0 text-xs text-on-surface-variant leading-relaxed">
+                    {description}
+                </p>
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-solid border-outline-variant/10">
+                    <button
+                        onClick={onSkip}
+                        className="bg-transparent border-none text-xs text-outline hover:text-on-surface-variant font-bold cursor-pointer p-0"
+                    >
+                        Bỏ qua
+                    </button>
+                    <button
+                        onClick={onNext}
+                        className="bg-primary hover:bg-primary-container text-white border-none text-xs px-4 py-1.5 rounded-full font-bold cursor-pointer transition-colors shadow-sm"
+                    >
+                        {isLast ? "Hoàn thành" : "Tiếp theo"}
+                    </button>
+                </div>
+            </div>
+        </>
     );
 }

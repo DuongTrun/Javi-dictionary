@@ -181,6 +181,7 @@ export default function SearchBar({
                     </button>
 
                     <input
+                        id="search-input"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         placeholder={placeholderMap[activeTab]}
