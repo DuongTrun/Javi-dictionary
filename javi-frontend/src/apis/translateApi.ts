@@ -17,7 +17,9 @@ import type {
  * Backend: POST /translate
  */
 export const callTranslateText = async (body: ITranslateRequest) => {
-  return await axiosClient.post<IBackendRes<ITranslateResponse>>(`/translate`, body);
+  return await axiosClient.post<IBackendRes<ITranslateResponse>>(`/translate`, body, {
+    skipGlobalError: true,
+  });
 };
 
 /**
@@ -36,6 +38,7 @@ export const callTranslateImage = async (payload: ITranslateImageRequest) => {
 
   return await axiosClient.post<IBackendRes<ITranslateResponse>>(`/translate/image`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    skipGlobalError: true,
   });
 };
 
@@ -76,7 +79,9 @@ export const callDeleteAllTranslateHistory = async () => {
  * Backend: POST /grammar/check
  */
 export const callCheckGrammar = async (body: IGrammarCheckSourceText) => {
-  return await axiosClient.post<IBackendRes<IGrammarCheckResult>>(`/grammar/check`, body);
+  return await axiosClient.post<IBackendRes<IGrammarCheckResult>>(`/grammar/check`, body, {
+    skipGlobalError: true,
+  });
 };
 
 export default {

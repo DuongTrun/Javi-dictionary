@@ -37,6 +37,7 @@ export const callEvaluateSimpleVoice = async (audioBlob: Blob, targetText: strin
 
   return await axiosClient.post<IBackendRes<IVoiceEvaluationResponse>>(`/voice/evaluate`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    skipGlobalError: true,
   });
 };
 
@@ -52,6 +53,7 @@ export const callEvaluateChatVoice = async (audioBlob: Blob, topicName: string, 
 
   return await axiosClient.post<IBackendRes<IVoiceChatResponse>>(`/voice/chat`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    skipGlobalError: true,
   });
 };
 
@@ -73,8 +75,9 @@ export interface IVoiceDialogueResponse {
  */
 export const callGenerateDialogue = async (topicName: string) => {
   return await axiosClient.get<IBackendRes<IVoiceDialogueResponse>>(`/voice/generate-dialogue`, {
-    params: { topicName }
-  });
+    params: { topicName },
+    skipGlobalError: true,
+  } as any);
 };
 
 export default {

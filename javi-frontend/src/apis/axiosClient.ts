@@ -7,6 +7,13 @@ import { usePremiumModalStore } from "@/stores/usePremiumModalStore";
 import { callLogout } from "@/apis/authApi";
 // import { useNavigate } from "react-router-dom";
 
+// Define custom config properties for Axios
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipGlobalError?: boolean;
+  }
+}
+
 // const navigate = useNavigate();
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -36,11 +43,14 @@ axiosClient.interceptors.response.use(
   async (error) => {
     // tạm thời comment để code tiếp
     // PHÁT HIỆN SERVER DOWN / MẤT KẾT NỐI
-    if (!error.response || (error.response.status >= 500 && error.response.status <= 599)) {
-      const { setServerDown } = useGlobalErrorStore.getState();
-      setServerDown(true); // hiển thị <ServerError /> toàn cục
-      message.error("Máy chủ đang gặp sự cố, vui lòng thử lại sau!");
-      return Promise.reject(error);
+    const skipGlobalError = error.config?.skipGlobalError;
+    if (!skipGlobalError) {
+      if (!error.response || (error.response.status >= 500 && error.response.status <= 599)) {
+        const { setServerDown } = useGlobalErrorStore.getState();
+        setServerDown(true); // hiển thị <ServerError /> toàn cục
+        message.error("Máy chủ đang gặp sự cố, vui lòng thử lại sau!");
+        return Promise.reject(error);
+      }
     }
 
     const status = error.response?.status;

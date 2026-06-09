@@ -15,4 +15,15 @@ public class JaviApplication {
     public static void main(String[] args) {
         SpringApplication.run(JaviApplication.class, args);
     }
+
+    @org.springframework.context.annotation.Bean
+    public org.springframework.boot.web.client.RestClientCustomizer restClientCustomizer() {
+        return restClientBuilder -> {
+            org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(15000); // 15 seconds
+            requestFactory.setReadTimeout(20000);    // 20 seconds
+            restClientBuilder.requestFactory(requestFactory);
+        };
+    }
 }

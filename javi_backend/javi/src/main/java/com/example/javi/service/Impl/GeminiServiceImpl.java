@@ -111,15 +111,20 @@ public class GeminiServiceImpl implements GeminiService {
 						""",
                 request.getTargetLang(), request.getSourceText());
 
-        String translatedText = chatClient.prompt().user(prompt).call().content();
+        try {
+            String translatedText = chatClient.prompt().user(prompt).call().content();
 
-        Translation translation = translationMapper.toTranslation(request);
-        translation.setUser(currentUser);
-        translation.setTranslatedText(translatedText);
-        translation.setEngine(EngineType.AI);
-        translationRepository.save(translation);
+            Translation translation = translationMapper.toTranslation(request);
+            translation.setUser(currentUser);
+            translation.setTranslatedText(translatedText);
+            translation.setEngine(EngineType.AI);
+            translationRepository.save(translation);
 
-        return translationMapper.translationToTranslateResponse(translation);
+            return translationMapper.translationToTranslateResponse(translation);
+        } catch (Exception e) {
+            log.error("[AI TRANSLATE FAIL] Lỗi dịch AI cho văn bản '{}': {}", request.getSourceText(), e.getMessage(), e);
+            throw new AppException(ErrorCode.ERROR_TRANSLATION);
+        }
     }
 
     @Override

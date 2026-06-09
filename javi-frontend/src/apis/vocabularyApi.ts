@@ -47,5 +47,7 @@ export const callDeleteVocabulary = (id: number) => {
 
 /** Giải nghĩa từ vựng bằng AI */
 export const callExplainVocabulary = (word: string) => {
-  return axiosClient.post<IBackendRes<string>>(`/vocab/explain/${encodeURIComponent(word)}`);
+  return axiosClient.post<IBackendRes<string>>(`/vocab/explain/${encodeURIComponent(word)}`, null, {
+    skipGlobalError: true,
+  });
 };
