@@ -31,7 +31,7 @@ public class UserDetailCustom implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Users user =
-                usersRepository.findByEmail(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                usersRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + username));
 
         // Tập hợp quyền
         Set<GrantedAuthority> authorities = new HashSet<>();
