@@ -148,7 +148,7 @@ public class VocabulariesController {
     }
 
     @GetMapping(value = "/explain/stream/{word}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamExplainVocabulary(@PathVariable String word) {
+    public ResponseEntity<SseEmitter> streamExplainVocabulary(@PathVariable String word) {
         SseEmitter emitter = new SseEmitter(60000L); // 60s timeout
 
         vocabulariesService.streamExplainVocabulary(word).subscribe(
@@ -163,6 +163,8 @@ public class VocabulariesController {
             () -> emitter.complete()
         );
 
-        return emitter;
+        return ResponseEntity.ok()
+                .header("X-Accel-Buffering", "no")
+                .body(emitter);
     }
 }

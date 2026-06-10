@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -66,7 +67,7 @@ public class TranslateController {
     }
 
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamTranslateText(@Valid @RequestBody TranslateRequest request) {
+    public ResponseEntity<SseEmitter> streamTranslateText(@Valid @RequestBody TranslateRequest request) {
         SseEmitter emitter = new SseEmitter(60000L); // 60s timeout
 
         geminiService.streamTranslateText(request).subscribe(
@@ -81,8 +82,11 @@ public class TranslateController {
             () -> emitter.complete()
         );
 
-        return emitter;
+        return ResponseEntity.ok()
+                .header("X-Accel-Buffering", "no")
+                .body(emitter);
     }
+
 
     @PostMapping("/image")
 

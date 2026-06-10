@@ -8,7 +8,11 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "meaning_example")
+@Table(
+        name = "meaning_example",
+        indexes = {
+            @Index(name = "idx_example_mean_id", columnList = "mean_id")
+        })
 @Getter
 @Setter
 @NoArgsConstructor

@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.javi.dto.response.VoiceChatResponse;
 import com.example.javi.dto.response.VoiceDialogueResponse;
 import com.example.javi.dto.response.VoiceEvaluationResponse;
+import com.example.javi.entity.Users;
+import com.example.javi.entity.AccountType;
 import com.example.javi.exeption.AppException;
 import com.example.javi.exeption.ErrorCode;
 import com.example.javi.service.Impl.VoiceServiceImpl;
@@ -127,6 +129,12 @@ class VoiceServiceImplTest {
             byte[] smallAudio = new byte[100];
             MockMultipartFile audioFile = new MockMultipartFile("audio", "test.webm", "audio/webm", smallAudio);
 
+            Users dummyUser = Users.builder()
+                    .username("testuser")
+                    .accountType(AccountType.PREMIUM)
+                    .build();
+            when(securityUtil.getCurrentUser()).thenReturn(dummyUser);
+
             // Gọi method — vì api-key là giả, Gemini sẽ trả lỗi -> fallback
             VoiceEvaluationResponse result = voiceService.evaluateSimplePronunciation(audioFile, "テスト");
 
@@ -183,6 +191,12 @@ class VoiceServiceImplTest {
         void shouldReturnFallbackWhenGeminiApiFails() {
             byte[] smallAudio = new byte[100];
             MockMultipartFile audioFile = new MockMultipartFile("audio", "test.webm", "audio/webm", smallAudio);
+
+            Users dummyUser = Users.builder()
+                    .username("testuser")
+                    .accountType(AccountType.PREMIUM)
+                    .build();
+            when(securityUtil.getCurrentUser()).thenReturn(dummyUser);
 
             VoiceChatResponse result = voiceService.evaluateChatConversation(audioFile, "Du lịch", "[]");
 

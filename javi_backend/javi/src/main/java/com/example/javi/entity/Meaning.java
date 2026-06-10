@@ -11,7 +11,11 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "meaning")
+@Table(
+        name = "meaning",
+        indexes = {
+            @Index(name = "idx_meaning_vocab_id", columnList = "vocab_id")
+        })
 @Getter
 @Setter
 @NoArgsConstructor
