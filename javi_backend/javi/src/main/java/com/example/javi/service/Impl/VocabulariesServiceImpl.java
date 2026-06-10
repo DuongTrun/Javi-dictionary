@@ -12,6 +12,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+import reactor.core.publisher.Flux;
+
 
 import com.example.javi.dto.request.MeaningRequest;
 import com.example.javi.dto.request.VocabRequest;
@@ -414,6 +416,45 @@ public class VocabulariesServiceImpl implements VocabulariesService {
         log.info("[CACHE SAVE] Giải nghĩa từ '{}' (FREE user)", word);
         return explain;
     }
+
+    @Override
+    public Flux<String> streamExplainVocabulary(String word) {
+        String cached = vocabulariesCacheService.getExplain(word);
+        Users currentUser = securityUtil.getCurrentUser();
+
+        // Chặn spam: mỗi user chỉ gọi explain 1 lần / 5 giây
+        String limitKey = "ai:limit:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu giải thích từ '{}'", currentUser.getUsername(), word);
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", Duration.ofSeconds(5));
+
+        // Kiểm tra quota cho FREE user
+        if (currentUser.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(currentUser);
+        }
+
+        // Nếu có cache, stream lại cache ngay lập tức
+        if (cached != null) {
+            log.info("[CACHE HIT] Giải nghĩa từ '{}' (Stream từ cache)", word);
+            return Flux.just(cached);
+        }
+
+        // Nếu chưa có cache, stream từ Gemini và lưu cache sau khi kết thúc stream
+        StringBuilder fullResult = new StringBuilder();
+        return geminiService.streamExplainWord(word)
+                .doOnNext(fullResult::append)
+                .doOnComplete(() -> {
+                    String explanation = fullResult.toString();
+                    if (!explanation.isBlank()) {
+                        vocabulariesCacheService.saveExplain(word, explanation);
+                        log.info("[CACHE SAVE] Đã lưu cache explain từ '{}' sau khi kết thúc stream", word);
+                    }
+                })
+                .doOnError(err -> log.error("Lỗi khi stream giải nghĩa từ '{}': {}", word, err.getMessage()));
+    }
+
 
     @Override
     @Transactional

@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Comment from "@/components/comment/Comment";
 import { IVocabResponse, IMeaning } from "@/types/backend";
-import { callExplainVocabulary } from "@/apis/vocabularyApi";
+import { getExplainVocabularyStreamUrl } from "@/apis/vocabularyApi";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+
+
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
 import SaveToDeckModal from "@/components/study-deck/SaveToDeckModal";
@@ -78,6 +81,7 @@ export default function VocabularyDetail({ data }: Props) {
 
         if (explanation) {
             setShowExplanation(true);
+            setDisplayedText(explanation);
             return;
         }
 
@@ -87,41 +91,62 @@ export default function VocabularyDetail({ data }: Props) {
         setLoading(true);
         setCanRetry(false);
 
+        let accumulatedText = "";
         try {
-            const res = await callExplainVocabulary(data.word);
-            setExplanation(res.data.result || "");
+            const token = useAuthStore.getState().token;
+            await fetchEventSource(getExplainVocabularyStreamUrl(data.word), {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+
+                async onopen(response) {
+                    if (response.ok && response.headers.get("content-type")?.includes("text/event-stream")) {
+                        return; // everything is good
+                    } else {
+                        let errorMsg = "Không thể giải thích từ vựng. Vui lòng thử lại!";
+                        try {
+                            const errorJson = await response.json();
+                            if (errorJson && errorJson.message) {
+                                errorMsg = errorJson.message;
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                        throw new Error(errorMsg);
+                    }
+                },
+                onmessage(ev) {
+                    accumulatedText += ev.data;
+                    setDisplayedText(accumulatedText);
+                    setExplanation(accumulatedText);
+                    setLoading(false);
+                },
+                onclose() {
+                    setLoading(false);
+                    setCanRetry(true);
+                },
+                onerror(err) {
+                    console.error("Lỗi stream:", err);
+                    toast.error(err.message || "Không thể giải thích từ vựng. Vui lòng thử lại!");
+                    setLoading(false);
+                    setCanRetry(true);
+                    throw err;
+                }
+            });
         } catch (err: any) {
             console.error("Lỗi khi gọi AI giải thích:", err);
-            toast.error(
-                err?.response?.data?.message ||
-                    "Không thể giải thích từ vựng. Vui lòng thử lại!"
-            );
-            setTimeout(() => setCanRetry(true), 5000);
-        } finally {
+            if (!accumulatedText) {
+                toast.error(
+                    err?.message ||
+                        "Không thể giải thích từ vựng. Vui lòng thử lại!"
+                );
+            }
             setLoading(false);
-            if (!explanation) setCanRetry(true);
+            setCanRetry(true);
         }
     };
 
-    // Hiệu ứng typing
-    useEffect(() => {
-        if (!showExplanation || !isLoggedIn || !explanation) {
-            setDisplayedText("");
-            return;
-        }
-
-        let currentIndex = 0;
-        const intervalId = setInterval(() => {
-            if (currentIndex < explanation.length) {
-                setDisplayedText((prev) => prev + explanation[currentIndex]);
-                currentIndex++;
-            } else {
-                clearInterval(intervalId);
-            }
-        }, 12);
-
-        return () => clearInterval(intervalId);
-    }, [showExplanation, explanation, isLoggedIn]);
 
     // Chia sẻ mạng xã hội
     const currentUrl = window.location.href;

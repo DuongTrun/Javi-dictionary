@@ -51,3 +51,9 @@ export const callExplainVocabulary = (word: string) => {
     skipGlobalError: true,
   });
 };
+
+/** URL stream giải nghĩa từ vựng bằng AI */
+export const getExplainVocabularyStreamUrl = (word: string) => {
+  return `${import.meta.env.VITE_API_URL}/vocab/explain/stream/${encodeURIComponent(word)}`;
+};
+

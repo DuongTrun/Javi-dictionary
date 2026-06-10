@@ -7,8 +7,12 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
+
 
 import com.example.javi.dto.request.TranslateRequest;
 import com.example.javi.dto.response.ApiResponse;
@@ -61,7 +65,27 @@ public class TranslateController {
                 .build();
     }
 
+    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamTranslateText(@Valid @RequestBody TranslateRequest request) {
+        SseEmitter emitter = new SseEmitter(60000L); // 60s timeout
+
+        geminiService.streamTranslateText(request).subscribe(
+            token -> {
+                try {
+                    emitter.send(SseEmitter.event().data(token));
+                } catch (Exception e) {
+                    // Ignore or log error
+                }
+            },
+            error -> emitter.completeWithError(error),
+            () -> emitter.complete()
+        );
+
+        return emitter;
+    }
+
     @PostMapping("/image")
+
     public ApiResponse<TranslateResponse> translateImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(defaultValue = "vi") String targetLang,

@@ -8,10 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 
 import com.example.javi.dto.request.VocabRequest;
 import com.example.javi.dto.request.VocabUpdateDTO;
@@ -142,5 +145,24 @@ public class VocabulariesController {
                 .message("Giải nghĩa thành công")
                 .result(response)
                 .build();
+    }
+
+    @GetMapping(value = "/explain/stream/{word}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamExplainVocabulary(@PathVariable String word) {
+        SseEmitter emitter = new SseEmitter(60000L); // 60s timeout
+
+        vocabulariesService.streamExplainVocabulary(word).subscribe(
+            token -> {
+                try {
+                    emitter.send(SseEmitter.event().data(token));
+                } catch (Exception e) {
+                    // Ignore or log error
+                }
+            },
+            error -> emitter.completeWithError(error),
+            () -> emitter.complete()
+        );
+
+        return emitter;
     }
 }

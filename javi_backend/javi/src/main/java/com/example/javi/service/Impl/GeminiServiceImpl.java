@@ -11,6 +11,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
+
 
 import com.example.javi.dto.request.GrammarCheckSourceText;
 import com.example.javi.dto.request.TranslateRequest;
@@ -129,6 +131,64 @@ public class GeminiServiceImpl implements GeminiService {
 
     @Override
     @Transactional
+    public Flux<String> streamTranslateText(TranslateRequest request) {
+        Users currentUser = securityUtil.getCurrentUser();
+        if (currentUser == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        if (currentUser.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(currentUser);
+        }
+        String text = request.getSourceText();
+        if (text == null || text.isBlank()) {
+            throw new AppException(ErrorCode.SOURCE_TEXT_CANNOT_EMPTY);
+        }
+        if (text.length() > 5000) {
+            throw new AppException(ErrorCode.SOURCE_TEXT_TOO_LONG);
+        }
+
+        Language detectedLang = detector.detectLanguageOf(request.getSourceText());
+        String detectedLangCode = detectedLang.getIsoCode639_1().toString();
+        String currentLang = request.getSourceLang();
+        if (currentLang == null || currentLang.isBlank() || !detectedLangCode.equalsIgnoreCase(currentLang)) {
+            log.info(
+                    "[LANG DETECT] Phát hiện ngôn ngữ thực tế là '{}', cập nhật sourceLang từ '{}' → '{}'",
+                    detectedLangCode,
+                    currentLang,
+                    detectedLangCode);
+            request.setSourceLang(detectedLangCode);
+        }
+
+        String prompt = String.format(
+                """
+						Please translate this paragraph into %s so that it sounds natural, easy to read,
+						and conveys the original feeling.
+						Output only the final translation — do not include explanations, brackets, or notes.
+						The paragraph to be translated is: %s
+						""",
+                request.getTargetLang(), request.getSourceText());
+
+        StringBuilder fullResult = new StringBuilder();
+        return chatClient.prompt().user(prompt).stream().content()
+                .doOnNext(fullResult::append)
+                .doOnComplete(() -> {
+                    String translatedText = fullResult.toString();
+                    if (!translatedText.isBlank()) {
+                        Translation translation = translationMapper.toTranslation(request);
+                        translation.setUser(currentUser);
+                        translation.setTranslatedText(translatedText);
+                        translation.setEngine(EngineType.AI);
+                        translationRepository.save(translation);
+                        log.info("[AI TRANSLATE STREAM SAVE] Đã lưu bản dịch AI vào DB cho user {}", currentUser.getUsername());
+                    }
+                })
+                .doOnError(err -> log.error("[AI TRANSLATE STREAM FAIL] Lỗi khi stream dịch AI: {}", err.getMessage()));
+    }
+
+
+    @Override
+    @Transactional
     public TranslateResponse translateImage(MultipartFile imageFile, String targetLang, String sourceLang) {
         Users user = securityUtil.getCurrentUser();
         if (user == null) throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -183,6 +243,33 @@ public class GeminiServiceImpl implements GeminiService {
         log.info("AI explanation for {}: {}", word, result);
         return result;
     }
+
+    @Override
+    public Flux<String> streamExplainWord(String word) {
+        String prompt = String.format(
+                """
+						Bạn là một giáo viên người Nhật chuyên dạy tiếng Nhật cho người Việt.
+						Hãy giải thích từ vựng: "%s" một cách tự nhiên.
+						Cách trình bày mong muốn:
+						1. Dòng đầu: Viết từ vựng gốc bằng tiếng Nhật.
+						Ví dụ: 「飲む」(のむ, nomu)
+						2. Viết một đoạn ngắn giải thích ý nghĩa tổng quát, phạm vi sử dụng của từ, dễ hiểu, tự nhiên.
+						3. Sau đó liệt kê các cách dùng phổ biến nhất theo dạng:
+							1. Nghĩa 1 (mô tả nghĩa, dùng khi nào)
+								Ví dụ: Câu ví dụ tiếng Nhật (Phiên âm Romaji)
+								Dịch nghĩa tiếng Việt
+							2. Nghĩa 2 ...
+						4. Nếu có thể, chọn ví dụ sinh động, gần gũi (đời sống, công việc, học tập).
+						5. Tuyệt đối không dùng ký tự đặc biệt như *, **, #, hoặc markdown.
+						6. Trình bày rõ ràng, có dấu xuống dòng tự nhiên, dễ hiển thị trên web.
+						7. Trả về hoàn toàn bằng tiếng Việt (ngoại trừ từ và ví dụ tiếng Nhật).
+						8. Không thêm phần tiêu đề, giới thiệu hay lời chào.
+						""",
+                word);
+
+        return chatClient.prompt().user(prompt).stream().content();
+    }
+
 
     /**
      * Khi retry 3 lần vẫn lỗi → Spring tự động gọi hàm này.

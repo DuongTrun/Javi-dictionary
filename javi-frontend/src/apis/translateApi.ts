@@ -84,6 +84,11 @@ export const callCheckGrammar = async (body: IGrammarCheckSourceText) => {
   });
 };
 
+/** URL stream dịch văn bản bằng AI */
+export const getTranslateStreamUrl = () => {
+  return `${import.meta.env.VITE_API_URL}/translate/stream`;
+};
+
 export default {
   callTranslateText,
   callTranslateImage,
@@ -91,4 +96,6 @@ export default {
   callDeleteSelectedTranslateHistory,
   callDeleteAllTranslateHistory,
   callCheckGrammar,
+  getTranslateStreamUrl,
 };
+

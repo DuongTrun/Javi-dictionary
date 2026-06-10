@@ -11,6 +11,8 @@ import com.example.javi.dto.request.VocabUpdateDTO;
 import com.example.javi.dto.response.VocabResponse;
 import com.example.javi.entity.Vocabularies;
 
+import reactor.core.publisher.Flux;
+
 public interface VocabulariesService {
     VocabResponse createVocabulary(VocabRequest request);
 
@@ -26,5 +28,8 @@ public interface VocabulariesService {
 
     String explainVocabulary(String word);
 
+    Flux<String> streamExplainVocabulary(String word);
+
     void deleteVocabularyById(Long id);
 }
+

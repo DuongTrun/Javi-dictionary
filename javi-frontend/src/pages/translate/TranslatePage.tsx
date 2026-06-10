@@ -8,7 +8,9 @@ import {
     callCheckGrammar,
     callDeleteSelectedTranslateHistory,
     callDeleteAllTranslateHistory,
+    getTranslateStreamUrl,
 } from "@/apis/translateApi";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -284,6 +286,51 @@ export default function TranslatePage() {
                         ...(returnedTargetLang !== undefined
                             ? { targetLang: returnedTargetLang }
                             : {}),
+                    });
+                } else if (currentEngine === "AI") {
+                    const payload = {
+                        sourceText: blk.sourceText ?? "",
+                        sourceLang: blk.sourceLang ?? "ja",
+                        targetLang: blk.targetLang ?? "vi",
+                        engine: "AI",
+                    };
+
+                    let accumulatedText = "";
+                    await fetchEventSource(getTranslateStreamUrl(), {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload),
+                        async onopen(response) {
+                            if (response.ok && response.headers.get("content-type")?.includes("text/event-stream")) {
+                                return; // everything is good
+                            } else {
+                                let errorMsg = "Dịch thất bại";
+                                try {
+                                    const errorJson = await response.json();
+                                    if (errorJson && errorJson.message) {
+                                        errorMsg = errorJson.message;
+                                    }
+                                } catch (e) {
+                                    // ignore
+                                }
+                                throw new Error(errorMsg);
+                            }
+                        },
+                        onmessage(ev) {
+                            accumulatedText += ev.data;
+                            updateBlock(id, { translatedText: accumulatedText });
+                        },
+                        onclose() {
+                            updateBlock(id, { loading: false });
+                            isProcessingRef.current = false;
+                        },
+                        onerror(err) {
+                            console.error("Lỗi stream dịch:", err);
+                            throw err;
+                        }
                     });
                 } else {
                     const payload = {
