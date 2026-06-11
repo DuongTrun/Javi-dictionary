@@ -43,6 +43,7 @@ public class VoiceServiceImpl implements VoiceService {
     String apiKey;
     SecurityUtil securityUtil;
     UsersService usersService;
+    RestClient restClient;
 
     public VoiceServiceImpl(
             ChatClient.Builder builder, 
@@ -55,17 +56,21 @@ public class VoiceServiceImpl implements VoiceService {
         this.apiKey = apiKey;
         this.securityUtil = securityUtil;
         this.usersService = usersService;
+
+        // Pooled JDK HTTP Client request factory for connection reuse
+        java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
+                .connectTimeout(java.time.Duration.ofSeconds(45))
+                .build();
+        org.springframework.http.client.JdkClientHttpRequestFactory requestFactory = 
+                new org.springframework.http.client.JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(45000);
+
+        this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
+                .build();
     }
 
     private String callGeminiDirect(byte[] audioBytes, MimeType mimeType, String systemInstruction) throws Exception {
-        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
-            new org.springframework.http.client.SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(45000); // 45 seconds
-        requestFactory.setReadTimeout(45000);    // 45 seconds
-
-        RestClient restClient = RestClient.builder()
-            .requestFactory(requestFactory)
-            .build();
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
@@ -86,7 +91,7 @@ public class VoiceServiceImpl implements VoiceService {
             )
         );
 
-        String responseJson = restClient.post()
+        String responseJson = this.restClient.post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
             .body(requestBody)
@@ -106,14 +111,6 @@ public class VoiceServiceImpl implements VoiceService {
     }
 
     private String callGeminiTextDirect(String systemInstruction, String promptText) throws Exception {
-        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = 
-            new org.springframework.http.client.SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(45000); // 45 seconds
-        requestFactory.setReadTimeout(45000);    // 45 seconds
-
-        RestClient restClient = RestClient.builder()
-            .requestFactory(requestFactory)
-            .build();
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
@@ -131,7 +128,7 @@ public class VoiceServiceImpl implements VoiceService {
             )
         );
 
-        String responseJson = restClient.post()
+        String responseJson = this.restClient.post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
             .body(requestBody)

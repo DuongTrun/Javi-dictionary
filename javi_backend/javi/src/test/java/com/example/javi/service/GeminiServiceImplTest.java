@@ -96,4 +96,32 @@ class GeminiServiceImplTest {
         assertEquals(EngineType.AI, mockTranslation.getEngine());
         assertEquals(mockUser, mockTranslation.getUser());
     }
+
+    @Test
+    @DisplayName("streamTranslateText - Trả về bản dịch đã lưu trong DB nếu cache hit")
+    void shouldReturnCachedTranslationWhenCacheHits() {
+        TranslateRequest request = new TranslateRequest();
+        request.setSourceText("こんにちは");
+        request.setSourceLang("ja");
+        request.setTargetLang("vi");
+        request.setEngine("AI");
+
+        when(securityUtil.getCurrentUser()).thenReturn(mockUser);
+
+        Translation cachedTranslation = new Translation();
+        cachedTranslation.setTranslatedText("Xin chào");
+
+        when(translationRepository.findFirstBySourceTextAndSourceLangAndTargetLangAndEngine(
+                eq("こんにちは"), eq("ja"), eq("vi"), eq(EngineType.AI)))
+                .thenReturn(java.util.Optional.of(cachedTranslation));
+
+        List<String> result = geminiService.streamTranslateText(request).collectList().block();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Xin chào", result.get(0));
+
+        verify(chatClient, never()).prompt();
+        verify(translationRepository, never()).save(any());
+    }
 }

@@ -103,6 +103,15 @@ public class GeminiServiceImpl implements GeminiService {
                     detectedLangCode);
             request.setSourceLang(detectedLangCode);
         }
+
+        // Check cache before calling AI
+        java.util.Optional<Translation> cachedTranslation = translationRepository.findFirstBySourceTextAndSourceLangAndTargetLangAndEngine(
+                request.getSourceText(), request.getSourceLang(), request.getTargetLang(), EngineType.AI);
+        if (cachedTranslation.isPresent()) {
+            log.info("[AI TRANSLATE CACHE HIT] Đã tìm thấy bản dịch AI trong DB");
+            return translationMapper.translationToTranslateResponse(cachedTranslation.get());
+        }
+
         // dịch vẫn sượng do prompt chưa chuẩn
         String prompt = String.format(
                 """
@@ -158,6 +167,14 @@ public class GeminiServiceImpl implements GeminiService {
                     currentLang,
                     detectedLangCode);
             request.setSourceLang(detectedLangCode);
+        }
+
+        // Check cache before calling AI
+        java.util.Optional<Translation> cachedTranslation = translationRepository.findFirstBySourceTextAndSourceLangAndTargetLangAndEngine(
+                request.getSourceText(), request.getSourceLang(), request.getTargetLang(), EngineType.AI);
+        if (cachedTranslation.isPresent()) {
+            log.info("[AI TRANSLATE STREAM CACHE HIT] Trả về bản dịch AI từ DB cho stream");
+            return Flux.just(cachedTranslation.get().getTranslatedText());
         }
 
         String prompt = String.format(
