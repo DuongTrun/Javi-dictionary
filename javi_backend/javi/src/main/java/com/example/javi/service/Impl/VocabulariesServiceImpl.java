@@ -379,50 +379,13 @@ public class VocabulariesServiceImpl implements VocabulariesService {
         String cached = vocabulariesCacheService.getExplain(word);
         Users currentUser = securityUtil.getCurrentUser();
 
-        // Chặn spam: mỗi user chỉ gọi explain 1 lần / 5 giây
-        String limitKey = "ai:limit:" + currentUser.getId();
-        if (redisHelper.find(limitKey, String.class) != null) {
-            log.warn("[AI LIMIT] User {} spam yêu cầu giải thích từ '{}'", currentUser.getUsername(), word);
-            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
-        }
-        redisHelper.save(limitKey, "1", Duration.ofSeconds(5));
-
-        // PREMIUM user: dùng cache nếu có, nếu không thì gọi AI và cache lại
-        if (currentUser.getAccountType().equals(AccountType.PREMIUM)) {
-            if (cached != null) {
-                log.info("[CACHE HIT] Giải nghĩa từ '{}' (PREMIUM user)", word);
-                return cached;
-            }
-            String explain = geminiService.explainWord(word);
-            vocabulariesCacheService.saveExplain(word, explain);
-            log.info("[CACHE SAVE] Giải nghĩa từ '{}' (PREMIUM user)", word);
-            return explain;
-        }
-
-        // FREE user: kiểm tra lượt và trừ lượt sử dụng AI
-        if (currentUser.getAccountType() == AccountType.FREE) {
-            usersService.checkAndUpdateAiQuota(currentUser);
-        }
-
-        // Nếu có cache, trả cache (vẫn đã bị trừ lượt)
+        // Cache hit → trả ngay, không tốn rate limit hay quota
         if (cached != null) {
-            log.info("[CACHE HIT] Giải nghĩa từ '{}' (FREE user, vẫn trừ lượt)", word);
+            log.info("[CACHE HIT] Giải nghĩa từ '{}' (trả ngay từ cache)", word);
             return cached;
         }
 
-        // Nếu chưa có cache, gọi AI, cache lại và trả về
-        String explain = geminiService.explainWord(word);
-        vocabulariesCacheService.saveExplain(word, explain);
-        log.info("[CACHE SAVE] Giải nghĩa từ '{}' (FREE user)", word);
-        return explain;
-    }
-
-    @Override
-    public Flux<String> streamExplainVocabulary(String word) {
-        String cached = vocabulariesCacheService.getExplain(word);
-        Users currentUser = securityUtil.getCurrentUser();
-
-        // Chặn spam: mỗi user chỉ gọi explain 1 lần / 5 giây
+        // Chặn spam: mỗi user chỉ gọi explain 1 lần / 5 giây (chỉ áp dụng khi cache miss)
         String limitKey = "ai:limit:" + currentUser.getId();
         if (redisHelper.find(limitKey, String.class) != null) {
             log.warn("[AI LIMIT] User {} spam yêu cầu giải thích từ '{}'", currentUser.getUsername(), word);
@@ -435,10 +398,35 @@ public class VocabulariesServiceImpl implements VocabulariesService {
             usersService.checkAndUpdateAiQuota(currentUser);
         }
 
-        // Nếu có cache, stream lại cache ngay lập tức
+        // Cache miss → gọi AI, cache lại và trả về
+        String explain = geminiService.explainWord(word);
+        vocabulariesCacheService.saveExplain(word, explain);
+        log.info("[CACHE SAVE] Giải nghĩa từ '{}'", word);
+        return explain;
+    }
+
+    @Override
+    public Flux<String> streamExplainVocabulary(String word) {
+        String cached = vocabulariesCacheService.getExplain(word);
+        Users currentUser = securityUtil.getCurrentUser();
+
+        // Cache hit → stream lại cache ngay, không tốn rate limit hay quota
         if (cached != null) {
             log.info("[CACHE HIT] Giải nghĩa từ '{}' (Stream từ cache)", word);
             return Flux.just(cached);
+        }
+
+        // Chặn spam: mỗi user chỉ gọi explain 1 lần / 5 giây (chỉ áp dụng khi cache miss)
+        String limitKey = "ai:limit:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu giải thích từ '{}'", currentUser.getUsername(), word);
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", Duration.ofSeconds(5));
+
+        // Kiểm tra quota cho FREE user
+        if (currentUser.getAccountType() == AccountType.FREE) {
+            usersService.checkAndUpdateAiQuota(currentUser);
         }
 
         // Nếu chưa có cache, stream từ Gemini và lưu cache sau khi kết thúc stream

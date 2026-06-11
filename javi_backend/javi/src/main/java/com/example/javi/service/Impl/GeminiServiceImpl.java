@@ -250,8 +250,8 @@ public class GeminiServiceImpl implements GeminiService {
 
     @Retryable(
             value = {org.springframework.ai.retry.NonTransientAiException.class},
-            maxAttempts = 3, // tổng cộng 3 lần thử
-            backoff = @Backoff(delay = 2000, multiplier = 2) // delay tăng dần 2s, 4s
+            maxAttempts = 2, // tối đa 2 lần (1 lần gốc + 1 retry) để tránh treo UX
+            backoff = @Backoff(delay = 1000) // chờ 1s giữa các lần thử
             )
     @Override
     public String explainWord(String word) {

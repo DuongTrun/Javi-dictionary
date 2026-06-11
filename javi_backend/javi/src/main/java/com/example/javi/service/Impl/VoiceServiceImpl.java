@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Base64;
+import java.time.Duration;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,21 +63,56 @@ public class VoiceServiceImpl implements VoiceService {
         this.usersService = usersService;
         this.redisHelper = redisHelper;
 
-        // Pooled JDK HTTP Client request factory for connection reuse
+        // Pooled JDK HTTP Client — timeout thấp để fail-fast, tránh treo UX
         java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
-                .connectTimeout(java.time.Duration.ofSeconds(45))
+                .connectTimeout(Duration.ofSeconds(10))
                 .build();
         org.springframework.http.client.JdkClientHttpRequestFactory requestFactory = 
                 new org.springframework.http.client.JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(45000);
+        requestFactory.setReadTimeout(20000); // 20s read timeout
 
         this.restClient = RestClient.builder()
                 .requestFactory(requestFactory)
                 .build();
     }
 
+    private static final String GEMINI_API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=";
+
+    // ===== Prompt templates (static để tránh tạo lại mỗi request) =====
+    private static final String PRONUNCIATION_PROMPT_TEMPLATE =
+            """
+            Bạn là chuyên gia huấn luyện phát âm tiếng Nhật cho người Việt.
+            Lắng nghe audio, so sánh với mẫu: "%s".
+            Phân tích lỗi phát âm (trường âm, âm ngắt っ, phụ/nguyên âm).
+            Trả về CHỈ JSON (không markdown):
+            {"score":85,"accuracyLevel":"GOOD","feedback":"nhận xét tiếng Việt","wordsAnalysis":[{"word":"từ mẫu","isCorrect":true,"phonemeError":""}]}
+            """;
+
+    private static final String KAIWA_PROMPT_TEMPLATE =
+            """
+            Bạn là Kaiwa Partner luyện hội thoại tiếng Nhật kiêm giáo viên chấm điểm.
+            Chủ đề: "%s". Lịch sử: %s
+            Nhiệm vụ: 1.Nhận diện STT 2.Dịch Việt 3.Chấm phát âm 0-100 4.Kiểm tra ngữ pháp 5.Đáp lại bằng tiếng Nhật (<25 từ).
+            Trả về CHỈ JSON (không markdown):
+            {"userSpokenText":"","userSpokenTranslation":"","pronunciationScore":85,"pronunciationFeedback":"","isGrammarValid":true,"grammarFeedback":"","nextAiResponseText":"","nextAiResponseTranslation":""}
+            """;
+
+    private static final String DIALOGUE_PROMPT_TEMPLATE =
+            """
+            Bạn là trợ lý AI thiết kế tình huống giao tiếp tiếng Nhật.
+            Chủ đề: %s. Tạo 1 câu hỏi + 3 phương án trả lời (khẳng định/phủ định/mở rộng), trình độ sơ trung cấp.
+            Trả về CHỈ JSON (không markdown):
+            {"question":"","questionVi":"","options":[{"jp":"","vi":""},{"jp":"","vi":""},{"jp":"","vi":""}]}
+            """;
+
+    /**
+     * Gọi Gemini REST API với audio inlineData.
+     * Tự động retry 1 lần nếu gặp lỗi 503 (server overloaded).
+     */
     private String callGeminiDirect(byte[] audioBytes, MimeType mimeType, String systemInstruction) throws Exception {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + apiKey;
+        String url = GEMINI_API_URL + apiKey;
+        String audioBase64 = Base64.getEncoder().encodeToString(audioBytes);
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -84,7 +120,7 @@ public class VoiceServiceImpl implements VoiceService {
                     "parts", List.of(
                         Map.of("inlineData", Map.of(
                             "mimeType", mimeType.toString(),
-                            "data", Base64.getEncoder().encodeToString(audioBytes)
+                            "data", audioBase64
                         ))
                     )
                 )
@@ -96,27 +132,16 @@ public class VoiceServiceImpl implements VoiceService {
             )
         );
 
-        String responseJson = this.restClient.post()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(requestBody)
-            .retrieve()
-            .body(String.class);
-
-        JsonNode rootNode = objectMapper.readTree(responseJson);
-        String rawResponse = rootNode.path("candidates")
-            .path(0)
-            .path("content")
-            .path("parts")
-            .path(0)
-            .path("text")
-            .asText();
-
-        return rawResponse;
+        String responseJson = executeWithRetry(url, requestBody);
+        return extractTextFromResponse(responseJson);
     }
 
+    /**
+     * Gọi Gemini REST API với text-only prompt.
+     * Tự động retry 1 lần nếu gặp lỗi 503.
+     */
     private String callGeminiTextDirect(String systemInstruction, String promptText) throws Exception {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + apiKey;
+        String url = GEMINI_API_URL + apiKey;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -133,23 +158,49 @@ public class VoiceServiceImpl implements VoiceService {
             )
         );
 
-        String responseJson = this.restClient.post()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(requestBody)
-            .retrieve()
-            .body(String.class);
+        String responseJson = executeWithRetry(url, requestBody);
+        return extractTextFromResponse(responseJson);
+    }
 
+    /**
+     * Thực thi HTTP POST với retry tự động khi gặp 503.
+     * Retry tối đa 1 lần, chờ 1 giây giữa các lần thử.
+     */
+    private String executeWithRetry(String url, Map<String, Object> requestBody) throws Exception {
+        int maxRetries = 1;
+        Exception lastException = null;
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return this.restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+            } catch (org.springframework.web.client.HttpServerErrorException e) {
+                lastException = e;
+                if (e.getStatusCode().value() == 503 && attempt < maxRetries) {
+                    log.warn("[GEMINI 503] Server quá tải, retry sau 1 giây... (attempt {})", attempt + 1);
+                    Thread.sleep(1000);
+                } else {
+                    throw e;
+                }
+            }
+        }
+        throw lastException;
+    }
+
+    /** Trích xuất text response từ JSON trả về của Gemini API */
+    private String extractTextFromResponse(String responseJson) throws Exception {
         JsonNode rootNode = objectMapper.readTree(responseJson);
-        String rawResponse = rootNode.path("candidates")
+        return rootNode.path("candidates")
             .path(0)
             .path("content")
             .path("parts")
             .path(0)
             .path("text")
             .asText();
-
-        return rawResponse;
     }
 
     @Override
@@ -184,28 +235,7 @@ public class VoiceServiceImpl implements VoiceService {
             MimeType mimeType = MimeTypeUtils.parseMimeType(
                     audioFile.getContentType() != null ? audioFile.getContentType() : "audio/webm");
 
-            String systemInstruction = String.format(
-                    """
-                    Bạn là chuyên gia huấn luyện phát âm tiếng Nhật dành cho người Việt Nam.
-                    Nhiệm vụ của bạn:
-                    1. Lắng nghe tệp âm thanh (audio) được gửi kèm.
-                    2. So sánh âm thanh này với văn bản tiếng Nhật mẫu: "%s".
-                    3. Phân tích chi tiết lỗi phát âm (ví dụ: thiếu trường âm, sai âm ngắt っ, phát âm sai phụ âm hoặc nguyên âm).
-                    4. Trả về kết quả CHỈ dưới dạng cấu trúc JSON hợp lệ sau đây, không bọc markdown hay chữ viết thừa, không có ```json ở đầu.
-
-                    {
-                      "score": 85,
-                      "accuracyLevel": "GOOD",
-                      "feedback": "Nhận xét tổng quát bằng tiếng Việt về phát âm của người học",
-                      "wordsAnalysis": [
-                         {
-                           "word": "từ tiếng Nhật mẫu",
-                           "isCorrect": true,
-                           "phonemeError": "Nếu isCorrect là false, ghi rõ lỗi sai bằng tiếng Việt. Nếu isCorrect là true, để trống."
-                         }
-                      ]
-                    }
-                    """, targetText);
+            String systemInstruction = String.format(PRONUNCIATION_PROMPT_TEMPLATE, targetText);
 
             String rawResponse = callGeminiDirect(audioBytes, mimeType, systemInstruction);
             log.info("[VOICE EVALUATION] Raw response: {}", rawResponse);
@@ -257,32 +287,7 @@ public class VoiceServiceImpl implements VoiceService {
             MimeType mimeType = MimeTypeUtils.parseMimeType(
                     audioFile.getContentType() != null ? audioFile.getContentType() : "audio/webm");
 
-            String systemInstruction = String.format(
-                    """
-                    Bạn là đối tác luyện hội thoại tiếng Nhật (Kaiwa Partner) và đồng thời là giáo viên chấm điểm.
-                    Ngữ cảnh cuộc hội thoại: Chủ đề "%s".
-                    Lịch sử các câu đối đáp trước đó (JSON): %s
-
-                    Nhiệm vụ của bạn:
-                    1. Lắng nghe tệp âm thanh (audio) người học nói tự do.
-                    2. Nhận diện chính xác văn bản tiếng Nhật (STT) người học vừa nói.
-                    3. Dịch nghĩa câu nói đó sang tiếng Việt.
-                    4. Đánh giá phát âm (chấm điểm từ 0-100, chỉ rõ lỗi âm ngắt, trường âm bị sai hoặc ngắt nhịp chưa đúng).
-                    5. Kiểm tra ngữ pháp câu người học nói. Nếu chưa tự nhiên hoặc sai ngữ pháp, hãy đề xuất câu mẫu tự nhiên hơn của người Nhật và giải thích ngắn gọn bằng tiếng Việt.
-                    6. Đưa ra câu đáp tiếp theo của bạn (bằng tiếng Nhật ngắn gọn, dưới 25 từ, phù hợp với ngữ cảnh hội thoại hiện tại) để tiếp tục cuộc trò chuyện.
-                    7. Trả về kết quả CHỈ dưới dạng cấu trúc JSON hợp lệ sau đây, không bọc markdown hay chữ viết thừa, không có ```json ở đầu.
-
-                    {
-                      "userSpokenText": "chữ tiếng Nhật nhận diện được từ giọng nói của user",
-                      "userSpokenTranslation": "dịch nghĩa tiếng Việt câu của user",
-                      "pronunciationScore": 85,
-                      "pronunciationFeedback": "Lời khuyên/nhận xét phát âm cụ thể bằng tiếng Việt",
-                      "isGrammarValid": true,
-                      "grammarFeedback": "Nhận xét ngữ pháp và câu gợi ý tự nhiên hơn bằng tiếng Việt (nếu có, nếu không thì để trống)",
-                      "nextAiResponseText": "câu đáp lại tiếp theo của bạn bằng tiếng Nhật",
-                      "nextAiResponseTranslation": "dịch tiếng Việt câu đáp lại của bạn"
-                    }
-                    """, topicName, historyJson);
+            String systemInstruction = String.format(KAIWA_PROMPT_TEMPLATE, topicName, historyJson);
 
             String rawResponse = callGeminiDirect(audioBytes, mimeType, systemInstruction);
             log.info("[VOICE CHAT KAIWA] Raw response: {}", rawResponse);
@@ -325,41 +330,8 @@ public class VoiceServiceImpl implements VoiceService {
         }
 
         try {
-            String systemInstruction = 
-                    """
-                    Bạn là một trợ lý AI thiết kế câu hỏi tình huống giao tiếp tiếng Nhật chuyên nghiệp.
-                    Hãy tạo ra một tình huống hội thoại mẫu (gồm 1 câu hỏi và 3 câu trả lời gợi ý) phù hợp với ngữ cảnh của chủ đề được yêu cầu.
-                    Ngữ cảnh chủ đề: %s.
-                    
-                    Yêu cầu:
-                    1. Tạo ra 1 câu hỏi tiếng Nhật tự nhiên, ngắn gọn (phù hợp trình độ giao tiếp sơ trung cấp).
-                    2. Dịch nghĩa câu hỏi đó sang tiếng Việt.
-                    3. Đưa ra 3 phương án trả lời bằng tiếng Nhật khác nhau (ví dụ: một khẳng định, một phủ định, một phản hồi mở rộng) để người học lựa chọn để trả lời.
-                    4. Dịch nghĩa của 3 phương án trả lời đó sang tiếng Việt.
-                    5. Trả về kết quả CHỈ dưới dạng cấu trúc JSON hợp lệ sau đây, không bọc markdown hay chữ viết thừa, không có ```json ở đầu.
-
-                    {
-                      "question": "câu hỏi tiếng Nhật",
-                      "questionVi": "dịch nghĩa tiếng Việt câu hỏi",
-                      "options": [
-                        {
-                          "jp": "phương án 1 tiếng Nhật",
-                          "vi": "phương án 1 tiếng Việt"
-                        },
-                        {
-                          "jp": "phương án 2 tiếng Nhật",
-                          "vi": "phương án 2 tiếng Việt"
-                        },
-                        {
-                          "jp": "phương án 3 tiếng Nhật",
-                          "vi": "phương án 3 tiếng Việt"
-                        }
-                      ]
-                    }
-                    """;
-
-            String formattedInstruction = String.format(systemInstruction, topicName);
-            String rawResponse = callGeminiTextDirect(formattedInstruction, "Hãy tạo hội thoại cho chủ đề: " + topicName);
+            String systemInstruction = String.format(DIALOGUE_PROMPT_TEMPLATE, topicName);
+            String rawResponse = callGeminiTextDirect(systemInstruction, "Tạo hội thoại cho chủ đề: " + topicName);
             log.info("[VOICE DIALOGUE GENERATE] Raw response: {}", rawResponse);
 
             String fixedJson = sanitizeJson(rawResponse);

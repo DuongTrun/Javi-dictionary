@@ -60,7 +60,6 @@ class VocabulariesServiceImplTest {
         String cachedExplanation = "Giải nghĩa từ 飲む";
 
         when(securityUtil.getCurrentUser()).thenReturn(mockUser);
-        when(redisHelper.find(anyString(), eq(String.class))).thenReturn(null); // Anti-spam check: null means not spamming
         when(vocabulariesCacheService.getExplain(word)).thenReturn(cachedExplanation);
 
         // Act
