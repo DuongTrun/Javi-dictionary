@@ -76,7 +76,7 @@ public class VoiceServiceImpl implements VoiceService {
     }
 
     private String callGeminiDirect(byte[] audioBytes, MimeType mimeType, String systemInstruction) throws Exception {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -116,7 +116,7 @@ public class VoiceServiceImpl implements VoiceService {
     }
 
     private String callGeminiTextDirect(String systemInstruction, String promptText) throws Exception {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + apiKey;
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -218,11 +218,11 @@ public class VoiceServiceImpl implements VoiceService {
             throw new AppException(ErrorCode.VOICE_PROCESSING_ERROR);
         } catch (Exception e) {
             log.error("Lỗi đánh giá phát âm", e);
-            // Trả về DTO rỗng nếu AI không thể phân tích âm thanh (im lặng hoặc nhiễu)
+            // Trả về DTO rỗng nếu AI không thể phân tích âm thanh (im lặng hoặc nhiễu) hoặc API lỗi
             return VoiceEvaluationResponse.builder()
                     .score(0)
                     .accuracyLevel("IMPROVABLE")
-                    .feedback("Không thể nhận diện giọng nói. Vui lòng nói to rõ ràng hơn hoặc kiểm tra Micro.")
+                    .feedback("Không thể nhận diện giọng nói hoặc kết nối AI gặp sự cố. Vui lòng nói to rõ ràng hơn hoặc kiểm tra Micro/đường truyền mạng.")
                     .wordsAnalysis(List.of())
                     .build();
         }
@@ -299,7 +299,7 @@ public class VoiceServiceImpl implements VoiceService {
                     .userSpokenText("")
                     .userSpokenTranslation("")
                     .pronunciationScore(0)
-                    .pronunciationFeedback("Không nghe rõ giọng nói. Vui lòng nói to rõ ràng hơn hoặc kiểm tra Micro.")
+                    .pronunciationFeedback("Không nghe rõ giọng nói hoặc kết nối AI gặp sự cố. Vui lòng nói to rõ ràng hơn hoặc kiểm tra Micro/đường truyền mạng.")
                     .isGrammarValid(true)
                     .grammarFeedback("")
                     .nextAiResponseText("もう一度話してください。")
