@@ -29,6 +29,8 @@ import com.example.javi.utils.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.example.javi.service.cache.RedisHelper;
+
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -44,18 +46,21 @@ public class VoiceServiceImpl implements VoiceService {
     SecurityUtil securityUtil;
     UsersService usersService;
     RestClient restClient;
+    RedisHelper redisHelper;
 
     public VoiceServiceImpl(
             ChatClient.Builder builder, 
             ObjectMapper objectMapper, 
             @Value("${spring.ai.openai.api-key}") String apiKey,
             SecurityUtil securityUtil,
-            UsersService usersService) {
+            UsersService usersService,
+            RedisHelper redisHelper) {
         this.chatClient = builder.build();
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
         this.securityUtil = securityUtil;
         this.usersService = usersService;
+        this.redisHelper = redisHelper;
 
         // Pooled JDK HTTP Client request factory for connection reuse
         java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
@@ -166,6 +171,14 @@ public class VoiceServiceImpl implements VoiceService {
             usersService.checkAndUpdateAiQuota(currentUser);
         }
 
+        // Rate limiting: 1 request / 5 seconds per user for voice AI
+        String limitKey = "ai:limit:voice:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu voice AI", currentUser.getUsername());
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", java.time.Duration.ofSeconds(5));
+
         try {
             byte[] audioBytes = audioFile.getBytes();
             MimeType mimeType = MimeTypeUtils.parseMimeType(
@@ -231,6 +244,14 @@ public class VoiceServiceImpl implements VoiceService {
             usersService.checkAndUpdateAiQuota(currentUser);
         }
 
+        // Rate limiting: 1 request / 5 seconds per user for voice AI
+        String limitKey = "ai:limit:voice:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu voice AI", currentUser.getUsername());
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", java.time.Duration.ofSeconds(5));
+
         try {
             byte[] audioBytes = audioFile.getBytes();
             MimeType mimeType = MimeTypeUtils.parseMimeType(
@@ -291,6 +312,16 @@ public class VoiceServiceImpl implements VoiceService {
     public VoiceDialogueResponse generateDialogue(String topicName) {
         if (topicName == null || topicName.isBlank()) {
             throw new AppException(ErrorCode.VOICE_TARGET_TEXT_EMPTY);
+        }
+
+        Users currentUser = securityUtil.getCurrentUser();
+        if (currentUser != null) {
+            String limitKey = "ai:limit:voice:" + currentUser.getId();
+            if (redisHelper.find(limitKey, String.class) != null) {
+                log.warn("[AI LIMIT] User {} spam yêu cầu tạo hội thoại", currentUser.getUsername());
+                throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+            }
+            redisHelper.save(limitKey, "1", java.time.Duration.ofSeconds(5));
         }
 
         try {

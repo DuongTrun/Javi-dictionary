@@ -55,6 +55,9 @@ class VoiceServiceImplTest {
     @Mock
     private UsersService usersService;
 
+    @Mock
+    private com.example.javi.service.cache.RedisHelper redisHelper;
+
     private ObjectMapper objectMapper;
     private VoiceServiceImpl voiceService;
 
@@ -62,7 +65,7 @@ class VoiceServiceImplTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         when(chatClientBuilder.build()).thenReturn(chatClient);
-        voiceService = new VoiceServiceImpl(chatClientBuilder, objectMapper, "test-api-key", securityUtil, usersService);
+        voiceService = new VoiceServiceImpl(chatClientBuilder, objectMapper, "test-api-key", securityUtil, usersService, redisHelper);
     }
 
     // =============================================

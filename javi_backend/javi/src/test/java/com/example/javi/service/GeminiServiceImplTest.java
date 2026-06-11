@@ -37,6 +37,7 @@ class GeminiServiceImplTest {
     @Mock TranslationRepository translationRepository;
     @Mock OcrService ocrService;
     @Mock UsersService usersService;
+    @Mock com.example.javi.service.cache.RedisHelper redisHelper;
 
     private GeminiServiceImpl geminiService;
     private Users mockUser;
@@ -56,7 +57,8 @@ class GeminiServiceImplTest {
                 translationRepository,
                 ocrService,
                 usersService,
-                null
+                null,
+                redisHelper
         );
     }
 

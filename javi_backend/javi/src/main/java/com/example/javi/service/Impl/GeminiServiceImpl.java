@@ -36,6 +36,8 @@ import com.github.pemistahl.lingua.api.Language;
 import com.github.pemistahl.lingua.api.LanguageDetector;
 import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
 
+import com.example.javi.service.cache.RedisHelper;
+
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +53,7 @@ public class GeminiServiceImpl implements GeminiService {
     OcrService ocrService;
     UsersService usersService;
     ObjectMapper objectMapper;
+    RedisHelper redisHelper;
 
     public GeminiServiceImpl(
             ChatClient.Builder builder,
@@ -59,7 +62,8 @@ public class GeminiServiceImpl implements GeminiService {
             TranslationRepository translationRepository,
             OcrService ocrService,
             UsersService usersService,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            RedisHelper redisHelper) {
         this.chatClient = builder.build();
         this.securityUtil = securityUtil;
         this.translationMapper = translationMapper;
@@ -67,6 +71,7 @@ public class GeminiServiceImpl implements GeminiService {
         this.ocrService = ocrService;
         this.usersService = usersService;
         this.objectMapper = objectMapper;
+        this.redisHelper = redisHelper;
     }
 
     LanguageDetector detector = LanguageDetectorBuilder.fromLanguages(
@@ -111,6 +116,14 @@ public class GeminiServiceImpl implements GeminiService {
             log.info("[AI TRANSLATE CACHE HIT] Đã tìm thấy bản dịch AI trong DB");
             return translationMapper.translationToTranslateResponse(cachedTranslation.get());
         }
+
+        // Rate limiting: 1 request / 5 seconds per user for translation
+        String limitKey = "ai:limit:translate:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu dịch thuật", currentUser.getUsername());
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", java.time.Duration.ofSeconds(5));
 
         // dịch vẫn sượng do prompt chưa chuẩn
         String prompt = String.format(
@@ -176,6 +189,14 @@ public class GeminiServiceImpl implements GeminiService {
             log.info("[AI TRANSLATE STREAM CACHE HIT] Trả về bản dịch AI từ DB cho stream");
             return Flux.just(cachedTranslation.get().getTranslatedText());
         }
+
+        // Rate limiting: 1 request / 5 seconds per user for translation
+        String limitKey = "ai:limit:translate:" + currentUser.getId();
+        if (redisHelper.find(limitKey, String.class) != null) {
+            log.warn("[AI LIMIT] User {} spam yêu cầu dịch thuật", currentUser.getUsername());
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        }
+        redisHelper.save(limitKey, "1", java.time.Duration.ofSeconds(5));
 
         String prompt = String.format(
                 """
